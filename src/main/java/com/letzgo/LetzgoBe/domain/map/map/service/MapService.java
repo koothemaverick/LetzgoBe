@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.map.service;
+package com.letzgo.LetzgoBe.domain.map.map.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;

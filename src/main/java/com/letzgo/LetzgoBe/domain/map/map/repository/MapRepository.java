@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.map.repository;
+package com.letzgo.LetzgoBe.domain.map.map.repository;
 
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.map.entity;
+package com.letzgo.LetzgoBe.domain.map.map.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
