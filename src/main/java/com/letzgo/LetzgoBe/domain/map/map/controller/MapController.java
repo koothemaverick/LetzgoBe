@@ -1,6 +1,6 @@
-package com.letzgo.LetzgoBe.map.controller;
+package com.letzgo.LetzgoBe.domain.map.map.controller;
 
-import com.letzgo.LetzgoBe.map.service.MapService;
+import com.letzgo.LetzgoBe.domain.map.map.service.MapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
