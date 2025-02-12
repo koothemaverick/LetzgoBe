@@ -1,6 +1,5 @@
-package com.letzgo.LetzgoBe.map.dto;
+package com.letzgo.LetzgoBe.domain.map.map.dto;
 
-import com.letzgo.LetzgoBe.map.entity.Place;
 import lombok.Builder;
 
 import java.util.ArrayList;
