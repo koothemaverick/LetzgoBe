@@ -1,8 +1,8 @@
 package com.letzgo.LetzgoBe.domain.map.map.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 
+@ToString
 @Builder
 public class PlaceDto {
     private String name;
