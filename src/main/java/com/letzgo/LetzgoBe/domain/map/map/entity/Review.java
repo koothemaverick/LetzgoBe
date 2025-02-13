@@ -3,6 +3,8 @@ package com.letzgo.LetzgoBe.domain.map.map.entity;
 import com.letzgo.LetzgoBe.common.entity.Account;
 import jakarta.persistence.*;
 
+import java.time.LocalTime;
+
 @Entity
 public class Review {
     @Id
@@ -24,5 +26,5 @@ public class Review {
     private int rating;
 
     @Column(nullable = false)
-    private int created_at;
+    private LocalTime created_at;
 }
