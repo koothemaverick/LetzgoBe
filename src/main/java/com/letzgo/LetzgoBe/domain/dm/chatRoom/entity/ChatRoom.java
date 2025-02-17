@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dm.chatRoom.entity;
 
-import com.letzgo.LetzgoBe.domain.dm.chatRoom.converter.StringDoubleListConverter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
@@ -17,10 +17,14 @@ import java.util.List;
 @SuperBuilder
 @ToString(callSuper = true)
 public class ChatRoom extends BaseEntity {
+    public static final Long ROOM_MEMBER_LIMIT = 100L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    @Convert(converter = StringDoubleListConverter.class)
-    private List<List<String>> joinMemberIdNickNameList;
-    private Long roomMemberLimit;
+
+    @OneToMany
+    @JoinColumn(name = "user_id")
+    @JsonBackReference // 자식 역할
+    private List<User> joinUserList;
 }
