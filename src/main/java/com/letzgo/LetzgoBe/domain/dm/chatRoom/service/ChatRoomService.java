@@ -10,7 +10,7 @@ public interface ChatRoomService {
     // 사용자의 모든 채팅방 조회
     Page<ChatRoomList> findAll(Pageable pageable, User loginUser);
 
-    // 사용자의 채팅방/팔로워 검색(여기서 채팅방 생성 가능)
+    // 사용자의 채팅방 목록에서 검색(여기서 채팅방 생성 가능)
     Page<ChatRoomList> searchByKeyword(String keyword, Pageable pageable, User loginUser);
 
     // 선택한 유저와 채팅방(1:1, 단체) 생성

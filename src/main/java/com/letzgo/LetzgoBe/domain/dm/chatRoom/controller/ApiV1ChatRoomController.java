@@ -25,7 +25,7 @@ public class ApiV1ChatRoomController {
         return chatRoomService.findAll(pageable, loginUser);
     }
 
-    // 사용자의 채팅방/팔로워 검색(여기서 채팅방 생성 가능)
+    // 사용자의 채팅방 목록에서 검색(여기서 채팅방 생성 가능)
     @GetMapping("/chat-rooms/search")
     public Page<ChatRoomList> searchRooms(@RequestParam("keyword") String keyword, Pageable pageable, @LoginUser User loginUser){
         return chatRoomService.searchByKeyword(keyword, pageable, loginUser);
