@@ -32,7 +32,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRooms.map(ChatRoomList::from);
     }
 
-    // 사용자의 채팅방 목록 검색(여기서 채팅방 생성 가능)
+    // 사용자의 채팅방 목록에서 검색(여기서 채팅방 생성 가능)
     @Override
     @Transactional
     public Page<ChatRoomList> searchByKeyword(String keyword, Pageable pageable, User loginUser){
