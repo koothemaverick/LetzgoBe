@@ -1,11 +1,10 @@
 package com.letzgo.LetzgoBe.domain.dm.chatRoom.controller;
 
-import com.letzgo.LetzgoBe.domain.dm.chatRoom.dto.res.DetailChatRoomDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
+import com.letzgo.LetzgoBe.domain.dm.chatRoom.dto.res.ChatRoomList;
 import com.letzgo.LetzgoBe.domain.dm.chatRoom.dto.req.ChatRoomForm;
-import com.letzgo.LetzgoBe.domain.dm.chatRoom.dto.req.UpdateChatRoomForm;
 import com.letzgo.LetzgoBe.domain.dm.chatRoom.service.ChatRoomService;
-import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
-import com.letzgo.LetzgoBe.global.webMvc.LoginUser;
+import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,21 +14,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("letzgo/restful/api/v1/post")
+@RequestMapping("letzgo/rest-api/v1/post")
 @RequiredArgsConstructor
 public class ApiV1ChatRoomController {
     private final ChatRoomService chatRoomService;
 
     // 사용자의 모든 채팅방 조회
     @GetMapping("/chat-rooms")
-    public Page<ChatRoomDto> getAllRooms(Pageable pageable, @LoginUser User loginUser){
-        return chatRoomService.findAll(pageable);
+    public Page<ChatRoomList> getAllRooms(Pageable pageable, @LoginUser User loginUser){
+        return chatRoomService.findAll(pageable, loginUser);
     }
 
     // 사용자의 채팅방/팔로워 검색(여기서 채팅방 생성 가능)
     @GetMapping("/chat-rooms/search")
-    public Page<ChatRoomDto> searchRooms(@RequestParam("keyword") String keyword, Pageable pageable, @LoginUser User loginUser){
-        return chatRoomService.searchByKeyword(keyword, pageable);
+    public Page<ChatRoomList> searchRooms(@RequestParam("keyword") String keyword, Pageable pageable, @LoginUser User loginUser){
+        return chatRoomService.searchByKeyword(keyword, pageable, loginUser);
     }
 
     // 선택한 유저와 채팅방(1:1, 단체) 생성
