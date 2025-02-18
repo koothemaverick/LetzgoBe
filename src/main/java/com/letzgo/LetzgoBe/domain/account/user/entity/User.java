@@ -12,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -62,16 +63,19 @@ public class User extends BaseEntity {
         ROLE_USER, ROLE_ADMIN
     }
 
+    @Column(columnDefinition = "VARCHAR(255) DEFAULT 'default.png'")
+    private String profilePath = "default.png";  // 프로필 사진 경로
+
     @OneToMany
     @JoinColumn(name = "chatroom_id")
     @JsonManagedReference // 부모 역할
-    private List<ChatRoom> joinChatRoomList;  // 참여하고 있는 채팅방 리스트
+    private List<ChatRoom> joinChatRoomList = new ArrayList<>();  // 참여중인 채팅방 리스트
 
     @OneToMany(mappedBy = "follower")
-    private List<UserFollow> followUserList;
+    private List<UserFollow> followUserList = new ArrayList<>();
 
     @OneToMany(mappedBy = "followee")
-    private List<UserFollow> followerUserList;
+    private List<UserFollow> followerUserList = new ArrayList<>();
 
     private LocalDate birthday;
 }

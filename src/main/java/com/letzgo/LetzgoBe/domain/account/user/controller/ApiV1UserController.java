@@ -1,9 +1,9 @@
 package com.letzgo.LetzgoBe.domain.account.user.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.user.dto.req.UserForm;
 import com.letzgo.LetzgoBe.domain.account.user.dto.res.UserInfo;
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 import com.letzgo.LetzgoBe.domain.account.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,21 +24,21 @@ public class ApiV1UserController {
 
     // 회원정보 조회
     @GetMapping("/me")
-    public ResponseEntity<UserInfo> getUserInfo(@RequestHeader("Authorization") String token, @LoginUser User loginUser) {
-        return ResponseEntity.ok(userService.getUserInfo(token, loginUser));
+    public ResponseEntity<UserInfo> getUserInfo(@LoginUser LoginUserDto loginUser) {
+        return ResponseEntity.ok(userService.getUserInfo(loginUser));
     }
 
     // 회원정보 수정
     @PutMapping("/update")
-    public ResponseEntity<String> updateUserInfo(@RequestBody UserForm userForm, @RequestHeader("Authorization") String token, @LoginUser User loginUser) {
-        userService.updateUser(userForm, token, loginUser);
+    public ResponseEntity<String> updateUserInfo(@RequestBody UserForm userForm, @LoginUser LoginUserDto loginUser) {
+        userService.updateUser(userForm, loginUser);
         return ResponseEntity.ok("회원정보 수정 성공");
     }
 
     // 회원탈퇴
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestHeader("Authorization") String token, @LoginUser User loginUser) {
-        userService.deleteUser(token, loginUser);
+    public ResponseEntity<String> deleteUser(@LoginUser LoginUserDto loginUser) {
+        userService.deleteUser(loginUser);
         return ResponseEntity.ok("회원탈퇴 성공");
     }
 
