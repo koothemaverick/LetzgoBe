@@ -1,9 +1,10 @@
-package com.letzgo.LetzgoBe.domain.map.map.entity;
+package com.letzgo.LetzgoBe.domain.map.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 public class Place {
     @Id

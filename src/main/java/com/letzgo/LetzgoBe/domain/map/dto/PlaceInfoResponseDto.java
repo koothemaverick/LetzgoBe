@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.map.map.dto;
+package com.letzgo.LetzgoBe.domain.map.dto;
 
 import lombok.*;
 
