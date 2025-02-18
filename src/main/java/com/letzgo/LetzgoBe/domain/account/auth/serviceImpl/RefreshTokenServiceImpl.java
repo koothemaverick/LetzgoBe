@@ -29,7 +29,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     // Refresh Token 삭제
-    public void deleteRefreshToken(String userId) {
-        redisTemplate.delete(userId);
+    public void deleteRefreshToken(String token) {
+        redisTemplate.delete(token);
     }
 }

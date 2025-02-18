@@ -8,6 +8,7 @@ import com.letzgo.LetzgoBe.domain.account.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 회원가입
     @Override
@@ -22,12 +24,13 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail((userForm.getEmail()))) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
+        String encodedPassword = passwordEncoder.encode(userForm.getPassword());
         User user = User.builder()
                         .name(userForm.getName())
                         .nickName(userForm.getNickName())
                         .phone(userForm.getPhone())
                         .email(userForm.getEmail())
-                        .password(userForm.getPassword())
+                        .password(encodedPassword)  // 인코딩된 비밀번호 저장
                         .gender(userForm.getGender())
                         .birthday(userForm.getBirthday())
                         .build();
