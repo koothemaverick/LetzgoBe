@@ -12,7 +12,6 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,8 +33,8 @@ public class User extends BaseEntity {
 
     @Column(length = 50)
     private String email;
-
-    @Column(length = 20)
+    
+    @Column(length = 1000)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -43,14 +42,14 @@ public class User extends BaseEntity {
     private Gender gender;  // 성별
     @Getter
     public enum Gender {
-        M, W;
+        MALE, FEMALE;
     }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "ENUM('NORMAL', 'DELETED', 'BANNED') DEFAULT 'NORMAL'")
-    private MemberState state;  // 회원 상태
+    private State state;  // 회원 상태
     @Getter
-    public enum MemberState {
+    public enum State {
         NORMAL,  // 정상
         BANNED  // 정지
     }
