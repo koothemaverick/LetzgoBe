@@ -23,15 +23,15 @@ public class ApiV1AuthController {
     }
 
     // 로그아웃
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String token, @LoginUser User loginUser) {
-        authService.logout(token);
+        authService.logout(token, loginUser);
         return ResponseEntity.ok("로그아웃 성공");
     }
 
     // accessToken 재발급
-    @PostMapping("/refresh-token")
+    @GetMapping("/refresh-token")
     public ResponseEntity<Auth> refreshToken(@RequestBody RefreshToken refreshToken, @LoginUser User loginUser) {
-        return ResponseEntity.ok(authService.refreshToken(refreshToken));
+        return ResponseEntity.ok(authService.refreshToken(refreshToken, loginUser));
     }
 }
