@@ -11,7 +11,7 @@ import com.letzgo.LetzgoBe.domain.account.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${custom.accessToken.expiration}")
     private long accessTokenExpiration;
@@ -36,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(loginForm.getEmail())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        if (!BCrypt.checkpw(loginForm.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginForm.getPassword(), user.getPassword())) {
             throw new RuntimeException("비밀번호가 올바르지 않습니다.");
         }
 
@@ -51,15 +52,15 @@ public class AuthServiceImpl implements AuthService {
 
     // 로그아웃
     @Override
-    public void logout(String userId) {
+    public void logout(String token, User loginUser) {
         // Redis에서 Refresh Token 삭제
-        refreshTokenService.deleteRefreshToken(userId);
+        refreshTokenService.deleteRefreshToken(token);
     }
 
     // accessToken 재발급
     @Override
     @Transactional
-    public Auth refreshToken(RefreshToken refreshTokenRequest) {
+    public Auth refreshToken(RefreshToken refreshTokenRequest, User loginUser) {
         String storedRefreshToken = refreshTokenService.getRefreshToken(refreshTokenRequest.getRefreshToken());
 
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshTokenRequest.getRefreshToken())) {
