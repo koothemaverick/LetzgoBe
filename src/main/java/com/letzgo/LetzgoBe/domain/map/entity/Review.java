@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.map.map.entity;
+package com.letzgo.LetzgoBe.domain.map.entity;
 
 import com.letzgo.LetzgoBe.common.entity.Account;
 import jakarta.persistence.*;
@@ -18,6 +18,9 @@ public class Review {
     @ManyToOne
     @JoinColumn(name = "place_pk")
     private Place place;
+
+    @Column(nullable = true)
+    private String photo; //내부 이미지 저장경로
 
     @Column(nullable = false)
     private String content;

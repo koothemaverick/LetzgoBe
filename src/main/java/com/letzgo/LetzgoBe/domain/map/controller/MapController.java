@@ -1,7 +1,7 @@
-package com.letzgo.LetzgoBe.domain.map.map.controller;
+package com.letzgo.LetzgoBe.domain.map.controller;
 
-import com.letzgo.LetzgoBe.domain.map.map.dto.ReviewDto;
-import com.letzgo.LetzgoBe.domain.map.map.service.MapService;
+import com.letzgo.LetzgoBe.domain.map.dto.ReviewDto;
+import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/map-api")
 public class MapController {
-    final private MapService mapService;
+    private final MapService mapService;
 
     //클릭한 장소에 대한 정보,리뷰 출력
     @GetMapping("/place")
