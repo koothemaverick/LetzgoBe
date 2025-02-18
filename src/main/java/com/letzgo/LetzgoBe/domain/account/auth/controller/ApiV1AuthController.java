@@ -5,7 +5,6 @@ import com.letzgo.LetzgoBe.domain.account.auth.dto.res.Auth;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

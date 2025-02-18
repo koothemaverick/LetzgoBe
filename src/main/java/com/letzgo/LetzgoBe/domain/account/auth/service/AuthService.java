@@ -3,7 +3,6 @@ package com.letzgo.LetzgoBe.domain.account.auth.service;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginForm;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.res.Auth;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 
 public interface AuthService {
     // 로그인
