@@ -36,6 +36,14 @@ dependencies {
 	implementation("mysql:mysql-connector-java:8.0.33")
 	implementation ("org.springframework.boot:spring-boot-starter-validation")
 	implementation ("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("io.jsonwebtoken:jjwt:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-mail")
+	implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
 }
 
 tasks.withType<Test> {
