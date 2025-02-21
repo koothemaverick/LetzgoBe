@@ -11,7 +11,7 @@ class NaverApiClientTest {
     public MapApiService mapApiService;
     @Test
     public void apiTest() {
-        String s = mapApiService.doReverseGeocoding("128.12345,37.98776");
+        String s = mapApiService.googleApiTest("");
         System.out.println(s);
     }
 }

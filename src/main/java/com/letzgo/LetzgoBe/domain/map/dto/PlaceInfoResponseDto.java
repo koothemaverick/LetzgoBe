@@ -5,8 +5,11 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@ToString
+@Getter
+@Setter
 @Builder
+@ToString
+@AllArgsConstructor
 public class PlaceInfoResponseDto {
     private PlaceDto placeinfo;
     @Builder.Default
