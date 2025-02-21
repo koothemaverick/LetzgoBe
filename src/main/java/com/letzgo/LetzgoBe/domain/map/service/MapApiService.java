@@ -39,7 +39,7 @@ public class MapApiService {
                 .bodyToMono(String.class)
                 .block();
     }
-
+    
     public String googleApiTest(String query) {
         return googleApiClient.post()
                 .uri(uriBuilder -> uriBuilder
@@ -47,7 +47,7 @@ public class MapApiService {
                         .build())
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("textQuery", query, "languageCode", "ko"))//요청본문
-                .header("X-Goog-FieldMask", "places.displayName,places.formattedAddress")
+                .header("X-Goog-FieldMask", "places.name")
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
