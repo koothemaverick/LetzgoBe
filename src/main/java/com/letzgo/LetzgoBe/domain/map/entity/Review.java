@@ -17,7 +17,7 @@ public class Review extends BaseEntity {
     private Place place;
 
     @Column(nullable = true)
-    private String photo_dir; //내부 이미지 저장경로
+    private int photo; //리뷰 사진 존재시 1, 없을시 0
 
     @Column(nullable = false)
     private String content;

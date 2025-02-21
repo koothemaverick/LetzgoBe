@@ -2,8 +2,11 @@ package com.letzgo.LetzgoBe.domain.map.dto;
 
 import lombok.*;
 
-@ToString
+@Getter
+@Setter
 @Builder
+@ToString
+@AllArgsConstructor
 public class ReviewDto {
     private int review_id;
     private String account;
