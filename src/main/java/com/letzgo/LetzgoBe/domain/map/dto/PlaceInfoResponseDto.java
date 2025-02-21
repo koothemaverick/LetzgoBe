@@ -1,12 +1,16 @@
-package com.letzgo.LetzgoBe.domain.map.map.dto;
+package com.letzgo.LetzgoBe.domain.map.dto;
 
-import lombok.Builder;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Builder
-public class ResponseDto {
+@ToString
+@AllArgsConstructor
+public class PlaceInfoResponseDto {
     private PlaceDto placeinfo;
     @Builder.Default
     private List<ReviewDto> reviews = new ArrayList<>();

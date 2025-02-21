@@ -1,15 +1,13 @@
-package com.letzgo.LetzgoBe.domain.map.map.entity;
+package com.letzgo.LetzgoBe.domain.map.entity;
 
+import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
-public class Place {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int place_pk;
-
+public class Place extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
