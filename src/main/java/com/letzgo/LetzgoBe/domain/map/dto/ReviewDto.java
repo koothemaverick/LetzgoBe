@@ -1,8 +1,12 @@
-package com.letzgo.LetzgoBe.domain.map.map.dto;
+package com.letzgo.LetzgoBe.domain.map.dto;
 
-import lombok.Builder;
+import lombok.*;
 
+@Getter
+@Setter
 @Builder
+@ToString
+@AllArgsConstructor
 public class ReviewDto {
     private int review_id;
     private String account;
