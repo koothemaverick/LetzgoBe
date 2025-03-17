@@ -3,6 +3,9 @@ package com.letzgo.LetzgoBe.domain.map.controller;
 import com.letzgo.LetzgoBe.domain.map.dto.ReviewDto;
 import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +16,22 @@ import org.springframework.web.bind.annotation.*;
 public class MapController {
     private final MapService mapService;
 
-    //클릭한 장소에 대한 정보,리뷰 출력
+    //클릭한 장소에 대한 정보출력
     @GetMapping("/place")
-    public ResponseEntity getPlaceInfo(long latitude, long longitude) {
+    public ResponseEntity getPlaceInfo(@RequestParam long latitude,
+                                       @RequestParam long longitude) {
 
         return ResponseEntity.status(HttpStatus.OK).body("");
     }
 
+    //클릭한 장소에 대한 리뷰 출력
+    @GetMapping("/place/Review")
+    public ResponseEntity getPlaceReview(@RequestParam long latitude,
+                                         @RequestParam long longitude,
+                                         @PageableDefault(sort = "id", size = 5, direction = Sort.Direction.DESC)Pageable pageable) {
+
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
     //검색한 장소에 대한 정보, 리뷰 출력
     @GetMapping("/place-search/{placeName}")
     public ResponseEntity getSearchedPlaceInfo(@PathVariable String placeName) {

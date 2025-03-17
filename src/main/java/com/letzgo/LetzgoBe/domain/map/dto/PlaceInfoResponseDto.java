@@ -10,8 +10,10 @@ import java.util.List;
 @Builder
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class PlaceInfoResponseDto {
     private PlaceDto placeinfo;
     @Builder.Default
     private List<ReviewDto> reviews = new ArrayList<>();
+
 }
