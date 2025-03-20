@@ -1,58 +1,44 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import com.google.maps.GeoApiContext;
+import com.google.maps.PlaceDetailsRequest;
+import com.google.maps.PlacesApi;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.Photo;
+import com.google.maps.model.PlaceDetails;
+import com.letzgo.LetzgoBe.domain.map.dto.PlaceDetailResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.Map;
+import java.io.IOException;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class MapApiService {
+    private final GeoApiContext context;
 
-    @Autowired
-    private WebClient naverCloudPlatformApiClient;
-    @Autowired
-    private WebClient naverOpenApiClient;
-    @Autowired
-    private WebClient googleApiClient;
+    //장소이름, 주소, 사진요청용스트링 받아옴
+    public PlaceDetailResponse getPlaceDetails(String placeId) throws IOException, InterruptedException, ApiException {
 
-    public String doReverseGeocoding(String coords) {
-        return naverCloudPlatformApiClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/map-reversegeocode/v2/gc") // api경로
-                        .queryParam("coords", coords) // 쿼리파라미터
-                        .queryParam("output", "json") // 응답형식
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId)
+                .fields(PlaceDetailsRequest.FieldMask.NAME,
+                        PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
+                        PlaceDetailsRequest.FieldMask.PHOTOS)
+                .language("ko")
+                .await();
+
+        return PlaceDetailResponse.builder()
+                .placeName(placeDetails.name)
+                .address(placeDetails.adrAddress)
+                .photos(placeDetails.photos)
+                .build();
     }
 
-    public String OpenApiTest(String query) {
-        return naverOpenApiClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/v1/search/local.xml")
-                        .queryParam("query", query)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+    public void savePlacePhoto(String photo) {
+        // photo api로 사진 받아와 스토리지에 저장하는 메소드
     }
-    
-    public String googleApiTest(String query) {
-        return googleApiClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/v1/places:searchText")
-                        .build())
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(Map.of("textQuery", query, "languageCode", "ko"))//요청본문
-                .header("X-Goog-FieldMask", "places.name")
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-    }
-
-
 }
 
