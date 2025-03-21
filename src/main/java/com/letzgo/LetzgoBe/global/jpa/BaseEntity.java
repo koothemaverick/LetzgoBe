@@ -18,6 +18,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
 @Getter
+@Setter(AccessLevel.PROTECTED)
 @SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
 @ToString
@@ -25,11 +26,9 @@ import static lombok.AccessLevel.PROTECTED;
 public class BaseEntity {
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  @Setter(AccessLevel.PROTECTED)
   @EqualsAndHashCode.Include
   private Long id;
 
   @CreatedDate
-  @Setter(AccessLevel.PRIVATE)
   private LocalDateTime createDate;
 }

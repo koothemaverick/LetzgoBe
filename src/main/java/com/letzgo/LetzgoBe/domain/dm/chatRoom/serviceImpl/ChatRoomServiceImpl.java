@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dm.chatRoom.serviceImpl;
 
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.user.entity.User;
 import com.letzgo.LetzgoBe.domain.account.user.repository.UserRepository;
 import com.letzgo.LetzgoBe.domain.dm.chatRoom.dto.req.ChatRoomForm;
@@ -27,7 +28,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 사용자의 모든 채팅방 조회
     @Override
     @Transactional
-    public Page<ChatRoomList> findAll(Pageable pageable, User loginUser) {
+    public Page<ChatRoomList> findAll(Pageable pageable, LoginUserDto loginUser) {
         Page<ChatRoom> chatRooms = chatRoomRepository.findAll(pageable);
         return chatRooms.map(ChatRoomList::from);
     }
@@ -35,7 +36,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 사용자의 채팅방 목록에서 검색(여기서 채팅방 생성 가능)
     @Override
     @Transactional
-    public Page<ChatRoomList> searchByKeyword(String keyword, Pageable pageable, User loginUser){
+    public Page<ChatRoomList> searchByKeyword(String keyword, Pageable pageable, LoginUserDto loginUser){
         Page<ChatRoom> chatRooms = chatRoomRepository.searchByUserUsername(keyword, pageable);
         return chatRooms.map(ChatRoomList::from);
     }
@@ -43,7 +44,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 선택한 유저와 채팅방(1:1, 단체) 생성
     @Override
     @Transactional
-    public void createChatRoom(ChatRoomForm chatRoomForm, User loginUser) {
+    public void createChatRoom(ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
         // ChatRoomUser Dto -> User 변환
         List<User> users = chatRoomForm.getJoinUserList().stream()
                 .map(chatRoomUser -> userRepository.findById(chatRoomUser.getId())
@@ -51,7 +52,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .collect(Collectors.toList());
 
         ChatRoom chatRoom = ChatRoom.builder()
-                        .user(loginUser)
+                        .user(loginUser.toEntity())
                         .joinUserList(users)
                         .build();
 
@@ -61,7 +62,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 선택한 유저 초대하기
     @Override
     @Transactional
-    public void inviteUser(ChatRoomForm chatRoomForm, User loginUser){
+    public void inviteUser(ChatRoomForm chatRoomForm, LoginUserDto loginUser){
         // ChatRoomUser Dto -> User 변환
         List<User> usersToInvite = chatRoomForm.getJoinUserList().stream()
                 .map(chatRoomUser -> userRepository.findById(chatRoomUser.getId())
@@ -85,7 +86,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 해당 채팅방 나가기
     @Override
     @Transactional
-    public void leaveChatRoom(String chatRoomId, User loginUser){
+    public void leaveChatRoom(String chatRoomId, LoginUserDto loginUser){
         // chatRoomId로 채팅방 조회
         ChatRoom chatRoom = chatRoomRepository.findById(Long.valueOf(chatRoomId))
                 .orElseThrow(() -> new RuntimeException("ChatRoom not found: " + chatRoomId));
