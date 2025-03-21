@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     // 회원가입
     @Override
     @Transactional
-    public void signup(UserForm userForm) {
+    public User signup(UserForm userForm) {
         if (userRepository.existsByEmail((userForm.getEmail()))) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
                         .build();
 
         userRepository.save(user);
+        return user;
     }
 
     // 회원정보 조회
