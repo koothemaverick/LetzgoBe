@@ -34,7 +34,7 @@ public class User extends BaseEntity {
 
     @Column(length = 50)
     private String email;
-    
+
     @Column(length = 1000)
     private String password;
 
@@ -64,12 +64,7 @@ public class User extends BaseEntity {
     }
 
     @Column(columnDefinition = "VARCHAR(255) DEFAULT 'default.png'")
-    private String profilePath = "default.png";  // 프로필 사진 경로
-
-    @OneToMany
-    @JoinColumn(name = "chatroom_id")
-    @JsonManagedReference // 부모 역할
-    private List<ChatRoom> joinChatRoomList = new ArrayList<>();  // 참여중인 채팅방 리스트
+    private String profileUrl = "default.png";  // 프로필 사진 경로
 
     @OneToMany(mappedBy = "follower")
     private List<UserFollow> followUserList = new ArrayList<>();

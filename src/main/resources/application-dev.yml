@@ -1,8 +1,49 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/test_database?createDatabaseIfNotExist=true
-    username: root
-    password: root
+    url: jdbc:mysql://localhost:3306/meta_db?createDatabaseIfNotExist=true
+    username: admin
+    password: admin
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 100
+        show_sql: true
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+    mongodb:
+      uri: mongodb://admin:admin@localhost:27017/meta_db?authSource=admin
+      database: meta_db
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+  messaging:
+    stomp:
+      broker-relay:
+        host: localhost  # RabbitMQ 서버 IP
+        port: 61613           # STOMP 기본 포트
+        system-login: admin   # RabbitMQ 로그인 계정
+        system-passcode: admin
+        relay-host: localhost
+        relay-port: 61613
+        client-login: admin
+        client-passcode: admin
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    team.klover: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
