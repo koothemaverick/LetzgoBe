@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:mysql://NEED_TO_INPUT:3306/meta_db?createDatabaseIfNotExist=true
+    username: admin
+    password: ${spring.datasource.password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        default_batch_fetch_size: 100
+        show_sql: false  # 운영 환경에서는 SQL 로깅 비활성화
+        format_sql: false
+        highlight_sql: false
+        use_sql_comments: false
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: letzgo-redis
+      port: 6379
+    mongodb:
+      uri: mongodb://admin:admin@NEED_TO_INPUT:27017/meta_db?authSource=admin
+      database: meta_db
+    rabbitmq:
+      host: NEED_TO_INPUT
+      port: 5672
+      username: admin
+      password: admin
+    messaging:
+      stomp:
+        broker-relay:
+          host: NEED_TO_INPUT  # RabbitMQ 서버 IP
+          port: 61613           # STOMP 기본 포트
+          system-login: admin   # RabbitMQ 로그인 계정
+          system-passcode: admin
+          relay-host: NEED_TO_INPUT
+          relay-port: 61613
+          client-login: admin
+          client-passcode: admin
+
+logging:
+  level:
+    org.springframework.web: INFO
+    team.klover: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
