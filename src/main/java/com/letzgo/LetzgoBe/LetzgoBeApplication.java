@@ -14,6 +14,7 @@ public class LetzgoBeApplication {
 		Dotenv dotenv = Dotenv.load();
 		System.setProperty("AWS_ACCESS_KEY_ID", dotenv.get("AWS_ACCESS_KEY_ID"));
 		System.setProperty("AWS_SECRET_ACCESS_KEY", dotenv.get("AWS_SECRET_ACCESS_KEY"));
+		System.setProperty("JWT_SECRET_KEY", dotenv.get("JWT_SECRET_KEY"));
 
 		SpringApplication.run(LetzgoBeApplication.class, args);
 	}
