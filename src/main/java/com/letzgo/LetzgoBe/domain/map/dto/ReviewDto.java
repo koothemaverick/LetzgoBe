@@ -18,7 +18,7 @@ public class ReviewDto {
 
     public static ReviewDto entitytoDto(Review review) {
         return ReviewDto.builder()
-                .account(review.getUser().getName())
+                .account(review.getMember().getName())
                 .title(review.getContent())
                 .rating(review.getRating())
                 .content(review.getContent())

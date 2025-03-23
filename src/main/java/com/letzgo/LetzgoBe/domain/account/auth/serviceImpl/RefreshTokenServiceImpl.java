@@ -19,24 +19,24 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     // Refresh Token 저장
     @Override
     @Transactional
-    public void saveRefreshToken(String userId, String refreshToken, long duration) {
+    public void saveRefreshToken(String memberId, String refreshToken, long duration) {
         ValueOperations<String, Object> ops = redisTemplate.opsForValue();
-        ops.set(userId, refreshToken, duration, TimeUnit.MILLISECONDS);
+        ops.set(memberId, refreshToken, duration, TimeUnit.MILLISECONDS);
     }
 
     // Refresh Token 조회
     @Override
     @Transactional
-    public String getRefreshToken(String userId) {
+    public String getRefreshToken(String memberId) {
         ValueOperations<String, Object> ops = redisTemplate.opsForValue();
-        Object value = ops.get(userId);
+        Object value = ops.get(memberId);
         return value != null ? value.toString() : null;
     }
 
     // Refresh Token 삭제
     @Override
     @Transactional
-    public void deleteRefreshToken(String userId) {
-        redisTemplate.delete(userId);
+    public void deleteRefreshToken(String memberId) {
+        redisTemplate.delete(memberId);
     }
 }

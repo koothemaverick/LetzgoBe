@@ -1,12 +1,10 @@
 package com.letzgo.LetzgoBe.global.jpa;
 
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -30,5 +28,12 @@ public class BaseEntity {
   private Long id;
 
   @CreatedDate
+  @Column(updatable = false)
+  @Getter
   private LocalDateTime createDate;
+
+  @LastModifiedDate
+  @Getter
+  @Setter
+  private LocalDateTime modifyDate;
 }

@@ -1,0 +1,88 @@
+package com.letzgo.LetzgoBe.domain.account.member.entity;
+
+import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicInsert;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+@DynamicInsert
+public class Member extends BaseEntity {
+    @Column(length = 20)
+    @Size(max = 20)
+    private String name;
+
+    @Column(length = 20)
+    @Size(max = 20)
+    private String nickname;
+
+    @Column(length = 20)
+    @Size(max = 20)
+    private String phone;
+
+    @Column(length = 50)
+    @Size(max = 50)
+    private String email;
+
+    @Column(length = 1000)
+    @Size(max = 1000)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 6, nullable = false)
+    private Gender gender;  // 성별
+    public enum Gender {
+        MALE, FEMALE;
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 6, nullable = false)
+    private State state = State.NORMAL;  // 회원 상태
+    public enum State {
+        NORMAL, BANNED;
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 9, nullable = false)
+    private MemberRole role = MemberRole.ROLE_USER;  // 권한 (관리자, 사용자)
+    public enum MemberRole {
+        ROLE_USER, ROLE_ADMIN;
+    }
+
+    @Column(length = 300)
+    @Size(max = 300)
+    private String profileImageUrl = "";  // 프로필 사진 경로
+
+    @OneToMany(mappedBy = "follow")
+    private List<MemberFollow> followList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "followed")
+    private List<MemberFollow> followedList = new ArrayList<>();
+
+    private LocalDate birthday;
+
+    // 기본값 설정
+    @PrePersist
+    public void prePersist() {
+        if (this.state == null) {
+            this.state = State.NORMAL;
+        }
+        if (this.role == null) {
+            this.role = MemberRole.ROLE_USER;
+        }
+    }
+}

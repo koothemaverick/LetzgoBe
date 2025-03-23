@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.global.config;
 
+import com.amazonaws.HttpMethod;
 import com.letzgo.LetzgoBe.domain.account.auth.security.JwtAuthenticationFilter;
 import com.letzgo.LetzgoBe.domain.account.auth.serviceImpl.CustomUserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,11 +27,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/letzgo/rest-api/v1/auth/**",
-                                "/letzgo/rest-api/v1/user/**",
-                                "/letzgo/rest-api/v1/post/**").permitAll()
+                        .requestMatchers("/rest-api/v1/auth/login",
+                                "/oauth2/**",
+                                "/map-api/**").permitAll()
+                        .requestMatchers(String.valueOf(HttpMethod.POST), "/rest-api/v1/member").permitAll()
+                        .requestMatchers(String.valueOf(HttpMethod.GET), "/rest-api/v1/post/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
