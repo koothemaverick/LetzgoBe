@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://NEED_TO_INPUT:5432/meta_db
+    username: admin
+    password: ${spring.datasource.password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show-sql: false      # 운영 환경에서는 보통 false로 설정
+        format_sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: letzgo-redis
+      port: 6379
+    mongodb:
+      uri: mongodb://admin:admin@NEED_TO_INPUT:27017/meta_db?authSource=admin
+      database: meta_db
+    rabbitmq:
+      host: NEED_TO_INPUT
+      port: 5672
+      username: admin
+      password: admin
+    messaging:
+      stomp:
+        broker-relay:
+          host: NEED_TO_INPUT  # RabbitMQ 서버 IP
+          port: 61613           # STOMP 기본 포트
+          system-login: admin   # RabbitMQ 로그인 계정
+          system-passcode: admin
+          relay-host: NEED_TO_INPUT
+          relay-port: 61613
+          client-login: admin
+          client-passcode: admin
+
+logging:
+  level:
+    org.springframework.web: INFO
+    team.klover: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN

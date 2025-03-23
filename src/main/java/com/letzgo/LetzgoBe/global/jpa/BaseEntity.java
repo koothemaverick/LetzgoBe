@@ -1,12 +1,10 @@
 package com.letzgo.LetzgoBe.global.jpa;
 
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
@@ -18,6 +16,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
 @Getter
+@Setter(AccessLevel.PROTECTED)
 @SuperBuilder
 @EntityListeners(AuditingEntityListener.class)
 @ToString
@@ -25,11 +24,16 @@ import static lombok.AccessLevel.PROTECTED;
 public class BaseEntity {
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  @Setter(AccessLevel.PROTECTED)
   @EqualsAndHashCode.Include
   private Long id;
 
   @CreatedDate
-  @Setter(AccessLevel.PRIVATE)
+  @Column(updatable = false)
+  @Getter
   private LocalDateTime createDate;
+
+  @LastModifiedDate
+  @Getter
+  @Setter
+  private LocalDateTime modifyDate;
 }
