@@ -40,7 +40,6 @@ out/
 dockerProjects
 src/main/resources/application-secret.yml
 
-
 # Terraform 상태 파일
 *.tfstate
 *.tfstate.*
