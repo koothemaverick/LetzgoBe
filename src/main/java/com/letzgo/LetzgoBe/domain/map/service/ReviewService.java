@@ -18,7 +18,7 @@ public class ReviewService {
         Place place = placeRepository.findByPlaceId(placeId);
 
         Review review = Review.builder()
-                .user(loginUserDto.toEntity())
+                .member(loginUserDto.ConvertToMember())
                 .place(place)
                 .content(reviewDto.getContent())
                 .rating(reviewDto.getRating())

@@ -1,12 +1,13 @@
 package com.letzgo.LetzgoBe.domain.account.auth.loginUser;
 
-import com.letzgo.LetzgoBe.domain.account.user.repository.UserRepository;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
+import com.letzgo.LetzgoBe.global.exception.ReturnCode;
+import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -16,7 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 @RequiredArgsConstructor
 public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -31,9 +32,9 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails securityUser) {
             String email = securityUser.getUsername(); // UserDetails의 getUsername()은 이메일을 반환
 
-            return userRepository.findByEmail(email)
-                    .map(LoginUserDto::from)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+            return memberRepository.findByEmail(email)
+                    .map(LoginUserDto::ConvertToLoginUserDto)
+                    .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         }
         return null;
     }

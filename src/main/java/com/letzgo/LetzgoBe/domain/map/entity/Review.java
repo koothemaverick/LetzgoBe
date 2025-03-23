@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.entity;
 
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
+import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 public class Review extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_pk")
-    private User user;
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_pk")

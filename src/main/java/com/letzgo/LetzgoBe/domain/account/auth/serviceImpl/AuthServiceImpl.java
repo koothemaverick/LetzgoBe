@@ -6,8 +6,8 @@ import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.security.JwtTokenProvider;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.auth.service.RefreshTokenService;
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
-import com.letzgo.LetzgoBe.domain.account.user.repository.UserRepository;
+import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
@@ -37,15 +37,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public Auth login(LoginForm loginForm) {
-        User user = userRepository.findByEmail(loginForm.getEmail())
+        Member member = memberRepository.findByEmail(loginForm.getEmail())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        if (!passwordEncoder.matches(loginForm.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(loginForm.getPassword(), member.getPassword())) {
             throw new RuntimeException("비밀번호가 올바르지 않습니다.");
         }
-        String accessToken = jwtTokenProvider.generateToken(user.getEmail(), accessTokenExpiration);
-        String refreshToken = jwtTokenProvider.generateToken(user.getEmail(), refreshTokenExpiration);
+        String accessToken = jwtTokenProvider.generateToken(member.getEmail(), accessTokenExpiration);
+        String refreshToken = jwtTokenProvider.generateToken(member.getEmail(), refreshTokenExpiration);
         // Refresh Token을 Redis에 저장
-        refreshTokenService.saveRefreshToken(user.getId().toString(), refreshToken, refreshTokenExpiration);
+        refreshTokenService.saveRefreshToken(member.getId().toString(), refreshToken, refreshTokenExpiration);
 
         return new Auth(accessToken, refreshToken);
     }
