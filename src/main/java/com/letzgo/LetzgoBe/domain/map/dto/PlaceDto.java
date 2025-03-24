@@ -12,12 +12,4 @@ public class PlaceDto {
     private String name;
     private String address;
     private String placePhoto;
-
-    public static PlaceDto entityToDto(Place place) {
-        return PlaceDto.builder()
-                .name(place.getName())
-                .address(place.getAddress())
-                .placePhoto(place.getPlacePhoto())
-                .build();
-    }
 }

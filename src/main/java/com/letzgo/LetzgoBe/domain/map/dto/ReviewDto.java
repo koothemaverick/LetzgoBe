@@ -20,11 +20,11 @@ public class ReviewDto {
     public static ReviewDto entitytoDto(Review review) {
         return ReviewDto.builder()
                 .id(review.getId())
-                .account(review.getUser().getName())
-                .title(review.getContent())
+                .account(review.getMember().getName())
+                .title(review.getTitle())
                 .rating(review.getRating())
                 .content(review.getContent())
-                .photoDir(review.getPhotoDir())
+                .photoDir(review.getPhoto().getStore_dir())
                 .build();
     }
 }

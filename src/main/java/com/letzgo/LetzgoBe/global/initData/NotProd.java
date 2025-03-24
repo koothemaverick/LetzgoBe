@@ -1,10 +1,16 @@
 package com.letzgo.LetzgoBe.global.initData;
 
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
+import com.letzgo.LetzgoBe.domain.map.entity.Place;
+import com.letzgo.LetzgoBe.domain.map.entity.Review;
+import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
+import com.letzgo.LetzgoBe.domain.map.repository.ReviewRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +27,9 @@ public class NotProd {
     private final MemberService memberService;
     private final ChatRoomService chatRoomService;
 
-    public NotProd(AuthService authService, MemberService memberService, ChatRoomService chatRoomService) {
+
+    public NotProd(AuthService authService, MemberService memberService, ChatRoomService chatRoomService,
+                   PlaceRepository placeRepository, ReviewRepository reviewRepository) {
         this.authService = authService;
         this.memberService = memberService;
         this.chatRoomService = chatRoomService;
@@ -29,7 +37,6 @@ public class NotProd {
 
     @Bean
     public ApplicationRunner applicationRunner(
-
     ){
         return new ApplicationRunner() {
             @Transactional
@@ -68,6 +75,8 @@ public class NotProd {
                         .birthday(LocalDate.of(1994, 3, 3))
                         .build();
                 Member member3 = memberService.signup(memberForm3);
+
+
             }
         };
     }

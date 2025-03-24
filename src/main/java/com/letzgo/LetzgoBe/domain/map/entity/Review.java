@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.entity;
 
-import com.letzgo.LetzgoBe.domain.account.user.entity.User;
+import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,19 +14,20 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Review extends BaseEntity {
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_pk")
-    private User user;
+    private Member member;
 
-    @Column(nullable = false)
-    private String title;
+    @OneToOne
+    @JoinColumn(name = "photo_pk")
+    private Photo photo; //없을경우 null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_pk")
     private Place place;
 
-    @Column(name = "photo_dir", nullable = false)
-    private String photoDir; //없을경우 "null"
+    @Column(nullable = false)
+    private String title;
 
     @Column(nullable = false)
     private String content;
@@ -34,10 +35,16 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private int rating;
 
-    public void update(String title, String photoDir, String content, int rating) {
+    public void update(Photo photo,String title, String content, int rating) {
+        this.photo = photo;
         this.title = title;
-        this.photoDir = photoDir;
-        this.content = photoDir;
+        this.content = content;
+        this.rating = rating;
+    }
+
+    public void update(String title, String content, int rating) {
+        this.title = title;
+        this.content = content;
         this.rating = rating;
     }
 }
