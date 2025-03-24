@@ -4,12 +4,10 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.PlaceDetailsRequest;
 import com.google.maps.PlacesApi;
 import com.google.maps.errors.ApiException;
-import com.google.maps.model.Photo;
 import com.google.maps.model.PlaceDetails;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDetailResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,19 +24,15 @@ public class MapApiService {
         PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId)
                 .fields(PlaceDetailsRequest.FieldMask.NAME,
                         PlaceDetailsRequest.FieldMask.FORMATTED_ADDRESS,
-                        PlaceDetailsRequest.FieldMask.PHOTOS)
+                        PlaceDetailsRequest.FieldMask.PHOTOS) //무료사용한도:1000번/한달 그이상 호출시 과금됨
                 .language("ko")
                 .await();
 
         return PlaceDetailResponse.builder()
                 .placeName(placeDetails.name)
-                .address(placeDetails.adrAddress)
+                .address(placeDetails.formattedAddress)
                 .photos(placeDetails.photos)
                 .build();
-    }
-
-    public void savePlacePhoto(String photo) {
-        // photo api로 사진 받아와 스토리지에 저장하는 메소드
     }
 }
 

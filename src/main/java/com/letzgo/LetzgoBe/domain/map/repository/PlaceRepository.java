@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PlaceRepository extends JpaRepository<Place, Integer> {
     public Place findByPlaceId(String placeId);
+    public Place findById(Long id);
     public Place save(Place place);
 }

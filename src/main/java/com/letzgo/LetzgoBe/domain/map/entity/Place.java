@@ -22,4 +22,7 @@ public class Place extends BaseEntity {
 
     @Column(name = "place_id", nullable = false)
     private String placeId;
+
+    @Column
+    private String placePhoto;
 }

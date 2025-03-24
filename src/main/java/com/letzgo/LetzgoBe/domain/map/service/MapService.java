@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import com.google.maps.errors.ApiException;
+import com.google.maps.model.Photo;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDetailResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
@@ -13,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,15 +51,24 @@ public class MapService {
                 placeDetail = mapApiService.getPlaceDetails(placeId);
             }
              catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("구글 api호출중 오류발생");
+            }
+
+            String photoRef = null;
+            //사진호출용 스트링(최대10개)중 첫번째만사용
+            if(placeDetail.getPhotos() != null) {
+                Photo[] photos = placeDetail.getPhotos();
+                photoRef = photos[0].photoReference;
             }
 
             if(placeDetail.getPlaceName() != null && placeDetail.getAddress() != null) {
                 //db에 저장
+
                 Place newPlace = Place.builder()
                         .name(placeDetail.getPlaceName())
                         .address(placeDetail.getAddress())
                         .placeId(placeId)
+                        .placePhoto(photoRef)
                         .build();
                 placeRepository.save(newPlace);
                 //반환
@@ -70,7 +78,7 @@ public class MapService {
                         .build();
             }
             else {
-                throw new IllegalStateException();
+                throw new RuntimeException("placeDetail의 Name혹은 Address가 null임");
             }
         }
     }

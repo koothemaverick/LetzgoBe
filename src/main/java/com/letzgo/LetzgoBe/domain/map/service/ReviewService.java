@@ -8,6 +8,9 @@ import com.letzgo.LetzgoBe.domain.map.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -18,11 +21,11 @@ public class ReviewService {
         Place place = placeRepository.findByPlaceId(placeId);
 
         Review review = Review.builder()
-                .member(loginUserDto.ConvertToMember())
+                .user(loginUserDto.toEntity())
                 .place(place)
                 .content(reviewDto.getContent())
                 .rating(reviewDto.getRating())
-                .photo_dir(reviewDto.getPhoto_dir())
+                .photoDir(reviewDto.getPhotoDir())
                 .build();
 
         Review savedReview = reviewRepository.save(review);
@@ -32,11 +35,22 @@ public class ReviewService {
         }
         return false;
     }
-    public boolean deleteReview(LoginUserDto loginUserDto, ReviewDto reviewDto) {
-        if (loginUserDto.getName() == reviewDto.getAccount()) {
 
+    public void updateReview(LoginUserDto loginUserDto, ReviewDto reviewDto) {
+        if (loginUserDto.getName() == reviewDto.getAccount()) {
+            Optional<Review> review = reviewRepository.findById(reviewDto.getId());
+            review.orElseThrow(()->new NoSuchElementException())
+                    .update(reviewDto.getTitle(),
+                            reviewDto.getPhotoDir(),
+                            reviewDto.getContent(),
+                            reviewDto.getRating());
         }
-        return true;
     }
 
+
+    public void deleteReview(LoginUserDto loginUserDto, ReviewDto reviewDto) {
+        if (loginUserDto.getName() == reviewDto.getAccount()) {
+            reviewRepository.deleteById(reviewDto.getId());
+        }
+    }
 }

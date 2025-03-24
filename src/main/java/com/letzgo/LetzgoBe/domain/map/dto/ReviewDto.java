@@ -10,19 +10,21 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReviewDto {
-    private String account;
+    private Long id;
+    private String account; //계정명
     private String title;
     private int rating;
     private String content;
-    private String photo_dir; //없을경우 "null"
+    private String photoDir; //없을경우 "null"
 
     public static ReviewDto entitytoDto(Review review) {
         return ReviewDto.builder()
-                .account(review.getMember().getName())
+                .id(review.getId())
+                .account(review.getUser().getName())
                 .title(review.getContent())
                 .rating(review.getRating())
                 .content(review.getContent())
-                .photo_dir(review.getPhoto_dir())
+                .photoDir(review.getPhotoDir())
                 .build();
     }
 }
