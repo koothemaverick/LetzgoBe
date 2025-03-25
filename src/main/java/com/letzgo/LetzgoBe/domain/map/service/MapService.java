@@ -1,15 +1,12 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import com.google.maps.model.Photo;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceDetailResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewDto;
+import com.letzgo.LetzgoBe.domain.map.dto.ReviewResponseDto;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
 import com.letzgo.LetzgoBe.domain.map.repository.ReviewRepository;
-import com.letzgo.LetzgoBe.global.s3.S3Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,13 +39,13 @@ public class MapService {
 
         if (place != null) { //한번이상 조회된적있는 장소일경우
             List<Review> reviews = reviewRepository.findByPlace(place);
-            List<ReviewDto> ReviewDtos = reviews.stream()
-                    .map(review -> ReviewDto.entitytoDto(review))
+            List<ReviewResponseDto> reviewResponseDtos = reviews.stream()
+                    .map(review -> ReviewResponseDto.entitytoDto(review))
                     .collect(Collectors.toList());
 
             return PlaceInfoResponseDto.builder()
                     .placeinfo(placeDto)
-                    .reviews(ReviewDtos)
+                    .reviews(reviewResponseDtos)
                     .build();
         }
 

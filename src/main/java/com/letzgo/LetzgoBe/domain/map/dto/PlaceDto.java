@@ -1,6 +1,5 @@
 package com.letzgo.LetzgoBe.domain.map.dto;
 
-import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import lombok.*;
 
 @Getter

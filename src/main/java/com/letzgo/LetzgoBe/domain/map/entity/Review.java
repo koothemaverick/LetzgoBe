@@ -18,7 +18,7 @@ public class Review extends BaseEntity {
     @JoinColumn(name = "account_pk")
     private Member member;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "photo_pk")
     private Photo photo; //없을경우 null
 

@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewDto {
+public class ReviewResponseDto {
     private Long id;
     private String account; //계정명
     private String title;
@@ -17,14 +17,14 @@ public class ReviewDto {
     private String content;
     private String photoDir; //없을경우 "null"
 
-    public static ReviewDto entitytoDto(Review review) {
-        return ReviewDto.builder()
+    public static ReviewResponseDto entitytoDto(Review review) {
+        return ReviewResponseDto.builder()
                 .id(review.getId())
                 .account(review.getMember().getName())
                 .title(review.getTitle())
                 .rating(review.getRating())
                 .content(review.getContent())
-                .photoDir(review.getPhoto().getStore_dir())
+                .photoDir(review.getPhoto() != null ? review.getPhoto().getStore_dir() : null)
                 .build();
     }
 }

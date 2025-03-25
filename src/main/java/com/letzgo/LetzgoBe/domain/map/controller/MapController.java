@@ -3,7 +3,7 @@ package com.letzgo.LetzgoBe.domain.map.controller;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewDto;
+import com.letzgo.LetzgoBe.domain.map.dto.ReviewRequestDto;
 import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import com.letzgo.LetzgoBe.domain.map.service.ReviewService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -32,25 +32,26 @@ public class MapController {
     @PostMapping("/review/{placeId}")
     public ApiResponse postReview(@LoginUser LoginUserDto loginUserDto,
                                   @PathVariable("placeId") String placeId,
-                                  @ModelAttribute ReviewDto reviewDto,
+                                  @ModelAttribute ReviewRequestDto reviewRequestDto,
                                   @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.createReview(loginUserDto, placeId, reviewDto, image);
+        reviewService.createReview(loginUserDto, placeId, reviewRequestDto, image);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     //리뷰수정
-    @PatchMapping("/review")
+    @PatchMapping("/review/{reviewId}")
     public ApiResponse patchReview(@LoginUser LoginUserDto loginUserDto,
-                                   @ModelAttribute ReviewDto reviewDto,
+                                   @PathVariable("reviewId") Long reviewId,
+                                   @ModelAttribute ReviewRequestDto reviewRequestDto,
                                    @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.updateReview(loginUserDto, reviewDto, image);
+        reviewService.updateReview(loginUserDto, reviewId, reviewRequestDto, image);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     //리뷰삭제
-    @DeleteMapping("/review")
-    public ApiResponse deleteReview(@LoginUser LoginUserDto loginUserDto, @RequestBody ReviewDto reviewDto) {
-        reviewService.deleteReview(loginUserDto, reviewDto);
+    @DeleteMapping("/review/{reviewId}")
+    public ApiResponse deleteReview(@LoginUser LoginUserDto loginUserDto, @PathVariable("reviewId") Long reviewId) {
+        reviewService.deleteReview(loginUserDto, reviewId);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 }
