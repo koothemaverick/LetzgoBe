@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberInfo;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -48,7 +49,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public MemberInfo getMemberInfo(LoginUserDto loginUser) {
-        return MemberInfo.from(loginUser);
+        return convertToMemberInfo(loginUser);
     }
 
     // 회원정보 수정
@@ -90,5 +91,33 @@ public class MemberServiceImpl implements MemberService {
         // LoginUserDto를 User 엔티티로 변환
         Member memberEntity = loginUser.ConvertToMember();
         memberRepository.delete(memberEntity);
+    }
+
+    // LoginUser를 MemberInfo로 변환
+    private MemberInfo convertToMemberInfo(LoginUserDto loginUser) {
+        return MemberInfo.builder()
+                .id(loginUser.getId())
+                .name(loginUser.getName())
+                .nickName(loginUser.getNickname())
+                .profileImgUrl(loginUser.getProfileImageUrl())
+                .followMemberCount(loginUser.getFollowList().stream().count())
+                .followedMemberCount(loginUser.getFollowedList().stream().count())
+                .build();
+    }
+
+    // LoginUser를 DetailMemberInfo로 변환
+    private DetailMemberInfo convertToDetailMemberInfo(LoginUserDto loginUser) {
+        return DetailMemberInfo.builder()
+                .id(loginUser.getId())
+                .name(loginUser.getName())
+                .nickName(loginUser.getNickname())
+                .phone(loginUser.getPhone())
+                .email(loginUser.getEmail())
+                .gender(loginUser.getGender())
+                .birthday(loginUser.getBirthday())
+                .profileImgUrl(loginUser.getProfileImageUrl())
+                .followMemberCount(loginUser.getFollowList().stream().count())
+                .followedMemberCount(loginUser.getFollowedList().stream().count())
+                .build();
     }
 }
