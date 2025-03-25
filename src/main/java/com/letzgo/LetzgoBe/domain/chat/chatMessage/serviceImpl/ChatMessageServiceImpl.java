@@ -92,17 +92,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
-        // 1️⃣ 채팅방 내 모든 메시지 ID 조회
+        // 채팅방 내 모든 메시지 ID 조회
         Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
         List<String> stringMessageIds = chatMessages.stream()
                 .map(chatMessage -> String.valueOf(chatMessage.getId()))
                 .collect(Collectors.toList());
 
-        // 2️⃣ MongoDB에서 해당 ID들의 메시지 내용 조회
+        // MongoDB에서 해당 ID들의 메시지 내용 조회
         Map<Long, String> messageContentMap = messageContentRepository.findByIdIn(stringMessageIds).stream()
                 .collect(Collectors.toMap(message -> Long.parseLong(message.getId()), MessageContent::getContent));
 
-        // 3️⃣ 키워드 포함 여부 검사 후 필터링
+        // 키워드 포함 여부 검사 후 필터링
         List<ChatMessage> filteredMessages = chatMessages.stream()
                 .filter(chatMessage -> {
                     String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
@@ -110,7 +110,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 })
                 .collect(Collectors.toList());
 
-        // 4️⃣ 필터링된 메시지를 DTO로 변환
+        // 필터링된 메시지를 DTO로 변환
         List<ChatMessageDto> chatMessageDtos = filteredMessages.stream()
                 .map(chatMessage -> {
                     String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
@@ -118,7 +118,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 })
                 .collect(Collectors.toList());
 
-        // 5️⃣ Page 객체로 변환 후 반환
         return new PageImpl<>(chatMessageDtos, pageable, chatMessageDtos.size());
     }
 
@@ -138,7 +137,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         // 입력 받은 이미지들 S3에 저장
         if (imageFiles == null) { imageFiles = new ArrayList<>(); }  // imageFiles가 null이면 빈 리스트로 초기화
         List<String> imageUrls = new ArrayList<>();
-        if (imageFiles.size() > 4) {
+        if (imageFiles.size() > 5) {
             throw new ServiceException(ReturnCode.FILE_UPLOAD_ERROR);
         } else {
             if (!imageFiles.isEmpty()) {

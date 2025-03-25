@@ -24,7 +24,7 @@ import java.util.List;
 public class ApiV1ChatMessageController {
     private final ChatMessageService chatMessageService;
 
-    // 해당 채팅방의 메시지 실시간 조회 시작
+    // 해당 채팅방의 메시지 실시간 조회 시작 [참여자 권한]
     @GetMapping("/{chatRoomId}")
     public ApiResponse<ChatMessageDto> findByChatRoomId(@ModelAttribute ChatMessagePage request,
                                                         @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
@@ -32,14 +32,14 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(Page.of(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser)));
     }
 
-    // 해당 채팅방의 메시지 실시간 조회 중단
+    // 해당 채팅방의 메시지 실시간 조회 중단 [참여자 권한]
     @PutMapping("/{chatRoomId}")
     public ApiResponse<String> updateLastReadMessage(@PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser){
         chatMessageService.updateLastReadMessage(chatRoomId, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 해당 채팅방에서 메시지 검색(닉네임/내용)
+    // 해당 채팅방에서 메시지 검색(닉네임/내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/keyword")
     public ApiResponse<ChatMessageDto> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
                                                          @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
@@ -47,7 +47,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(Page.of(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser)));
     }
 
-    // 해당 채팅방에서 메시지 생성
+    // 해당 채팅방에서 메시지 생성 [참여자 권한]
     @MessageMapping("/{chatRoomId}") // stomp websocket 사용
     public ApiResponse<String> writeChatMessage(@PathVariable("chatRoomId") Long chatRoomId,
                                                 @RequestPart(value ="chatMessageForm" ) ChatMessageForm chatMessageForm,
@@ -57,7 +57,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 해당 메시지 삭제
+    // 해당 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")
     public ApiResponse<String> deleteChatMessage(@PathVariable("messageId") Long messageId, @LoginUser LoginUserDto loginUser) {
         chatMessageService.deleteChatMessage(messageId, loginUser);
