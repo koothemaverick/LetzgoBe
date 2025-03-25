@@ -46,7 +46,6 @@ public class AuthServiceImpl implements AuthService {
         String refreshToken = jwtTokenProvider.generateToken(member.getEmail(), refreshTokenExpiration);
         // Refresh Token을 Redis에 저장
         refreshTokenService.saveRefreshToken(member.getId().toString(), refreshToken, refreshTokenExpiration);
-
         return new Auth(accessToken, refreshToken);
     }
 

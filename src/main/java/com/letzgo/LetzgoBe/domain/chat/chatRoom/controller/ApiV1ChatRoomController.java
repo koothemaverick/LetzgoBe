@@ -21,20 +21,20 @@ import org.springframework.web.bind.annotation.*;
 public class ApiV1ChatRoomController {
     private final ChatRoomService chatRoomService;
 
-    // 채팅방 목록 조회(DM/그룹) / 참여자 권한
+    // 채팅방 목록 조회(DM/그룹) [참여자 권한]
     @GetMapping
     public ApiResponse<ChatRoomDto> getChatRoom(@ModelAttribute ChatRoomPage request, @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(Page.of(chatRoomService.getChatRoom(pageable, loginUser)));
     }
 
-    // 채팅방 생성(DM/그룹) / 로그인 유저 권한
+    // 채팅방 생성(DM/그룹) [회원 권한]
     @PostMapping
     public ApiResponse<ChatRoomDto> addChatRoom(@RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
         return ApiResponse.of(chatRoomService.addChatRoom(chatRoomForm, loginUser));
     }
 
-    // 채팅방 이름 수정(그룹) / 참여자권한
+    // 채팅방 이름 수정(그룹) [참여자 권한]
     @PutMapping("/title/{chatRoomId}")
     public ApiResponse<String> updateChatRoomTitle(@PathVariable("chatRoomId") Long chatRoomId,
                                                    @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
@@ -42,7 +42,7 @@ public class ApiV1ChatRoomController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 채팅방에 초대(그룹) / 참여자권한
+    // 채팅방에 초대(그룹) [참여자 권한]
     @PutMapping("/group/{chatRoomId}")
     public ApiResponse<String> inviteChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,
                                                     @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
@@ -50,7 +50,7 @@ public class ApiV1ChatRoomController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 채팅방에서 강퇴(그룹) / 방장권한
+    // 채팅방에서 강퇴(그룹) [방장 권한]
     @DeleteMapping("/group/{chatRoomId}")
     public ApiResponse<String> kickOutChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,
                                                      @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
@@ -58,7 +58,7 @@ public class ApiV1ChatRoomController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 채팅방 나가기(DM/그룹) / 참여자권한
+    // 채팅방 나가기(DM/그룹) [참여자 권한]
     @DeleteMapping("/{chatRoomId}")
     public ApiResponse<String> leaveChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser){
         chatRoomService.leaveChatRoomMember(chatRoomId, loginUser);

@@ -1,6 +1,7 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewDto;
+import com.letzgo.LetzgoBe.domain.map.dto.ReviewRequestDto;
+import com.letzgo.LetzgoBe.domain.map.dto.ReviewResponseDto;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
@@ -17,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class ReviewService {
     private final PhotoRepository photoRepository;
     private final S3Service s3Service;
 
-    public void createReview(LoginUserDto loginUserDto, String placeId, ReviewDto reviewDto, MultipartFile image) {
+    public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequestDto ReviewRequestDto, MultipartFile image) {
 
         Place place = placeRepository.findByPlaceId(placeId);
         Photo uploadedPhoto = null;
@@ -49,9 +49,9 @@ public class ReviewService {
             Review review = Review.builder()
                     .member(loginUserDto.ConvertToMember())
                     .place(place)
-                    .content(reviewDto.getContent())
-                    .rating(reviewDto.getRating())
-                    .title(reviewDto.getTitle())
+                    .content(ReviewRequestDto.getContent())
+                    .rating(ReviewRequestDto.getRating())
+                    .title(ReviewRequestDto.getTitle())
                     .photo(uploadedPhoto)
                     .build();
 
@@ -60,9 +60,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public void updateReview(LoginUserDto loginUserDto, ReviewDto reviewDto, MultipartFile image) {
-        if (loginUserDto.getName().equals(reviewDto.getAccount())) {
-            Review review = reviewRepository.findById(reviewDto.getId()).orElseThrow(()->new NoSuchElementException());
+    public void updateReview(LoginUserDto loginUserDto, Long reviewId, ReviewRequestDto reviewRequestDto, MultipartFile image) {
+
+            Review review = reviewRepository.findById(reviewResponseDto.getId()).orElseThrow(()->new NoSuchElementException());
             if(image!= null) {
                 //기존이미지 삭제
                 s3Service.deleteFile(review.getPhoto().getStore_dir());
@@ -79,18 +79,18 @@ public class ReviewService {
 
                     review.update(
                             uploadedPhoto,
-                            reviewDto.getTitle(),
-                            reviewDto.getContent(),
-                            reviewDto.getRating());
+                            reviewResponseDto.getTitle(),
+                            reviewResponseDto.getContent(),
+                            reviewResponseDto.getRating());
 
                 } catch (IOException e) {
                     throw new ServiceException(ReturnCode.INTERNAL_ERROR);
                 }
 
                 review.update(
-                        reviewDto.getTitle(),
-                        reviewDto.getContent(),
-                        reviewDto.getRating());
+                        reviewResponseDto.getTitle(),
+                        reviewResponseDto.getContent(),
+                        reviewResponseDto.getRating());
             }
 
 
@@ -98,9 +98,9 @@ public class ReviewService {
     }
 
 
-    public void deleteReview(LoginUserDto loginUserDto, ReviewDto reviewDto) {
-        if (loginUserDto.getName().equals(reviewDto.getAccount())) {
-            reviewRepository.deleteById(reviewDto.getId());
+    public void deleteReview(LoginUserDto loginUserDto, ReviewResponseDto reviewResponseDto) {
+        if (loginUserDto.getName().equals(reviewResponseDto.getAccount())) {
+            reviewRepository.deleteById(reviewResponseDto.getId());
         }
     }
 }

@@ -3,10 +3,7 @@ package com.letzgo.LetzgoBe.domain.account.member.entity;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.DynamicInsert;
 
@@ -51,6 +48,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 6, nullable = false)
+    @Builder.Default
     private State state = State.NORMAL;  // 회원 상태
     public enum State {
         NORMAL, BANNED;
@@ -58,6 +56,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 9, nullable = false)
+    @Builder.Default
     private MemberRole role = MemberRole.ROLE_USER;  // 권한 (관리자, 사용자)
     public enum MemberRole {
         ROLE_USER, ROLE_ADMIN;
@@ -74,15 +73,4 @@ public class Member extends BaseEntity {
     private List<MemberFollow> followedList = new ArrayList<>();
 
     private LocalDate birthday;
-
-    // 기본값 설정
-    @PrePersist
-    public void prePersist() {
-        if (this.state == null) {
-            this.state = State.NORMAL;
-        }
-        if (this.role == null) {
-            this.role = MemberRole.ROLE_USER;
-        }
-    }
 }

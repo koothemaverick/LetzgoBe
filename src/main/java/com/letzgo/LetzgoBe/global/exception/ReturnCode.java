@@ -69,10 +69,20 @@ public enum ReturnCode {
     CHATROOM_NOT_FOUND(404, "CHATROOM_001", "채팅방을 찾을 수 없습니다."),
     CHATROOM_ALREADY_EXISTS(404, "CHATROOM_002", "이미 존재하는 채팅방입니다."),
     CHATROOM_LIMIT_EXCEEDED(404, "CHATROOM_003", "채팅방 참여자 수가 초과했습니다."),
-    CANNOT_KICKOUT_SELF(404, "CHATROOM_004", "자기 자신을 강퇴할 수 없습니다."),
+    MEMBER_ALREADY_EXISTS(404, "CHATROOM_004", "이미 채팅방에 존재하는 사용자입니다."),
+    CANNOT_KICKOUT_SELF(404, "CHATROOM_005", "자기 자신을 강퇴할 수 없습니다."),
 
     // ChatMessage 관련 에러
     CHATMESSAGE_NOT_FOUND(404, "CHATMESSAGE_001", "채팅 메시지를 찾을 수 없습니다."),
+
+    // Post 관련 에러
+    POST_NOT_FOUND(404, "POST_001", "게시글을 찾을 수 없습니다."),
+    POST_ALREADY_SAVED(404, "POST_002", "이미 저장한 게시글입니다."),
+    POST_ALREADY_LIKED(404, "POST_003", "이미 좋아요를 누른 게시글입니다."),
+
+    // Comment 관련 에러
+    COMMENT_NOT_FOUND(404, "COMMENT_001", "댓글을 찾을 수 없습니다."),
+    COMMENT_ALREADY_LIKED(404, "COMMENT_002", "이미 좋아요를 누른 댓글입니다."),
 
     // Friend 관련 에러
     FRIEND_LIMIT_EXCEEDED(400, "FRIEND_002", "친구 수가 초과되었습니다."),

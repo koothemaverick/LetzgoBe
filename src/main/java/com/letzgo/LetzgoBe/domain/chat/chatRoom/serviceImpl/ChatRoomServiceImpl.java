@@ -132,6 +132,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         if (chatRoomForm.getChatRoomMembers().size() > ChatRoom.ROOM_MEMBER_LIMIT - 1) {
             throw new ServiceException(ReturnCode.CHATROOM_LIMIT_EXCEEDED);
         }
+        // 초대할 멤버가 기존 멤버인지 확인
+        boolean hasExistingMember = chatRoomForm.getChatRoomMembers().stream()
+                .anyMatch(newMember -> chatRoom.getChatRoomMembers().stream()
+                        .anyMatch(existingMember -> existingMember.getMember().getId().equals(newMember.getMember().getId())));
+        if (hasExistingMember) {
+            throw new ServiceException(ReturnCode.MEMBER_ALREADY_EXISTS);
+        }
 
         // 초대할 멤버 추가(기존 멤버 아닌 경우에만 추가)
         List<ChatRoomMember> newMembers = chatRoomForm.getChatRoomMembers().stream()

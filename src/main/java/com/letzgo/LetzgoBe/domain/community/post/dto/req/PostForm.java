@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommPostForm {
+public class PostForm {
     private Double mapX;
     private Double mapY;
     private String content;
