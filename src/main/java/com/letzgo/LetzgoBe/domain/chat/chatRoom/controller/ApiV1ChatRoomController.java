@@ -50,6 +50,8 @@ public class ApiV1ChatRoomController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
+    // 방장 권한 위임(그룹) [방장 권한]
+
     // 채팅방에서 강퇴(그룹) [방장 권한]
     @DeleteMapping("/group/{chatRoomId}")
     public ApiResponse<String> kickOutChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,

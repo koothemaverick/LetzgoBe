@@ -9,6 +9,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import com.letzgo.LetzgoBe.global.common.response.Page;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,14 +51,19 @@ public class ApiV1ChatMessageController {
     // 해당 채팅방에서 메시지 생성 [참여자 권한]
     @MessageMapping("/{chatRoomId}") // stomp websocket 사용
     public ApiResponse<String> writeChatMessage(@PathVariable("chatRoomId") Long chatRoomId,
-                                                @RequestPart(value ="chatMessageForm" ) ChatMessageForm chatMessageForm,
-                                                @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,
+                                                @Valid ChatMessageForm chatMessageForm,
                                                 @LoginUser LoginUserDto loginUser) {
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm, imageFiles, loginUser);
+        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
+    @PostMapping("/image/{chatRoomId}")
+    public ApiResponse<ChatMessageDto> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
+                                                 @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,
+                                                 @LoginUser LoginUserDto loginUser) {
+        return ApiResponse.of(chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser));
+    }
 
     // 해당 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")

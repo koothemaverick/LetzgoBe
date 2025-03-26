@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.service;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,9 +18,10 @@ public interface ChatMessageService {
     Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 생성
-    void writeChatMessage(Long chatRoomId, ChatMessageForm chatMessageForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, LoginUserDto loginUser);
 
     // 해당 채팅방에서 이미지 메시지 생성
+    ChatMessageDto writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 메시지 삭제
     void deleteChatMessage(Long messageId, LoginUserDto loginUser);
@@ -29,5 +31,4 @@ public interface ChatMessageService {
 
     // 해당 채팅방의 메시지 실시간 조회 중단
     void updateLastReadMessage(Long chatRoomId, LoginUserDto loginUser);
-
 }

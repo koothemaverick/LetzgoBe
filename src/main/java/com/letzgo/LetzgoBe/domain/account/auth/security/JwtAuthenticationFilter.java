@@ -39,9 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return path.startsWith("/rest-api/v1/auth/login")
                 || path.startsWith("/oauth2")
                 || path.startsWith("/api/v1/auth/google")
-                || path.startsWith("/rest-api/v1/member") && method.equals("POST")
-                || path.startsWith("/rest-api/v1/post") && method.equals("GET")
-                || (path.startsWith("/api/v1/notification"));
+                || path.startsWith("/map-api/")
+                || path.startsWith("/rest-api/v1/notification");
     }
 
     @Override
