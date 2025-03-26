@@ -75,7 +75,7 @@ public class PostServiceImpl implements PostService {
     // 해당 사용자가 저장한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<PostDto> getSavedPostByMember(Long memberId, Pageable pageable){
+    public Page<PostDto> getSavedPostByMember(Long memberId, Pageable pageable) {
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findSavedPostByMemberId(memberId, pageable);
         return posts.map(this::convertToPostDto);
