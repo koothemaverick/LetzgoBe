@@ -14,16 +14,20 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Review extends BaseEntity {
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_pk")
     private Member member;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "photo_pk")
+    private Photo photo; //없을경우 null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_pk")
     private Place place;
 
     @Column(nullable = false)
-    private String photo_dir; //없을경우 "null"
+    private String title;
 
     @Column(nullable = false)
     private String content;
@@ -31,4 +35,16 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private int rating;
 
+    public void update(Photo photo,String title, String content, int rating) {
+        this.photo = photo;
+        this.title = title;
+        this.content = content;
+        this.rating = rating;
+    }
+
+    public void update(String title, String content, int rating) {
+        this.title = title;
+        this.content = content;
+        this.rating = rating;
+    }
 }
