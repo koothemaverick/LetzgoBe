@@ -172,9 +172,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
         messageContentRepository.save(messageContent);
 
-        rabbitTemplate.convertAndSend("amq.topic", "chatRoomId: " + chatRoomId + ",MessageCreated: ",
+        rabbitTemplate.convertAndSend("amq.topic", "chatRoomId:" + chatRoomId + "MessageCreated",
                 convertToChatMessageDto(chatMessage, messageContent.getContent()));
     }
+
+    // 해당 채팅방에서 이미지 메시지 생성
 
     // 해당 메시지 삭제
     @Override

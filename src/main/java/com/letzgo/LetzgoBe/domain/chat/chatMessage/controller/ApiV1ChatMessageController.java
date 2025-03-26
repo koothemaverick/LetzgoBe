@@ -57,6 +57,8 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
+    // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
+
     // 해당 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")
     public ApiResponse<String> deleteChatMessage(@PathVariable("messageId") Long messageId, @LoginUser LoginUserDto loginUser) {

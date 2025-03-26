@@ -19,6 +19,8 @@ public interface ChatMessageService {
     // 해당 채팅방에서 메시지 생성
     void writeChatMessage(Long chatRoomId, ChatMessageForm chatMessageForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
+    // 해당 채팅방에서 이미지 메시지 생성
+
     // 해당 메시지 삭제
     void deleteChatMessage(Long messageId, LoginUserDto loginUser);
 
