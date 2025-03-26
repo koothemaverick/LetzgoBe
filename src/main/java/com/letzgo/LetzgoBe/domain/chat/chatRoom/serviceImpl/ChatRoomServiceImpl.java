@@ -161,21 +161,35 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
-        // 강퇴할 멤버 목록 가져오기 & 채팅방 참여 목록에서 제거
+        // 현재 채팅방에 참여 중인 멤버 ID 리스트
+        List<Long> joinMemberIds = chatRoom.getChatRoomMembers().stream()
+                .map(member -> member.getMember().getId())
+                .collect(Collectors.toList());
+
+        // 강퇴할 멤버 목록 가져오기
         List<Long> kickMemberIds = chatRoomForm.getChatRoomMembers().stream()
                 .map(member -> member.getMember().getId())
                 .collect(Collectors.toList());
+
         // 방장은 자기자신을 강퇴하지 못함
         if (kickMemberIds.contains(loginUser.getId())) {
-            throw new ServiceException(ReturnCode.CANNOT_KICKOUT_SELF);
+            throw new ServiceException(ReturnCode.INVALID_KICK_MEMBER);
+        }
+
+        // 강퇴 대상이 채팅방 참여자가 맞는지 검증
+        List<Long> invalidKickMembers = kickMemberIds.stream()
+                .filter(id -> !joinMemberIds.contains(id)) // 기존 멤버에 없는 ID 필터링
+                .collect(Collectors.toList());
+        if (!invalidKickMembers.isEmpty()) {
+            throw new ServiceException(ReturnCode.INVALID_KICK_MEMBER);
         }
 
         chatRoom.getChatRoomMembers().removeIf(existingMember ->
                 kickMemberIds.contains(existingMember.getMember().getId()));
         // 강퇴 후 남은 인원이 2명 미만이면 채팅방 삭제
         if (chatRoom.getChatRoomMembers().size() < 2) {
+            chatMessageService.deleteAllChatMessages(chatRoomId);
             chatRoomRepository.delete(chatRoom);
-
         } else {
             chatRoomRepository.save(chatRoom);
         }
