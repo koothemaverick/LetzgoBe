@@ -9,20 +9,16 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReviewDto {
-    private String account;
+public class ReviewRequestDto {
     private String title;
     private int rating;
     private String content;
-    private String photo_dir; //없을경우 "null"
 
-    public static ReviewDto entitytoDto(Review review) {
-        return ReviewDto.builder()
-                .account(review.getMember().getName())
-                .title(review.getContent())
+    public static ReviewRequestDto entitytoDto(Review review) {
+        return ReviewRequestDto.builder()
+                .title(review.getTitle())
                 .rating(review.getRating())
                 .content(review.getContent())
-                .photo_dir(review.getPhoto_dir())
                 .build();
     }
 }

@@ -39,6 +39,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-mail")
 	implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
 	implementation ("com.google.maps:google-maps-services:2.2.0")
+	implementation("org.apache.mahout:mahout-integration:0.13.0")
+	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
 	// netty
 	implementation("org.springframework.boot:spring-boot-starter-reactor-netty")

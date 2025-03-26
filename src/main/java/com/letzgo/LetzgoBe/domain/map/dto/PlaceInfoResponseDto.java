@@ -14,6 +14,6 @@ import java.util.List;
 public class PlaceInfoResponseDto {
     private PlaceDto placeinfo;
     @Builder.Default
-    private List<ReviewDto> reviews = new ArrayList<>();
+    private List<ReviewResponseDto> reviews = new ArrayList<>();
 
 }
