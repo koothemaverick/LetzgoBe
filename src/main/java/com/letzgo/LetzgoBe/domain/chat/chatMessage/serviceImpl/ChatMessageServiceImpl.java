@@ -152,7 +152,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
         messageContentRepository.save(messageContent);
 
-        rabbitTemplate.convertAndSend("amq.topic", "chatRoomId:" + chatRoomId + "MessageCreated",
+        rabbitTemplate.convertAndSend("amq.topic", "chatRoom" + chatRoomId + "MessageCreated",
                 convertToChatMessageDto(chatMessage, messageContent.getContent()));
     }
 
