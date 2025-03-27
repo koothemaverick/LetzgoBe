@@ -80,7 +80,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         });
     }
 
-    // 해당 채팅방에서 메시지 검색(닉네임/내용)
+    // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional
     public Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {

@@ -41,7 +41,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 해당 채팅방에서 메시지 검색(닉네임/내용) [참여자 권한]
+    // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/search")
     public ApiResponse<ChatMessageDto> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
                                                          @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
@@ -66,7 +66,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser));
     }
 
-    // 해당 메시지 삭제 [참여자 권한]
+    // 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")
     public ApiResponse<String> deleteChatMessage(@PathVariable("messageId") Long messageId, @LoginUser LoginUserDto loginUser) {
         chatMessageService.deleteChatMessage(messageId, loginUser);
