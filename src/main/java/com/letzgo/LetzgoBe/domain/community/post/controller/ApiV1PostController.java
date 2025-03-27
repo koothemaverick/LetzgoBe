@@ -52,13 +52,13 @@ public class ApiV1PostController {
     // 해당 사용자가 저장한 게시글 조회 [회원 권한]
     @GetMapping("/collection/{memberId}")
     public ApiResponse<PostDto> getMemberCollectionPost(@ModelAttribute PostPage request,
-                                                        @PathVariable("memberId") Long memberId, @LoginUser LoginUserDto loginUser) {
+                                                        @PathVariable("memberId") Long memberId) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(Page.of(postService.getSavedPostByMember(memberId, pageable)));
     }
 
     // 사용자 닉네임 & 게시글 내용 검색 [회원 권한]
-    @GetMapping
+    @GetMapping("/search")
     public ApiResponse<PostDto> searchPost(@ModelAttribute PostPage request, @RequestParam("keyword") String keyword) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(Page.of(postService.searchByKeyword(keyword, pageable)));

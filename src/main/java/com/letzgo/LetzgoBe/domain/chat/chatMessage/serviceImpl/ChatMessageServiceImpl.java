@@ -16,6 +16,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -79,7 +80,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         });
     }
 
-    // 해당 채팅방에서 메시지 검색(닉네임/내용)
+    // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional
     public Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
@@ -124,37 +125,71 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 생성
     @Override
     @Transactional
-    public void writeChatMessage(Long chatRoomId, ChatMessageForm chatMessageForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+    public void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, LoginUserDto loginUser) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
-        // 채팅방 참여멤버만 메시지 생성 가능
+        // 채팅방 참여 멤버만 메시지 생성 가능
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
                 .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
-        // 입력 받은 이미지들 S3에 저장
-        if (imageFiles == null) { imageFiles = new ArrayList<>(); }  // imageFiles가 null이면 빈 리스트로 초기화
-        List<String> imageUrls = new ArrayList<>();
+        Long inactiveMemberNum = countInactiveMembers(chatRoomId);
+        ChatMessage chatMessage = ChatMessage.builder()
+                .member(loginUser.ConvertToMember())
+                .chatRoom(chatRoom)
+                .readCount(inactiveMemberNum)
+                .build();
+        chatMessageRepository.save(chatMessage);
+
+        // MongoDB에 메시지 본문 저장
+        String content = (chatMessageForm != null) ? chatMessageForm.getContent() : "";
+        MessageContent messageContent = MessageContent.builder()
+                .id(String.valueOf(chatMessage.getId()))
+                .content(content)
+                .build();
+        messageContentRepository.save(messageContent);
+
+        rabbitTemplate.convertAndSend("amq.topic", "chatRoom" + chatRoomId + "MessageCreated",
+                convertToChatMessageDto(chatMessage, messageContent.getContent()));
+    }
+
+    // 해당 채팅방에서 이미지 메시지 생성
+    @Override
+    @Transactional
+    public ChatMessageDto writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+
+        // 채팅방 참여 멤버만 메시지 생성 가능
+        boolean memberExists = chatRoom.getChatRoomMembers().stream()
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+        if (!memberExists) {
+            throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
+        }
+
+        if (imageFiles == null || imageFiles.isEmpty()) {
+            throw new ServiceException(ReturnCode.FILE_UPLOAD_ERROR);
+        }
+
         if (imageFiles.size() > 5) {
             throw new ServiceException(ReturnCode.FILE_UPLOAD_ERROR);
-        } else {
-            if (!imageFiles.isEmpty()) {
-                for (MultipartFile imageFile : imageFiles) {
-                    if (!imageFile.isEmpty()) {  // 파일이 비어 있는지 확인
-                        try {
-                            String imageUrl = s3Service.uploadFile(imageFile, "commPost-images");
-                            imageUrls.add(imageUrl);
-                        } catch (IOException e) {
-                            throw new ServiceException(ReturnCode.INTERNAL_ERROR);
-                        }
-                    } else {
-                        log.warn("Empty file received, skipping upload.");
-                    }
+        }
+
+        List<String> imageUrls = new ArrayList<>();
+        for (MultipartFile imageFile : imageFiles) {
+            if (!imageFile.isEmpty()) {
+                try {
+                    String imageUrl = s3Service.uploadFile(imageFile, "commPost-images");
+                    imageUrls.add(imageUrl);
+                } catch (IOException e) {
+                    throw new ServiceException(ReturnCode.INTERNAL_ERROR);
                 }
             }
         }
+
         Long inactiveMemberNum = countInactiveMembers(chatRoomId);
         ChatMessage chatMessage = ChatMessage.builder()
                 .member(loginUser.ConvertToMember())
@@ -163,17 +198,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .readCount(inactiveMemberNum)
                 .build();
         chatMessageRepository.save(chatMessage);
-
-        // MongoDB에 메시지 본문 저장
-        String content = (chatMessageForm != null) ? chatMessageForm.getContent() : "";
-        MessageContent messageContent = MessageContent.builder()
-                .id(String.valueOf(chatMessage.getId())) // ChatMessage의 ID를 키로 사용
-                .content(content)
-                .build();
-        messageContentRepository.save(messageContent);
-
-        rabbitTemplate.convertAndSend("amq.topic", "chatRoomId: " + chatRoomId + ",MessageCreated: ",
-                convertToChatMessageDto(chatMessage, messageContent.getContent()));
+        return convertToChatMessageDto(chatMessage, null);
     }
 
     // 해당 메시지 삭제
@@ -181,26 +206,32 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public void deleteChatMessage(Long messageId, LoginUserDto loginUser) {
         ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
-
         // 작성자만 삭제 가능
         if (!chatMessage.getMember().getId().equals(loginUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
-        s3Service.deleteAllFile(chatMessage.getImageUrls());
-        messageContentRepository.deleteById(String.valueOf(messageId));
 
+        if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {
+            s3Service.deleteAllFile(chatMessage.getImageUrls());
+        }
+        messageContentRepository.deleteById(String.valueOf(messageId));
         chatMessageRepository.delete(chatMessage);
     }
 
     // 해당 채팅방의 모든 메시지 삭제
     @Override
     @Transactional
-    public void deleteAllChatMessages(Long chatRoomId){
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+    public void deleteAllChatMessages(Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         List<ChatMessage> messages = chatMessageRepository.findByChatRoom(chatRoom);
-        messages.forEach(message -> s3Service.deleteAllFile(message.getImageUrls()));
-        messages.forEach(message -> messageContentRepository.deleteById(String.valueOf(message.getId())));
 
+        messages.forEach(message -> {
+            if (message.getImageUrls() != null && !message.getImageUrls().isEmpty()) {
+                s3Service.deleteAllFile(message.getImageUrls());
+            }
+            messageContentRepository.deleteById(String.valueOf(message.getId()));
+        });
         chatMessageRepository.deleteAll(messages);
     }
 
