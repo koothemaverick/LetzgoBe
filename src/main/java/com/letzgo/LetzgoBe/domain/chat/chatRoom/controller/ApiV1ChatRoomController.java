@@ -51,6 +51,12 @@ public class ApiV1ChatRoomController {
     }
 
     // 방장 권한 위임(그룹) [방장 권한]
+    @PostMapping("/group/{chatRoomId}")
+    public ApiResponse<String> delegateChatRoomManager(@PathVariable("chatRoomId") Long chatRoomId,
+                                                       @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
+        chatRoomService.delegateChatRoomManager(chatRoomId, chatRoomForm, loginUser);
+        return ApiResponse.of(ReturnCode.SUCCESS);
+    }
 
     // 채팅방에서 강퇴(그룹) [방장 권한]
     @DeleteMapping("/group/{chatRoomId}")

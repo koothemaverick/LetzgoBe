@@ -66,10 +66,10 @@ public class Member extends BaseEntity {
     @Size(max = 300)
     private String profileImageUrl = "";  // 프로필 사진 경로
 
-    @OneToMany(mappedBy = "follow")
+    @OneToMany(mappedBy = "follow", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberFollow> followList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "followed")
+    @OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberFollow> followedList = new ArrayList<>();
 
     private LocalDate birthday;
