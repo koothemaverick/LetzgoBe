@@ -29,4 +29,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // 가장 최근 메시지의 ID를 가져오는 메서드
     @Query("SELECT cm.id FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId ORDER BY cm.createDate DESC LIMIT 1")
     Optional<Long> findLatestMessageIdByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
+    // 해당 멤버가 작성한 모든 메시지 삭제
+    List<ChatMessage> findByMemberId(Long memberId);
 }

@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface PostService {
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
-    Page<DetailPostDto> findPostsWithinRadius(@Valid XYForm xyForm, Pageable pageable);
+    Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable);
 
     // 해당 사용자가 작성한 게시글 조회
     Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable);
@@ -41,11 +41,14 @@ public interface PostService {
     void deletePostLike(Long postId, LoginUserDto loginUser);
 
     // 게시글 생성
-    void addPost(@Valid PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void addPost(PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 게시글 수정
-    void updatePost(Long postId, @Valid PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void updatePost(Long postId, PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 게시글 삭제
     void deletePost(Long postId, LoginUserDto loginUser);
+
+    // 해당 멤버가 작성한 모든 게시글 삭제
+    void deleteMembersAllPosts(Long memberId);
 }

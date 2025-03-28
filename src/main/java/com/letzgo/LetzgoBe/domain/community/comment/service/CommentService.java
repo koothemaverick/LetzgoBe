@@ -18,14 +18,17 @@ public interface CommentService {
     void deleteCommentLike(Long commentId, LoginUserDto loginUser);
 
     // 해당 게시글에 댓글 생성
-    void addComment(Long commPostId, @Valid CommentForm commentForm, LoginUserDto loginUser);
+    void addComment(Long commPostId, CommentForm commentForm, LoginUserDto loginUser);
 
     // 해당 댓글 수정
-    void updateComment(Long commentId,@Valid CommentForm commentForm, LoginUserDto loginUser);
+    void updateComment(Long commentId, CommentForm commentForm, LoginUserDto loginUser);
 
     // 해당 댓글 삭제
     void deleteComment(Long commentId, LoginUserDto loginUser);
 
     // 해당 게시글의 모든 댓글 삭제
     void deleteAllComments(Long commPostId);
+
+    // 해당 멤버가 작성한 모든 댓글 삭제
+    void deleteMembersAllComments(Long memberId);
 }

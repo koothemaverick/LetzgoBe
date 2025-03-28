@@ -6,6 +6,8 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
@@ -28,11 +30,13 @@ public class NotProd {
     private final MemberService memberService;
     private final ChatRoomService chatRoomService;
     private final MemberRepository memberRepository;
+    private final ChatMessageService chatMessageService;
 
-    public NotProd(AuthService authService, MemberService memberService, ChatRoomService chatRoomService, MemberRepository memberRepository) {
+    public NotProd(AuthService authService, MemberService memberService, ChatRoomService chatRoomService, MemberRepository memberRepository, ChatMessageService chatMessageService) {
         this.memberService = memberService;
         this.chatRoomService = chatRoomService;
         this.memberRepository = memberRepository;
+        this.chatMessageService = chatMessageService;
     }
 
     @Bean
@@ -81,6 +85,30 @@ public class NotProd {
                         ))
                         .build();
                 chatRoomService.addChatRoom(groupChatRoomForm, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+
+                // 유저 1, 2의 1:1 채팅
+                ChatMessageForm chatMessageForm1 = ChatMessageForm.builder()
+                        .content("점심 먹었어?")
+                        .build();
+                chatMessageService.writeChatMessage(1L, chatMessageForm1, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+                ChatMessageForm chatMessageForm2 = ChatMessageForm.builder()
+                        .content("아직 안먹었는데 돈까스 ㄱㄱ?")
+                        .build();
+                chatMessageService.writeChatMessage(1L, chatMessageForm2, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
+
+                // 유저 1, 2, 3의 단체 채팅
+                ChatMessageForm chatMessageForm3 = ChatMessageForm.builder()
+                        .content("안녕하세요!")
+                        .build();
+                chatMessageService.writeChatMessage(2L, chatMessageForm3, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+                ChatMessageForm chatMessageForm4 = ChatMessageForm.builder()
+                        .content("안녕하세용")
+                        .build();
+                chatMessageService.writeChatMessage(2L, chatMessageForm4, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
+                ChatMessageForm chatMessageForm5 = ChatMessageForm.builder()
+                        .content("반가워요!!")
+                        .build();
+                chatMessageService.writeChatMessage(2L, chatMessageForm5, LoginUserDto.ConvertToLoginUserDto(members.get(2)));
             }
         };
     }
