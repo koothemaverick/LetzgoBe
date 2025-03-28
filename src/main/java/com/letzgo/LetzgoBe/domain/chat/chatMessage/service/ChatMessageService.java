@@ -31,4 +31,7 @@ public interface ChatMessageService {
 
     // 해당 채팅방의 메시지 실시간 조회 중단
     void updateLastReadMessage(Long chatRoomId, LoginUserDto loginUser);
+
+    // 해당 멤버가 작성한 모든 메시지 삭제
+    void deleteMembersAllChatMessages(Long memberId);
 }

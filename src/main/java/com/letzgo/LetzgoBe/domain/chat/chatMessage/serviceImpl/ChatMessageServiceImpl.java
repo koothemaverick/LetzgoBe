@@ -247,6 +247,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatRoomMemberRepository.save(chatRoomMember);
     }
 
+    // 해당 멤버가 작성한 모든 메시지 삭제
+    @Override
+    @Transactional
+    public void deleteMembersAllChatMessages(Long memberId){
+        List<ChatMessage> chatMessages = chatMessageRepository.findByMemberId(memberId);
+        for (ChatMessage chatMessage : chatMessages) {
+            if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {
+                s3Service.deleteAllFile(chatMessage.getImageUrls());
+            }
+            messageContentRepository.deleteById(String.valueOf(chatMessage.getId()));
+            chatMessageRepository.delete(chatMessage);
+        }
+    }
+
     // 해당 채팅방 내의 모든 메시지 읽음 처리
     @Transactional
     public void readAllChatMessages(Long currentMemberId, ChatRoom chatRoom, Long chatRoomId){

@@ -71,6 +71,7 @@ public enum ReturnCode {
     CHATROOM_LIMIT_EXCEEDED(404, "CHATROOM_003", "채팅방 참여자 수가 초과했습니다."),
     MEMBER_ALREADY_EXISTS(404, "CHATROOM_004", "이미 채팅방에 존재하는 사용자입니다."),
     INVALID_KICK_MEMBER(404, "CHATROOM_005", "강퇴할 수 없는 사용자입니다."),
+    INVALID_DELEGATE_MEMBER(404, "CHATROOM_006", "위임할 수 없는 사용자입니다."),
 
     // ChatMessage 관련 에러
     CHATMESSAGE_NOT_FOUND(404, "CHATMESSAGE_001", "채팅 메시지를 찾을 수 없습니다."),

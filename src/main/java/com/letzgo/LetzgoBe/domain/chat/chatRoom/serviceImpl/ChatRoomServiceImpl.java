@@ -1,6 +1,8 @@
 package com.letzgo.LetzgoBe.domain.chat.chatRoom.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -34,6 +36,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatMessageService chatMessageService;
     private final MessageContentRepository messageContentRepository;
+    private final MemberRepository memberRepository;
 
     // 사용자의 모든 채팅방 조회
     @Override
@@ -47,7 +50,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방 생성(DM/그룹)
     @Override
     @Transactional
-    public ChatRoomDto addChatRoom(@Valid ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
+    public ChatRoomDto addChatRoom(ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
         // 제한 인원 초과 여부 확인 (본인 제외)
         if (chatRoomForm.getChatRoomMembers().size() > ChatRoom.ROOM_MEMBER_LIMIT - 1) {
             throw new ServiceException(ReturnCode.CHATROOM_LIMIT_EXCEEDED);
@@ -103,7 +106,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방 이름 수정(그룹)
     @Override
     @Transactional
-    public void updateChatRoomTitle(Long chatRoomId, @Valid ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
+    public void updateChatRoomTitle(Long chatRoomId, ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
         // 채팅방 멤버 누구나 수정 가능함
@@ -119,7 +122,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방에 초대(그룹)
     @Override
     @Transactional
-    public void inviteChatRoomMember(Long chatRoomId, @Valid ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
+    public void inviteChatRoomMember(Long chatRoomId, ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 채팅방 멤버 누구나 초대 가능함
@@ -150,10 +153,49 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         chatRoomRepository.save(chatRoom);
     }
 
-    // 채팅방에서 강퇴(그룹) / 방장권한
+    // 방장 권한 위임(그룹)
     @Override
     @Transactional
-    public void kickOutChatRoomMember(Long chatRoomId, @Valid ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
+    public void delegateChatRoomManager(Long chatRoomId, ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+        // 방장인지 확인 (방장만 위임 가능)
+        if (!chatRoom.getMember().getId().equals(loginUser.getId())) {
+            throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
+        }
+
+        // 현재 채팅방에 참여 중인 멤버 ID 리스트
+        List<Long> joinMemberIds = chatRoom.getChatRoomMembers().stream()
+                .map(member -> member.getMember().getId())
+                .collect(Collectors.toList());
+
+        // 위임할 멤버 목록 검증 (1명만 가능)
+        List<ChatRoomMember> delegateMembers = chatRoomForm.getChatRoomMembers();
+        if (delegateMembers.size() != 1) {
+            throw new ServiceException(ReturnCode.INVALID_DELEGATE_MEMBER);
+        }
+        Long delegateMemberId = delegateMembers.get(0).getMember().getId();
+
+        // 방장은 자기자신을 위임하지 못함
+        if (delegateMemberId.equals(loginUser.getId())) {
+            throw new ServiceException(ReturnCode.INVALID_DELEGATE_MEMBER);
+        }
+
+        // 위임 대상이 채팅방 참여자가 맞는지 검증
+        if (!joinMemberIds.contains(delegateMemberId)) {
+            throw new ServiceException(ReturnCode.INVALID_DELEGATE_MEMBER);
+        }
+
+        Member newManager = memberRepository.findById(delegateMemberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        chatRoom.setMember(newManager);
+        chatRoomRepository.save(chatRoom);
+    }
+
+    // 채팅방에서 강퇴(그룹)
+    @Override
+    @Transactional
+    public void kickOutChatRoomMember(Long chatRoomId, ChatRoomForm chatRoomForm, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 방장인지 확인 (방장만 강퇴 가능)
@@ -224,6 +266,38 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             return;
         }
         chatRoomRepository.save(chatRoom);
+    }
+
+    // 멤버가 참여중인 모든 채팅방 나가기(DM/그룹)
+    @Override
+    @Transactional
+    public void leaveAllChatRooms(Long memberId){
+        List<ChatRoom> chatRooms = chatRoomRepository.findByMemberId(memberId);
+        for (ChatRoom chatRoom : chatRooms) {
+            // 현재 멤버가 속한 ChatRoomMember 찾기
+            ChatRoomMember chatRoomMember = chatRoom.getChatRoomMembers().stream()
+                    .filter(member -> member.getMember().getId().equals(memberId))
+                    .findFirst()
+                    .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+            chatRoom.getChatRoomMembers().remove(chatRoomMember);  // ChatRoomMember 제거
+
+            // 방장인지 확인
+            if (chatRoom.getMember().getId().equals(memberId)) {
+                if (chatRoom.getChatRoomMembers().size() > 1) { // 2명 이상 남아있으면 다음 방장 지정
+                    ChatRoomMember nextOwner = chatRoom.getChatRoomMembers().get(0);
+                    chatRoom.setMember(nextOwner.getMember());
+                } else { // 1명 미만(0명)이면 채팅방 삭제
+                    chatMessageService.deleteAllChatMessages(chatRoom.getId());
+                    chatRoomRepository.delete(chatRoom);
+                    return;
+                }
+            } else if (chatRoom.getChatRoomMembers().size() < 2) { // 방장이 아닌데 나갔을 때 1명이 되면 삭제
+                chatMessageService.deleteAllChatMessages(chatRoom.getId());
+                chatRoomRepository.delete(chatRoom);
+                return;
+            }
+            chatRoomRepository.save(chatRoom);
+        }
     }
 
     // 요청 페이지 수 제한
