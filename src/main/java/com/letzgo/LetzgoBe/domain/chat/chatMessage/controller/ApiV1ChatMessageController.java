@@ -7,7 +7,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.Page;
+import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class ApiV1ChatMessageController {
     public ApiResponse<ChatMessageDto> findByChatRoomId(@ModelAttribute ChatMessagePage request,
                                                         @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(Page.of(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser)));
+        return ApiResponse.of(LetzgoPage.of(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser)));
     }
 
     // 해당 채팅방의 메시지 실시간 조회 중단 [참여자 권한]
@@ -46,7 +46,7 @@ public class ApiV1ChatMessageController {
     public ApiResponse<ChatMessageDto> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
                                                          @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(Page.of(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser)));
+        return ApiResponse.of(LetzgoPage.of(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser)));
     }
 
     // 해당 채팅방에서 메시지 생성 [참여자 권한]

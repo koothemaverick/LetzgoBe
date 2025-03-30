@@ -127,18 +127,15 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> comments = commentRepository.findByMemberId(memberId);
         for (Comment comment : comments) {
             deleteChildComments(comment.getId());
-            commentRepository.save(comment);
         }
         commentRepository.deleteAll(comments);
-    };
+    }
 
     // 해당 댓글의 모든 하위 댓글 삭제
     @Transactional
     protected void deleteChildComments(Long superCommentId) {
         List<Comment> childComments = commentRepository.findBySuperCommentId(superCommentId);
-        for (Comment childComment : childComments) {
-            commentRepository.delete(childComment);
-        }
+        commentRepository.deleteAll(childComments);
     }
 
     // 요청 페이지 수 제한

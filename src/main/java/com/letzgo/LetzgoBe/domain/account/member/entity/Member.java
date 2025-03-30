@@ -72,5 +72,11 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "followed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberFollow> followedList = new ArrayList<>();
 
+    @OneToMany(mappedBy = "followReq", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberFollowReq> followReqList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "followRec", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberFollowReq> followRecList = new ArrayList<>();
+
     private LocalDate birthday;
 }

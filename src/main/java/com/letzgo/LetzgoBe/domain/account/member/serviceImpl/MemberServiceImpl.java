@@ -6,21 +6,30 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberInfo;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
+import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.MemberInfoDto;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
-import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentLikeRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,6 +42,8 @@ public class MemberServiceImpl implements MemberService {
     private final CommentService commentService;
     private final ChatMessageService chatMessageService;
     private final ChatRoomService chatRoomService;
+    private final MemberFollowReqRepository memberFollowReqRepository;
+    private final MemberFollowRepository memberFollowRepository;
 
     // 회원가입
     @Override
@@ -51,7 +62,6 @@ public class MemberServiceImpl implements MemberService {
                         .gender(memberForm.getGender())
                         .birthday(memberForm.getBirthday())
                         .build();
-
         memberRepository.save(member);
         return member;
     }
@@ -60,17 +70,32 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public MemberInfo getMyInfo(LoginUserDto loginUser) {
-        return convertToMemberInfo(loginUser);
+        return loginUserConvertToMemberInfo(loginUser);
+    }
+
+    // 본인 상세회원정보 조회
+    @Override
+    @Transactional
+    public DetailMemberInfo getMyDetailInfo(LoginUserDto loginUser){
+        return loginUserConvertToDetailMemberInfo(loginUser);
     }
 
     // 다른 멤버의 회원정보 조회
     @Override
     @Transactional
-    public MemberInfo getMemberInfo(Long memberId, LoginUserDto loginUser) {
+    public MemberInfo getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        return memberConvertToMemberInfo(member);
+    }
 
-        return convertToMemberInfo(LoginUserDto.ConvertToLoginUserDto(member));
+    // 다른 멤버의 상세회원정보 조회
+    @Override
+    @Transactional
+    public DetailMemberInfo getMemberDetailInfo(Long memberId){
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        return memberConvertToDetailMemberInfo(member);
     }
 
     // 회원정보 수정
@@ -109,8 +134,9 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(LoginUserDto loginUser) {
         // refreshToken 삭제
         authService.logout(loginUser);
-        // LoginUserDto를 Member 엔티티로 변환
-        Member memberEntity = loginUser.ConvertToMember();
+        // DB에서 회원 조회
+        Member memberEntity = memberRepository.findById(loginUser.getId())
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
 
         // 연관된 데이터 삭제
         commentService.deleteMembersAllComments(loginUser.getId());
@@ -122,31 +148,121 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // 회원 검색하기
+    @Override
+    @Transactional
+    public Page<MemberInfo> searchMemberInfo(Pageable pageable, String keyword){
+        checkPageSize(pageable.getPageSize());
+        Page<Member> members = memberRepository.findByKeyword(pageable, keyword);
+        return members.map(this::memberConvertToMemberInfo);
+    }
 
+    // 팔로우 요청하기
+    @Override
+    @Transactional
+    public void followReq(Long memberId, LoginUserDto loginUser){
+        Member followReq = loginUser.ConvertToMember();
+        Member followRec = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        // 기존 팔로우 여부 확인
+        boolean already_follow = memberFollowRepository.existsByFollowAndFollowed(followReq, followRec);
+        if (already_follow) {
+            throw new ServiceException(ReturnCode.ALREADY_FOLLOW);
+        }
+        // 중복 요청 방지
+        boolean already_requested = memberFollowReqRepository.existsByFollowReqAndFollowRec(followReq, followRec);
+        if (already_requested) {
+            throw new ServiceException(ReturnCode.ALREADY_REQUESTED);
+        }
+        MemberFollowReq followRequest = MemberFollowReq.builder()
+                .followReq(followReq)
+                .followRec(followRec)
+                .build();
+        memberFollowReqRepository.save(followRequest);
+    }
 
-    // 팔로우 신청하기
+    // 팔로우 요청 취소하기
+    @Override
+    @Transactional
+    public void cancelFollowReq(Long memberId, LoginUserDto loginUser){
+        Member followReq = loginUser.ConvertToMember();
+        Member followRec = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        MemberFollowReq followRequest = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
+                .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
+        memberFollowReqRepository.delete(followRequest);
+    }
 
+    // 팔로우 요청 수락하기
+    @Override
+    @Transactional
+    public void acceptFollowReq(Long memberId, LoginUserDto loginUser){
+        Member requester = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        Member receiver = loginUser.ConvertToMember();
+
+        // 요청받은 사용자의 followRecList에서 요청자 제거 및 followedList에 추가
+        if (receiver.getFollowRecList().removeIf(req -> req.getFollowReq().getId().equals(memberId))) {
+            receiver.getFollowList().add(new MemberFollow(requester, receiver));
+        } else {
+            throw new ServiceException(ReturnCode.REQUEST_NOT_FOUND);
+        }
+        memberRepository.save(receiver);
+    }
+
+    // 팔로우 요청 거절하기
+    @Override
+    @Transactional
+    public void refuseFollowReq(Long memberId, LoginUserDto loginUser){
+        Member requester = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        Member receiver = loginUser.ConvertToMember();
+
+        // 요청받은 사용자의 followRecList에서 요청자 제거
+        if (receiver.getFollowRecList().removeIf(req -> req.getFollowReq().getId().equals(memberId))) {
+        } else {
+            throw new ServiceException(ReturnCode.REQUEST_NOT_FOUND);
+        }
+        memberRepository.save(receiver);
+    }
 
     // 팔로우 취소하기
-
-
-    // 팔로우 목록 가져오기
-
-
-    // 팔로우 신청 수락하기
-
-
-    // 팔로우 신청 거절하기
-
-
-    // 팔로워 목록 가져오기
-    
+    @Override
+    @Transactional
+    public void cancelFollow(Long memberId, LoginUserDto loginUser){
+        Member follow = loginUser.ConvertToMember();
+        Member followed = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
+                .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
+        memberFollowRepository.delete(memberFollow);
+    }
 
     // 팔로워 목록에서 해당 유저 삭제하기
+    @Override
+    @Transactional
+    public void removeFollowed(Long memberId, LoginUserDto loginUser){
+        Member follow = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        Member followed = loginUser.ConvertToMember();
 
+        // 요청받은 사용자의 followedList에서 요청자 제거
+        if (followed.getFollowedList().removeIf(req -> req.getFollow().getId().equals(memberId))) {
+        } else {
+            throw new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND);
+        }
+        memberRepository.save(followed);
+    }
+
+    // 요청 페이지 수 제한
+    private void checkPageSize(int pageSize) {
+        int maxPageSize = ChatRoomPage.getMaxPageSize();
+        if (pageSize > maxPageSize) {
+            throw new ServiceException(ReturnCode.PAGE_REQUEST_FAIL);
+        }
+    }
 
     // LoginUser를 MemberInfo로 변환
-    private MemberInfo convertToMemberInfo(LoginUserDto loginUser) {
+    private MemberInfo loginUserConvertToMemberInfo(LoginUserDto loginUser) {
         return MemberInfo.builder()
                 .id(loginUser.getId())
                 .name(loginUser.getName())
@@ -157,8 +273,20 @@ public class MemberServiceImpl implements MemberService {
                 .build();
     }
 
+    // Member를 MemberInfo로 변환
+    private MemberInfo memberConvertToMemberInfo(Member member) {
+        return MemberInfo.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .nickName(member.getNickname())
+                .profileImgUrl(member.getProfileImageUrl())
+                .followMemberCount(member.getFollowList().stream().count())
+                .followedMemberCount(member.getFollowedList().stream().count())
+                .build();
+    }
+
     // LoginUser를 DetailMemberInfo로 변환
-    private DetailMemberInfo convertToDetailMemberInfo(LoginUserDto loginUser) {
+    private DetailMemberInfo loginUserConvertToDetailMemberInfo(LoginUserDto loginUser) {
         return DetailMemberInfo.builder()
                 .id(loginUser.getId())
                 .name(loginUser.getName())
@@ -170,6 +298,102 @@ public class MemberServiceImpl implements MemberService {
                 .profileImgUrl(loginUser.getProfileImageUrl())
                 .followMemberCount(loginUser.getFollowList().stream().count())
                 .followedMemberCount(loginUser.getFollowedList().stream().count())
+                // 팔로우 목록 변환
+                .followList(loginUser.getFollowList().stream()
+                        .map(MemberFollow -> MemberInfoDto.builder()
+                                .userId(MemberFollow.getFollowed().getId())
+                                .userNickname(MemberFollow.getFollowed().getNickname())
+                                .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로워 목록 변환
+                .followedList(loginUser.getFollowedList().stream()
+                        .map(MemberFollow -> MemberInfoDto.builder()
+                                .userId(MemberFollow.getFollow().getId())
+                                .userNickname(MemberFollow.getFollow().getNickname())
+                                .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
+                .followReqList(loginUser.getFollowReqList().stream()
+                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                                .userId(MemberFollowReq.getFollowRec().getId())
+                                .userNickname(MemberFollowReq.getFollowRec().getNickname())
+                                .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
+                .followRecList(loginUser.getFollowRecList().stream()
+                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                                .userId(MemberFollowReq.getFollowReq().getId())
+                                .userNickname(MemberFollowReq.getFollowReq().getNickname())
+                                .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                .build();
+    }
+
+    // Member를 DetailMemberInfo로 변환
+    private DetailMemberInfo memberConvertToDetailMemberInfo(Member member) {
+        return DetailMemberInfo.builder()
+                .id(member.getId())
+                .name(member.getName())
+                .nickName(member.getNickname())
+                .phone(member.getPhone())
+                .email(member.getEmail())
+                .gender(member.getGender())
+                .birthday(member.getBirthday())
+                .profileImgUrl(member.getProfileImageUrl())
+                .followMemberCount(member.getFollowList().stream().count())
+                .followedMemberCount(member.getFollowedList().stream().count())
+                // 팔로우 목록 변환
+                .followList(member.getFollowList().stream()
+                        .map(MemberFollow -> MemberInfoDto.builder()
+                                .userId(MemberFollow.getFollowed().getId())
+                                .userNickname(MemberFollow.getFollowed().getNickname())
+                                .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로워 목록 변환
+                .followedList(member.getFollowedList().stream()
+                        .map(MemberFollow -> MemberInfoDto.builder()
+                                .userId(MemberFollow.getFollow().getId())
+                                .userNickname(MemberFollow.getFollow().getNickname())
+                                .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
+                .followReqList(member.getFollowReqList().stream()
+                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                                .userId(MemberFollowReq.getFollowRec().getId())
+                                .userNickname(MemberFollowReq.getFollowRec().getNickname())
+                                .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
+                // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
+                .followRecList(member.getFollowRecList().stream()
+                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                                .userId(MemberFollowReq.getFollowReq().getId())
+                                .userNickname(MemberFollowReq.getFollowReq().getNickname())
+                                .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
+                                .build()
+                        )
+                        .collect(Collectors.toList())
+                )
                 .build();
     }
 }

@@ -10,7 +10,7 @@ public class ApiResponse<T> {
     private ReturnCode returnCode;
     private String returnMessage;
     private T data;
-    private Page<T> page;
+    private LetzgoPage<T> letzgoPage;
 
     public static <T> ApiResponse of(T data) {
         ApiResponse<T> response = new ApiResponse<>();
@@ -21,11 +21,11 @@ public class ApiResponse<T> {
         return response;
     }
 
-    public static <T> ApiResponse<T> of(Page<T> page) {
+    public static <T> ApiResponse<T> of(LetzgoPage<T> letzgoPage) {
         ApiResponse<T> response = new ApiResponse<>();
         response.returnCode = ReturnCode.SUCCESS;
         response.returnMessage = ReturnCode.SUCCESS.getMessage();
-        response.page = page;
+        response.letzgoPage = letzgoPage;
 
         return response;
     }

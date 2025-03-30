@@ -256,7 +256,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {
                 s3Service.deleteAllFile(chatMessage.getImageUrls());
             }
-            messageContentRepository.deleteById(String.valueOf(chatMessage.getId()));
+            if (messageContentRepository.existsById(String.valueOf(chatMessage.getId()))) {
+                messageContentRepository.deleteById(String.valueOf(chatMessage.getId()));
+            }
             chatMessageRepository.delete(chatMessage);
         }
     }
@@ -303,7 +305,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return chatRoomMemberRepository.countInActiveMembers(chatRoomId);
     }
 
-    // 요청 메시지 수 제한
+    // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {
         int maxPageSize = ChatMessagePage.getMaxPageSize();
         if (pageSize > maxPageSize) {

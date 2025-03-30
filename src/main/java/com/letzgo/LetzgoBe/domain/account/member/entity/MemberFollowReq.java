@@ -1,7 +1,10 @@
 package com.letzgo.LetzgoBe.domain.account.member.entity;
 
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,14 +19,14 @@ import org.hibernate.annotations.DynamicInsert;
 @NoArgsConstructor
 @SuperBuilder
 @DynamicInsert
-public class MemberFollow extends BaseEntity {
-    // 팔로우 하는 멤버
+public class MemberFollowReq extends BaseEntity {
+    // 팔로우 요청한 멤버
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follow_id", nullable = false)
-    private Member follow;
+    @JoinColumn(name = "follow_req_id", nullable = false)
+    private Member followReq;
 
-    // 팔로우 당하는 멤버
+    // 팔로우 요청 받은 멤버
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "followed_id", nullable = false)
-    private Member followed;
+    @JoinColumn(name = "follow_rec_id", nullable = false)
+    private Member followRec;
 }

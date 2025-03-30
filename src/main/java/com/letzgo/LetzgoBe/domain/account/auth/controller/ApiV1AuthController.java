@@ -25,14 +25,14 @@ public class ApiV1AuthController {
         return ApiResponse.of(authService.login(loginForm));
     }
 
-    // 로그아웃 [회원 권한]
+    // 로그아웃
     @PostMapping("/logout")
     public ApiResponse<String> logout(@LoginUser LoginUserDto loginUser) {
         authService.logout(loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // accessToken 재발급 [회원 권한]
+    // accessToken 재발급
     @GetMapping("/refresh-token")
     public ApiResponse<Auth> refreshToken(@RequestHeader("Authorization") String refreshToken, @LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(authService.refreshToken(refreshToken, loginUser));
