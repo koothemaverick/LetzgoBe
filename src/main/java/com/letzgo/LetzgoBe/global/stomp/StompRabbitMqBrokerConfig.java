@@ -1,6 +1,9 @@
 package com.letzgo.LetzgoBe.global.stomp;
 
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -19,7 +22,8 @@ public class StompRabbitMqBrokerConfig implements WebSocketMessageBrokerConfigur
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("*");  // CORS 허용
+                .setAllowedOrigins("*")
+                .withSockJS();  // CORS 허용
     }
 
     @Override
@@ -33,5 +37,10 @@ public class StompRabbitMqBrokerConfig implements WebSocketMessageBrokerConfigur
                 .setClientPasscode("admin")
                 .setSystemLogin("admin")
                 .setSystemPasscode("admin");
+    }
+
+    @Bean
+    public MessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 }

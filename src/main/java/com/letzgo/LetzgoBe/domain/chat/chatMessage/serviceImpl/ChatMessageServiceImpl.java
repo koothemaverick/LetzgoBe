@@ -80,7 +80,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         });
     }
 
-    // 해당 채팅방에서 메시지 검색(닉네임/내용)
+    // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional
     public Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
@@ -152,7 +152,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
         messageContentRepository.save(messageContent);
 
-        rabbitTemplate.convertAndSend("amq.topic", "chatRoomId:" + chatRoomId + "MessageCreated",
+        rabbitTemplate.convertAndSend("amq.topic", "chatRoom" + chatRoomId + "MessageCreated",
                 convertToChatMessageDto(chatMessage, messageContent.getContent()));
     }
 
@@ -245,6 +245,20 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage lastReadMessage = chatMessageRepository.findTopByChatRoomIdOrderByIdDesc(chatRoomId);
         chatRoomMember.setLastReadMessageId(lastReadMessage != null ? lastReadMessage.getId() : null);
         chatRoomMemberRepository.save(chatRoomMember);
+    }
+
+    // 해당 멤버가 작성한 모든 메시지 삭제
+    @Override
+    @Transactional
+    public void deleteMembersAllChatMessages(Long memberId){
+        List<ChatMessage> chatMessages = chatMessageRepository.findByMemberId(memberId);
+        for (ChatMessage chatMessage : chatMessages) {
+            if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {
+                s3Service.deleteAllFile(chatMessage.getImageUrls());
+            }
+            messageContentRepository.deleteById(String.valueOf(chatMessage.getId()));
+            chatMessageRepository.delete(chatMessage);
+        }
     }
 
     // 해당 채팅방 내의 모든 메시지 읽음 처리

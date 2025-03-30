@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> findPostsWithinRadius(@Valid XYForm xyForm, Pageable pageable){
+    public Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findPostsWithinRadius(
                 xyForm.getMapX(), xyForm.getMapY(), xyForm.getRadius(), pageable
@@ -149,7 +149,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 생성
     @Override
     @Transactional
-    public void addPost(@Valid PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void addPost(PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
         // 입력 받은 이미지들 S3에 저장
         List<String> imageUrls = new ArrayList<>();
         if (imageFiles.size() > 5 || imageFiles.isEmpty() || imageFiles == null) {
@@ -177,7 +177,7 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 수정
     @Override
     @Transactional
-    public void updatePost(Long postId, @Valid PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void updatePost(Long postId, PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
         if (!post.getMember().getId().equals(loginUser.getId())) {
@@ -219,6 +219,18 @@ public class PostServiceImpl implements PostService {
         s3Service.deleteAllFile(post.getImageUrls());
         postRepository.delete(post);
     }
+
+    // 해당 멤버가 작성한 모든 게시글 삭제
+    @Override
+    @Transactional
+    public void deleteMembersAllPosts(Long memberId){
+        List<Post> posts = postRepository.findPostsByMemberId(memberId);
+        for (Post post : posts){
+            commentService.deleteAllComments(post.getId());
+            s3Service.deleteAllFile(post.getImageUrls());
+            postRepository.delete(post);
+        }
+    };
 
     // 요청 페이지 수 제한
     public void checkPageSize(int pageSize) {

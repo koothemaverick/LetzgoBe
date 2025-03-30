@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
@@ -29,4 +31,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 사용자 닉네임 & 게시글 내용 검색
     @Query("SELECT c FROM Post c WHERE c.member.nickname LIKE %:keyword% OR c.content LIKE %:keyword%")
     Page<Post> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    // 해당 멤버가 작성한 모든 게시글 삭제
+    List<Post> findPostsByMemberId(Long memberId);
 }

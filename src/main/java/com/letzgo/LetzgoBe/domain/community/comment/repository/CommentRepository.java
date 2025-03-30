@@ -28,4 +28,7 @@ select count(c) from Comment c
 where c.post.id = :postId
 """)
     long countPostComment(@Param("postId")Long postId);
+
+    // 해당 멤버가 작성한 모든 댓글 삭제
+    List<Comment> findByMemberId(Long memberId);
 }
