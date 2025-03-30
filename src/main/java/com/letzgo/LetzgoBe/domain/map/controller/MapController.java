@@ -65,5 +65,4 @@ public class MapController {
                                          @RequestParam("num") int num) {
         return ApiResponse.of(mapService.getSearchedPlaces(query, lat, lng, radius, num));
     }
-
 }
