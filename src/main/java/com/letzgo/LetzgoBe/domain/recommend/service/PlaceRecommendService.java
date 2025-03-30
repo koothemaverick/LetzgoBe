@@ -40,7 +40,7 @@ public class PlaceRecommendService {
 
 
             UserSimilarity userSimilarity = new PearsonCorrelationSimilarity(model);
-            UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.5, userSimilarity, model); //0.5보다 유사도 큰 장소 추천
+            UserNeighborhood neighborhood = new ThresholdUserNeighborhood(0.1, userSimilarity, model); //0.1보다 유사도 큰 장소 추천
             UserBasedRecommender recommender = new GenericUserBasedRecommender(model, neighborhood, userSimilarity);
 
             List<RecommendedItem> recommendations = recommender.recommend(loginUserDto.getId(), num);//num개 추천
