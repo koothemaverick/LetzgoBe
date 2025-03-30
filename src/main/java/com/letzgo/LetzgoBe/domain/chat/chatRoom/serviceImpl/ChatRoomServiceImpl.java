@@ -12,12 +12,12 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.MemberInfoDto;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoom;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomMemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -37,6 +37,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final ChatMessageService chatMessageService;
     private final MessageContentRepository messageContentRepository;
     private final MemberRepository memberRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     // 사용자의 모든 채팅방 조회
     @Override
@@ -280,21 +281,25 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                     .findFirst()
                     .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
             chatRoom.getChatRoomMembers().remove(chatRoomMember);  // ChatRoomMember 제거
+            chatRoomMemberRepository.delete(chatRoomMember);
 
             // 방장인지 확인
             if (chatRoom.getMember().getId().equals(memberId)) {
                 if (chatRoom.getChatRoomMembers().size() > 1) { // 2명 이상 남아있으면 다음 방장 지정
                     ChatRoomMember nextOwner = chatRoom.getChatRoomMembers().get(0);
-                    chatRoom.setMember(nextOwner.getMember());
+                    // 영속 상태 보장
+                    Member persistedMember = memberRepository.findById(nextOwner.getMember().getId())
+                            .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+                    chatRoom.setMember(persistedMember);
                 } else { // 1명 미만(0명)이면 채팅방 삭제
                     chatMessageService.deleteAllChatMessages(chatRoom.getId());
                     chatRoomRepository.delete(chatRoom);
-                    return;
+                    continue;
                 }
             } else if (chatRoom.getChatRoomMembers().size() < 2) { // 방장이 아닌데 나갔을 때 1명이 되면 삭제
                 chatMessageService.deleteAllChatMessages(chatRoom.getId());
                 chatRoomRepository.delete(chatRoom);
-                return;
+                continue;
             }
             chatRoomRepository.save(chatRoom);
         }

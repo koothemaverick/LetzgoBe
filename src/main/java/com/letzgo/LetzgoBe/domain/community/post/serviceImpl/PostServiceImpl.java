@@ -230,7 +230,7 @@ public class PostServiceImpl implements PostService {
             s3Service.deleteAllFile(post.getImageUrls());
             postRepository.delete(post);
         }
-    };
+    }
 
     // 요청 페이지 수 제한
     public void checkPageSize(int pageSize) {

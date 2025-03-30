@@ -7,10 +7,11 @@ import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentDto;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.Page;
+import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -27,24 +28,24 @@ public class ApiV1CommentController {
     @GetMapping("/{postId}")
     public ApiResponse<CommentDto> findByPostId(@ModelAttribute CommentPage request, @PathVariable("postId") Long postId){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(Page.of(commentService.findByPostId(postId, pageable)));
+        return ApiResponse.of(LetzgoPage.of(commentService.findByPostId(postId, pageable)));
     }
 
-    // 댓글 좋아요 [회원 권한]
+    // 댓글 좋아요
     @PostMapping("/like/{commentId}")
     public ApiResponse<String> addCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.addCommentLike(commentId, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 댓글 좋아요 취소 [회원 권한]
+    // 댓글 좋아요 취소
     @DeleteMapping("/like/{commentId}")
     public ApiResponse<String> deleteCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.deleteCommentLike(commentId, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 해당 게시글에 댓글 생성 [회원 권한]
+    // 해당 게시글에 댓글 생성
     @PostMapping("/{postId}")
     public ApiResponse<String> addComment(@PathVariable("postId") Long postId,
                                           @RequestBody @Valid CommentForm commentForm, @LoginUser LoginUserDto loginUser){
@@ -52,7 +53,7 @@ public class ApiV1CommentController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 댓글 수정 [회원 권한]
+    // 댓글 수정
     @PutMapping("/{commentId}")
     public ApiResponse<String> updateComment(@PathVariable("commentId") Long commentId,
                                              @RequestBody @Valid CommentForm commentForm, @LoginUser LoginUserDto loginUser){
@@ -60,7 +61,7 @@ public class ApiV1CommentController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 댓글 삭제 [회원 권한]
+    // 댓글 삭제
     @DeleteMapping("/{commentId}")
     public ApiResponse<String> deleteComment(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.deleteComment(commentId, loginUser);

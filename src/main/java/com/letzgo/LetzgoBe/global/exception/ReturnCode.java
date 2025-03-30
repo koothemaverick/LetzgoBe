@@ -88,7 +88,7 @@ public enum ReturnCode {
     // Friend 관련 에러
     FRIEND_LIMIT_EXCEEDED(400, "FRIEND_002", "친구 수가 초과되었습니다."),
     FRIEND_REQUEST_NOT_FOUND(404, "FRIEND_003", "친구 요청을 찾을 수 없습니다."),
-    ALREADY_REQUESTED(400, "FRIEND_004", "이미 친구 요청을 보냈습니다."),
+//    ALREADY_REQUESTED(400, "FRIEND_004", "이미 친구 요청을 보냈습니다."),
     CANNOT_FRIEND_SELF(400, "FRIEND_005", "자기 자신을 친구로 추가할 수 없습니다."),
     BLOCKED_BY_USER(400, "FRIEND_006", "사용자에 의해 차단되었습니다."),
     REQUESTER_NOT_FOUND(404, "FRIEND_007", "요청자를 찾을 수 없습니다."),
@@ -100,6 +100,12 @@ public enum ReturnCode {
     INVALID_USER_STATE(400, "FRIEND_013", "상대가 유효하지 않은 회원 상태입니다."),
     NOT_FRIEND(400, "FRIEND_014", "친구가 아닙니다."),
     FRIEND_NOT_FOUND(404, "FRIEND_015", "해당 정보를 찾을 수 없습니다."),
+
+    // Follow 관련 에러
+    ALREADY_REQUESTED(404, "FOLLOW_001", "이미 팔로우 요청을 보냈습니다."),
+    REQUEST_NOT_FOUND(404, "FOLLOW_002", "팔로우 요청을 찾을 수 없습니다."),
+    ALREADY_FOLLOW(404, "FOLLOW_003", "이미 팔로우 중인 사용자입니다."),
+    FOLLOWER_NOT_FOUND(404, "FOLLOW_004", "팔로워를 찾을 수 없습니다."),
 
     //board 관련 에러
     BOARD_NOT_FOUND(400,"BOARD_001","게시글을 찾을 수 없습니다."),

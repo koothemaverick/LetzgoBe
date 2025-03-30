@@ -2,6 +2,7 @@ package com.letzgo.LetzgoBe.domain.account.auth.loginUser;
 
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
+import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
 import lombok.Data;
 import lombok.Builder;
 import java.time.LocalDate;
@@ -23,6 +24,8 @@ public class LoginUserDto {
     private String profileImageUrl;
     private List<MemberFollow> followList;
     private List<MemberFollow> followedList;
+    private List<MemberFollowReq> followReqList;
+    private List<MemberFollowReq> followRecList;
     private LocalDate birthday;
     private LocalDateTime createDate;
 
@@ -41,6 +44,8 @@ public class LoginUserDto {
                 .profileImageUrl(member.getProfileImageUrl())
                 .followList(member.getFollowList())
                 .followedList(member.getFollowedList())
+                .followReqList(member.getFollowReqList())
+                .followRecList(member.getFollowRecList())
                 .birthday(member.getBirthday())
                 .createDate(member.getCreateDate())
                 .build();
@@ -61,6 +66,8 @@ public class LoginUserDto {
                 .profileImageUrl(this.profileImageUrl)
                 .followList(this.followList)
                 .followedList(this.followedList)
+                .followReqList(this.followReqList)
+                .followRecList(this.followRecList)
                 .birthday(this.birthday)
                 .createDate(this.createDate)
                 .build();

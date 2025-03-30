@@ -7,7 +7,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.Page;
+import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +25,10 @@ public class ApiV1ChatRoomController {
     @GetMapping
     public ApiResponse<ChatRoomDto> getChatRoom(@ModelAttribute ChatRoomPage request, @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(Page.of(chatRoomService.getChatRoom(pageable, loginUser)));
+        return ApiResponse.of(LetzgoPage.of(chatRoomService.getChatRoom(pageable, loginUser)));
     }
 
-    // 채팅방 생성(DM/그룹) [회원 권한]
+    // 채팅방 생성(DM/그룹)
     @PostMapping
     public ApiResponse<ChatRoomDto> addChatRoom(@RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
         return ApiResponse.of(chatRoomService.addChatRoom(chatRoomForm, loginUser));

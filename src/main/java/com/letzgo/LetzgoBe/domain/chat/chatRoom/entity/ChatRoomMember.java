@@ -28,9 +28,4 @@ public class ChatRoomMember extends BaseEntity {
 
     @Builder.Default
     private boolean active = false;
-
-    // 테스트 코드 작성에 필요
-    public ChatRoomMember(Member member){
-        this.member = member;
-    }
 }
