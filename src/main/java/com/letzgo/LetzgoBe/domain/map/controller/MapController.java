@@ -54,4 +54,15 @@ public class MapController {
         reviewService.deleteReview(loginUserDto, reviewId);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
+
+    //검색으로 장소 목록 불러옴
+    //파라미터:검색키워드, 사용자위도경도, 검색주위반경(m단위), 받아올 갯수(최대20개)
+    @GetMapping("/places")
+    public ApiResponse getSearchedPlaces(@RequestParam("query") String query,
+                                         @RequestParam("lat") String lat,
+                                         @RequestParam("lng") String lng,
+                                         @RequestParam("radius") int radius,
+                                         @RequestParam("num") int num) {
+        return ApiResponse.of(mapService.getSearchedPlaces(query, lat, lng, radius, num));
+    }
 }

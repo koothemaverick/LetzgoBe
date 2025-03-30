@@ -60,6 +60,14 @@ public class MapService {
                         .build();
         }
     }
+
+    public List<PlaceDto> getSearchedPlaces(String query, String lat, String lng, int radius, int num){
+        try {
+            return mapApiService.getNearPlaces(query, lat, lng, radius, num);
+        } catch (Exception e) {
+            throw new RuntimeException("구글 api호출중 오류발생");
+        }
+    }
 }
 
 
