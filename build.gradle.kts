@@ -41,6 +41,8 @@ dependencies {
 	implementation ("com.google.maps:google-maps-services:2.2.0")
 	implementation("org.apache.mahout:mahout-integration:0.13.0")
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
+	implementation ("org.seleniumhq.selenium:selenium-java:4.30.0")
+	implementation ("io.github.bonigarcia:webdrivermanager:6.0.0")
 
 	// netty
 	implementation("org.springframework.boot:spring-boot-starter-reactor-netty")
