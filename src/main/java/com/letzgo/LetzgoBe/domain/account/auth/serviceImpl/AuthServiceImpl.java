@@ -8,10 +8,10 @@ import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.auth.service.RefreshTokenService;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
+import com.letzgo.LetzgoBe.global.exception.ReturnCode;
+import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     @Value("${custom.accessToken.expiration}")
     private long accessTokenExpiration;
@@ -36,10 +35,11 @@ public class AuthServiceImpl implements AuthService {
     // 로그인
     @Override
     @Transactional
-    public Auth login(LoginForm loginForm) {
+    public Auth login(LoginForm loginForm, boolean isSocialLogin) {
         Member member = memberRepository.findByEmail(loginForm.getEmail())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        if (!passwordEncoder.matches(loginForm.getPassword(), member.getPassword())) {
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        // 소셜 로그인이라면 비밀번호 검증을 생략
+        if (!isSocialLogin && !passwordEncoder.matches(loginForm.getPassword(), member.getPassword())) {
             throw new RuntimeException("비밀번호가 올바르지 않습니다.");
         }
         String accessToken = jwtTokenProvider.generateToken(member.getEmail(), accessTokenExpiration);

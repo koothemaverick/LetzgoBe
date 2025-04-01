@@ -9,8 +9,6 @@ import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,7 +20,7 @@ public class ApiV1AuthController {
     // 로그인
     @PostMapping("/login")
     public ApiResponse<Auth> login(@RequestBody @Valid LoginForm loginForm) {
-        return ApiResponse.of(authService.login(loginForm));
+        return ApiResponse.of(authService.login(loginForm, false));
     }
 
     // 로그아웃
