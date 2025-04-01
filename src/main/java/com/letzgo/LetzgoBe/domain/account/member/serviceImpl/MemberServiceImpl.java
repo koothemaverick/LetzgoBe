@@ -52,7 +52,8 @@ public class MemberServiceImpl implements MemberService {
         if (memberRepository.existsByEmail((memberForm.getEmail()))) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
-        String encodedPassword = passwordEncoder.encode(memberForm.getPassword());
+        // 비밀번호가 없으면 null로 처리하거나 다른 처리를 할 수 있습니다.
+        String encodedPassword = memberForm.getPassword() != null ? passwordEncoder.encode(memberForm.getPassword()) : null;
         Member member = Member.builder()
                         .name(memberForm.getName())
                         .nickname(memberForm.getNickname())

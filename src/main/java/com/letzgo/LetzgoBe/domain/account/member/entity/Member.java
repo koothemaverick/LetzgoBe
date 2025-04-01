@@ -40,7 +40,7 @@ public class Member extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 6, nullable = false)
+    @Column(length = 6, nullable = true)
     private Gender gender;  // 성별
     public enum Gender {
         MALE, FEMALE;

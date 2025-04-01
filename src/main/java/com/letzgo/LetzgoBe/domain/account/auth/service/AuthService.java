@@ -6,7 +6,7 @@ import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 
 public interface AuthService {
     // 로그인
-    Auth login(LoginForm loginForm);
+    Auth login(LoginForm loginForm, boolean isSocialLogin);
 
     // 로그아웃
     void logout(LoginUserDto loginUser);

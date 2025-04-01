@@ -45,7 +45,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/rest-api/v1/auth/login",
-                                "/oauth2/**",
+                                "/rest-api/v1/oauth2/**",
                                 "/map-api/**",
                                 "/rest-api/v1/member",
                                 "/rest-api/v1/post/**").permitAll()
