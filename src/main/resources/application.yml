@@ -17,3 +17,4 @@ spring:
 schedule:
   use: true
   cron: 0 12 * * *
+  use-page: 10

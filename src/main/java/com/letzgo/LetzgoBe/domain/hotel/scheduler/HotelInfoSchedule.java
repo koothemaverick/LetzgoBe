@@ -15,12 +15,15 @@ public class HotelInfoSchedule {
 
     @Value("${schedule.use}")
     private boolean useSchedule;
+    @Value("${schedule.use-page}")
+    //가져올 페이지 수
+    private int page;
 
     @Scheduled(cron = "${schedule.cron}")
     public void mainJob() {
         try {
             if (useSchedule)
-                hotelInfoService.getHotelsInfo(2);
+                hotelInfoService.getHotelsInfo(page);
         } catch (Exception e) {
             log.warn("hotelInfoService 스케줄링 중 오류 발생");
         }
