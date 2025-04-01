@@ -10,7 +10,7 @@ public class DriverConfig {
     @Bean
     public WebDriver Driver() {
         String WEB_DRIVER_ID = "webdriver.chrome.driver";
-        String WEB_DRIVER_PATH = "chromedriver.exe";
+        String WEB_DRIVER_PATH = "chromedriver.exe"; //프로젝트 폴터에 크롬드라이버 필요
         System.setProperty(WEB_DRIVER_ID, WEB_DRIVER_PATH);
 
         ChromeOptions options = new ChromeOptions();
