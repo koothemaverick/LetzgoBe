@@ -33,13 +33,6 @@ public class HotelInfoService {
     }
 
     public void getListPageInfo(String ListPageUrl) {
-        driver.get(ListPageUrl);
-
-        //대기
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By
-                .cssSelector(("#__next > div > main > section > div.css-1qumol3 > a:nth-child(3)"))));
-        //상세페이지 주소 넘겨줌
         for (int i = 3; i <= 22; i++) {
             try {
                 driver.get(ListPageUrl);
