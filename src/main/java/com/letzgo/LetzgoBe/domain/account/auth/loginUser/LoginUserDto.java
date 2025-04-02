@@ -27,7 +27,7 @@ public class LoginUserDto {
     private List<MemberFollowReq> followReqList;
     private List<MemberFollowReq> followRecList;
     private LocalDate birthday;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
 
     // Member 객체를 LoginUserDto로 변환하는 정적 팩토리 메서드
     public static LoginUserDto ConvertToLoginUserDto(Member member) {
@@ -47,7 +47,7 @@ public class LoginUserDto {
                 .followReqList(member.getFollowReqList())
                 .followRecList(member.getFollowRecList())
                 .birthday(member.getBirthday())
-                .createDate(member.getCreateDate())
+                .createdAt(member.getCreatedAt())
                 .build();
     }
 
@@ -69,7 +69,7 @@ public class LoginUserDto {
                 .followReqList(this.followReqList)
                 .followRecList(this.followRecList)
                 .birthday(this.birthday)
-                .createDate(this.createDate)
+                .createdAt(this.createdAt)
                 .build();
     }
 }

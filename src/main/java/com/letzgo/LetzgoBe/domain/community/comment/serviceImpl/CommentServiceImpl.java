@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public Page<CommentDto> findByPostId(Long postId, Pageable pageable){
         checkPageSize(pageable.getPageSize());
-        Page<Comment> comments = commentRepository.findByPostIdOrderByCreateDateDesc(postId, pageable);
+        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
         return comments.map(this::convertToCommentDto);
     }
 
@@ -156,7 +156,7 @@ public class CommentServiceImpl implements CommentService {
                 .likeCount(comment.getLikedMembers().size())
                 .content(comment.getContent())
                 .superCommentId(comment.getSuperCommentId())
-                .createDate(comment.getCreateDate())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }

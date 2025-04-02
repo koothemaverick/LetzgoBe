@@ -15,5 +15,5 @@ public class CommentDto {
     private int likeCount;
     private String content;
     private Long superCommentId;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
 }

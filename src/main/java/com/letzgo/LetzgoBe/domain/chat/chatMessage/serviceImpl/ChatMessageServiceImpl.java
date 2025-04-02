@@ -323,7 +323,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .content(content)
                 .imageUrls(chatMessage.getImageUrls())
                 .readCount(chatMessage.getReadCount())
-                .createDate(chatMessage.getCreateDate())
+                .createdAt(chatMessage.getCreatedAt())
                 .build();
     }
 }

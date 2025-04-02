@@ -46,7 +46,7 @@ public class NotProd {
         return new ApplicationRunner() {
             @Transactional
             @Override
-            public void run(ApplicationArguments args) throws Exception {
+            public void run(ApplicationArguments args) {
                 // 유저 1, 2, 3, 4, 5 생성
                 List<String> names = List.of("서울", "인천", "강릉", "부산", "제주");
                 List<String> nicknames = List.of("seoul_gangnam", "incheon_songdo", "gangneung_beach", "busan_haeundae", "jeju_seaside");

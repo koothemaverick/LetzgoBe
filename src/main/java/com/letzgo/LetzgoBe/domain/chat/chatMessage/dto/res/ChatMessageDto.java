@@ -16,5 +16,5 @@ public class ChatMessageDto {
     private String content;
     private List<String> imageUrls;
     private Long readCount;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
 }
