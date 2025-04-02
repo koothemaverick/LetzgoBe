@@ -19,5 +19,5 @@ public class DetailPostDto {
     private Double mapY;
     private String content;
     private List<String> imageUrls;
-    private LocalDateTime createDate;
+    private LocalDateTime createdAt;
 }

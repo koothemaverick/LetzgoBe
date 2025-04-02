@@ -249,7 +249,7 @@ public class PostServiceImpl implements PostService {
                 .mapX(post.getMapX())
                 .mapY(post.getMapY())
                 .imageUrls(post.getImageUrls())
-                .createDate(post.getCreateDate())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 
@@ -266,7 +266,7 @@ public class PostServiceImpl implements PostService {
                 .mapY(post.getMapY())
                 .content(post.getContent())
                 .imageUrls(post.getImageUrls())
-                .createDate(post.getCreateDate())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }

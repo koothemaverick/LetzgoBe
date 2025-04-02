@@ -22,7 +22,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     LEFT JOIN ChatMessage cm ON cm.chatRoom = cr
     WHERE crm.member = :member
     GROUP BY cr, crm
-    ORDER BY COALESCE(MAX(cm.createDate), cr.createDate) DESC
+    ORDER BY COALESCE(MAX(cm.createdAt), cr.createdAt) DESC
 """)
     Page<ChatRoom> findChatRoomsByMemberOrderByLatestMessage(Pageable pageable, @Param("member") Member member);
 

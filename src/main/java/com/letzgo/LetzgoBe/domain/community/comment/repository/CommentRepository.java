@@ -14,7 +14,7 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 해당 게시글에 작성된 모든 댓글 페이지 조회
-    Page<Comment> findByPostIdOrderByCreateDateDesc(Long postId, Pageable pageable);
+    Page<Comment> findByPostIdOrderByCreatedAtDesc(Long postId, Pageable pageable);
 
     // 해당 댓글의 모든 하위 댓글 삭제
     List<Comment> findBySuperCommentId(Long superCommentId);
