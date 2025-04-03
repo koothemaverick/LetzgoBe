@@ -23,7 +23,7 @@ import java.util.List;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value="/rest-api/v1/post",produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value="/rest-api/v1/post")
 @RequiredArgsConstructor
 public class ApiV1PostController {
     private final PostService postService;
