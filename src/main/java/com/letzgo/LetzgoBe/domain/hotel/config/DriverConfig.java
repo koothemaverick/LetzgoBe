@@ -2,16 +2,19 @@ package com.letzgo.LetzgoBe.domain.hotel.config;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class DriverConfig {
+    @Value("${selenium.driver-path}")
+    private String webDriverPath; //프로젝트 폴터에 크롬드라이버 필요, 컴퓨터마다 경로 다름
+
     @Bean
     public WebDriver Driver() {
         String WEB_DRIVER_ID = "webdriver.chrome.driver";
-        String WEB_DRIVER_PATH = "chromedriver.exe"; //프로젝트 폴터에 크롬드라이버 필요
-        System.setProperty(WEB_DRIVER_ID, WEB_DRIVER_PATH);
+        System.setProperty(WEB_DRIVER_ID, webDriverPath);
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
