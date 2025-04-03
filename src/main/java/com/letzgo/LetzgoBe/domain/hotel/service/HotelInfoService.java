@@ -92,14 +92,15 @@ public class HotelInfoService {
             hotelDto.setRating(Integer.parseInt(rating));
             hotelDto.setImagePath(photo);
 
-            hotelRepository.save(Hotel.builder()
+            Hotel hotel = Hotel.builder()
                     .name(hotelDto.getName())
                     .location(hotelDto.getLocation())
                     .daesilPrice(hotelDto.getDaesilPrice())
                     .sukbakPrice((hotelDto.getSukbakPrice()))
                     .rating(hotelDto.getRating())
                     .imagePath(hotelDto.getImagePath())
-                    .build());
+                    .build();
+            hotelRepository.save(hotel);
 
         } catch (Exception e) {
             //e.printStackTrace();
