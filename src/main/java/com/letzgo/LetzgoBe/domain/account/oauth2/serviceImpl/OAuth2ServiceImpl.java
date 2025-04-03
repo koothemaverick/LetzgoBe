@@ -67,11 +67,11 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         if (providerProps == null) {
             throw new IllegalArgumentException("지원되지 않는 OAuth2 제공자: " + provider);
         }
-        String accessToken = getAccessToken(providerProps, code);
+        String accessToken = getAccessToken(provider, providerProps, code);
         return getUserInfoFromProvider(provider, providerProps.getUserInfoUri(), accessToken);
     }
 
-    private String getAccessToken(OAuth2Properties.ProviderProperties providerProps, String code) {
+    private String getAccessToken(String provider, OAuth2Properties.ProviderProperties providerProps, String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -82,7 +82,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         params.add("grant_type", "authorization_code");
 
         // 카카오는 client_secret을 포함하지 않음
-        if (!providerProps.getClientId().equals("kakao") && providerProps.getClientSecret() != null) {
+        if (!"kakao".equalsIgnoreCase(provider) && providerProps.getClientSecret() != null) {
             params.add("client_secret", providerProps.getClientSecret());
         }
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);

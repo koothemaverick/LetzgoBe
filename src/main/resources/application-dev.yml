@@ -37,7 +37,7 @@ spring:
 logging:
   level:
     org.springframework.web: DEBUG
-    team.klover: DEBUG
+    com.letzgo: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
     org.springframework.web.socket: DEBUG
