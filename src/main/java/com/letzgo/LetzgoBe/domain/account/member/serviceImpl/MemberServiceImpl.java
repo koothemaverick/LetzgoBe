@@ -8,6 +8,7 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
+import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -256,7 +257,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {
-        int maxPageSize = ChatRoomPage.getMaxPageSize();
+        int maxPageSize = MemberPage.getMaxPageSize();
         if (pageSize > maxPageSize) {
             throw new ServiceException(ReturnCode.PAGE_REQUEST_FAIL);
         }
