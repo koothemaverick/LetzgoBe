@@ -26,8 +26,8 @@ public class Hotel extends BaseEntity {
     int daesilPrice;
 
     @Column
-    int rating;
+    float rating;
 
-    @Column(name = "image_path")
+    @Column(name = "image_path", length = 1000)
     String imagePath;
 }

@@ -41,8 +41,8 @@ public class HotelInfoService {
                 WebElement link = driver.findElement(By.cssSelector(cssSelector));
 
                 //가격 가져옴
-                String sukbak = "정보 없음";
-                String daesil = "정보 없음";
+                String sukbak = null;
+                String daesil = null;
                 try {
                     sukbak = driver.findElement(By.cssSelector("#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ") > div.css-gvoll6 > div.css-1by0ap6 > div.css-sg6wi7 > div:nth-child(1) > div > div.css-ukl1fa > div > div > span.css-5r5920")).getText();
                 } catch (Exception e) {
@@ -53,8 +53,8 @@ public class HotelInfoService {
                 }
 
                 HotelDto hotelDto = HotelDto.builder()
-                        .sukbakPrice(Integer.parseInt(sukbak))
-                        .daesilPrice(Integer.parseInt(daesil))
+                        .sukbakPrice(sukbak == null ? null : Integer.parseInt(sukbak.replace(",", "")))
+                        .daesilPrice(daesil == null ? null : Integer.parseInt(daesil.replace(",", "")))
                         .build();
 
                 String href = link.getAttribute("href");
@@ -89,7 +89,7 @@ public class HotelInfoService {
 
             hotelDto.setName(_title);
             hotelDto.setLocation(location);
-            hotelDto.setRating(Integer.parseInt(rating));
+            hotelDto.setRating(Float.parseFloat(rating));
             hotelDto.setImagePath(photo);
 
             Hotel hotel = Hotel.builder()
@@ -100,6 +100,7 @@ public class HotelInfoService {
                     .rating(hotelDto.getRating())
                     .imagePath(hotelDto.getImagePath())
                     .build();
+
             hotelRepository.save(hotel);
 
         } catch (Exception e) {

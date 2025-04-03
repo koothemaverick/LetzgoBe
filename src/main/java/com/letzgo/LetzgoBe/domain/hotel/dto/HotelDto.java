@@ -10,8 +10,8 @@ import lombok.*;
 public class HotelDto {
     String name;
     String location;
-    int sukbakPrice;
-    int daesilPrice;
-    int rating;
+    Integer sukbakPrice;
+    Integer daesilPrice;
+    float rating;
     String imagePath;
 }

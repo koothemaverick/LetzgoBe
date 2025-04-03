@@ -16,7 +16,7 @@ public class HotelInfoSchedule {
     @Value("${schedule.use}")
     private boolean useSchedule;
     @Value("${schedule.use-page}")
-    //가져올 페이지 수
+    //지역당 가져올 페이지 수, 페이지당 숙소 20개
     private int page;
 
     @Scheduled(cron = "${schedule.cron}")
