@@ -22,7 +22,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 본인 게시글 최신순 조회
     @Query("SELECT c FROM Post c WHERE c.member.id = :memberId ORDER BY c.createdAt DESC")
-    Page<Post> findByMemberId(@Param("memberId") Long id, Pageable pageable);
+    Page<Post> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 
     // 사용자가 저장한 게시글 조회
     @Query("SELECT p FROM Post p JOIN p.savedMembers sm WHERE sm.member.id = :memberId")

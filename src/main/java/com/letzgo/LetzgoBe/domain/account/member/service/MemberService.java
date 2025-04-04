@@ -2,8 +2,8 @@ package com.letzgo.LetzgoBe.domain.account.member.service;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberInfo;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,16 +13,16 @@ public interface MemberService {
     Member signup(MemberForm memberForm);
 
     // 회원정보 조회
-    MemberInfo getMyInfo(LoginUserDto loginUser);
+    MemberDto getMyInfo(LoginUserDto loginUser);
 
     // 본인 상세회원정보 조회
-    DetailMemberInfo getMyDetailInfo(LoginUserDto loginUser);
+    DetailMemberDto getMyDetailInfo(LoginUserDto loginUser);
 
     // 다른 멤버의 회원정보 조회
-    MemberInfo getMemberInfo(Long memberId);
+    MemberDto getMemberInfo(Long memberId);
 
     // 다른 멤버의 상세회원정보 조회
-    DetailMemberInfo getMemberDetailInfo(Long memberId);
+    DetailMemberDto getMemberDetailInfo(Long memberId);
 
     // 회원정보 수정
     void updateMember(MemberForm memberForm, LoginUserDto loginUser);
@@ -31,7 +31,7 @@ public interface MemberService {
     void deleteMember(LoginUserDto loginUser);
 
     // 회원 검색하기
-    Page<MemberInfo> searchMemberInfo(Pageable pageable, String keyword);
+    Page<MemberDto> searchMemberInfo(Pageable pageable, String keyword);
 
     // 팔로우 요청하기
     void followReq(Long memberId, LoginUserDto loginUser);

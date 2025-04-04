@@ -3,8 +3,8 @@ package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberInfo;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
@@ -14,8 +14,7 @@ import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepos
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.MemberInfoDto;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
@@ -56,14 +55,14 @@ public class MemberServiceImpl implements MemberService {
         // 비밀번호가 없으면 null로 처리하거나 다른 처리를 할 수 있습니다.
         String encodedPassword = memberForm.getPassword() != null ? passwordEncoder.encode(memberForm.getPassword()) : null;
         Member member = Member.builder()
-                        .name(memberForm.getName())
-                        .nickname(memberForm.getNickname())
-                        .phone(memberForm.getPhone())
-                        .email(memberForm.getEmail())
-                        .password(encodedPassword)  // 인코딩된 비밀번호 저장
-                        .gender(memberForm.getGender())
-                        .birthday(memberForm.getBirthday())
-                        .build();
+                .name(memberForm.getName())
+                .nickname(memberForm.getNickname())
+                .phone(memberForm.getPhone())
+                .email(memberForm.getEmail())
+                .password(encodedPassword)  // 인코딩된 비밀번호 저장
+                .gender(memberForm.getGender())
+                .birthday(memberForm.getBirthday())
+                .build();
         memberRepository.save(member);
         return member;
     }
@@ -71,21 +70,21 @@ public class MemberServiceImpl implements MemberService {
     // 회원정보 조회
     @Override
     @Transactional
-    public MemberInfo getMyInfo(LoginUserDto loginUser) {
+    public MemberDto getMyInfo(LoginUserDto loginUser) {
         return loginUserConvertToMemberInfo(loginUser);
     }
 
     // 본인 상세회원정보 조회
     @Override
     @Transactional
-    public DetailMemberInfo getMyDetailInfo(LoginUserDto loginUser){
+    public DetailMemberDto getMyDetailInfo(LoginUserDto loginUser){
         return loginUserConvertToDetailMemberInfo(loginUser);
     }
 
     // 다른 멤버의 회원정보 조회
     @Override
     @Transactional
-    public MemberInfo getMemberInfo(Long memberId) {
+    public MemberDto getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberConvertToMemberInfo(member);
@@ -94,7 +93,7 @@ public class MemberServiceImpl implements MemberService {
     // 다른 멤버의 상세회원정보 조회
     @Override
     @Transactional
-    public DetailMemberInfo getMemberDetailInfo(Long memberId){
+    public DetailMemberDto getMemberDetailInfo(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberConvertToDetailMemberInfo(member);
@@ -152,7 +151,7 @@ public class MemberServiceImpl implements MemberService {
     // 회원 검색하기
     @Override
     @Transactional
-    public Page<MemberInfo> searchMemberInfo(Pageable pageable, String keyword){
+    public Page<MemberDto> searchMemberInfo(Pageable pageable, String keyword){
         checkPageSize(pageable.getPageSize());
         Page<Member> members = memberRepository.findByKeyword(pageable, keyword);
         return members.map(this::memberConvertToMemberInfo);
@@ -264,32 +263,32 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // LoginUser를 MemberInfo로 변환
-    private MemberInfo loginUserConvertToMemberInfo(LoginUserDto loginUser) {
-        return MemberInfo.builder()
+    private MemberDto loginUserConvertToMemberInfo(LoginUserDto loginUser) {
+        return MemberDto.builder()
                 .id(loginUser.getId())
                 .name(loginUser.getName())
                 .nickName(loginUser.getNickname())
-                .profileImgUrl(loginUser.getProfileImageUrl())
+                .profileImageUrl(loginUser.getProfileImageUrl())
                 .followMemberCount(loginUser.getFollowList().stream().count())
                 .followedMemberCount(loginUser.getFollowedList().stream().count())
                 .build();
     }
 
     // Member를 MemberInfo로 변환
-    private MemberInfo memberConvertToMemberInfo(Member member) {
-        return MemberInfo.builder()
+    private MemberDto memberConvertToMemberInfo(Member member) {
+        return MemberDto.builder()
                 .id(member.getId())
                 .name(member.getName())
                 .nickName(member.getNickname())
-                .profileImgUrl(member.getProfileImageUrl())
+                .profileImageUrl(member.getProfileImageUrl())
                 .followMemberCount(member.getFollowList().stream().count())
                 .followedMemberCount(member.getFollowedList().stream().count())
                 .build();
     }
 
     // LoginUser를 DetailMemberInfo로 변환
-    private DetailMemberInfo loginUserConvertToDetailMemberInfo(LoginUserDto loginUser) {
-        return DetailMemberInfo.builder()
+    private DetailMemberDto loginUserConvertToDetailMemberInfo(LoginUserDto loginUser) {
+        return DetailMemberDto.builder()
                 .id(loginUser.getId())
                 .name(loginUser.getName())
                 .nickName(loginUser.getNickname())
@@ -297,12 +296,12 @@ public class MemberServiceImpl implements MemberService {
                 .email(loginUser.getEmail())
                 .gender(loginUser.getGender())
                 .birthday(loginUser.getBirthday())
-                .profileImgUrl(loginUser.getProfileImageUrl())
+                .profileImageUrl(loginUser.getProfileImageUrl())
                 .followMemberCount(loginUser.getFollowList().stream().count())
                 .followedMemberCount(loginUser.getFollowedList().stream().count())
                 // 팔로우 목록 변환
                 .followList(loginUser.getFollowList().stream()
-                        .map(MemberFollow -> MemberInfoDto.builder()
+                        .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollowed().getId())
                                 .userNickname(MemberFollow.getFollowed().getNickname())
                                 .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
@@ -312,7 +311,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로워 목록 변환
                 .followedList(loginUser.getFollowedList().stream()
-                        .map(MemberFollow -> MemberInfoDto.builder()
+                        .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollow().getId())
                                 .userNickname(MemberFollow.getFollow().getNickname())
                                 .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
@@ -322,7 +321,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
                 .followReqList(loginUser.getFollowReqList().stream()
-                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                        .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowRec().getId())
                                 .userNickname(MemberFollowReq.getFollowRec().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
@@ -332,7 +331,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
                 .followRecList(loginUser.getFollowRecList().stream()
-                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                        .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowReq().getId())
                                 .userNickname(MemberFollowReq.getFollowReq().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
@@ -344,8 +343,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     // Member를 DetailMemberInfo로 변환
-    private DetailMemberInfo memberConvertToDetailMemberInfo(Member member) {
-        return DetailMemberInfo.builder()
+    private DetailMemberDto memberConvertToDetailMemberInfo(Member member) {
+        return DetailMemberDto.builder()
                 .id(member.getId())
                 .name(member.getName())
                 .nickName(member.getNickname())
@@ -353,12 +352,12 @@ public class MemberServiceImpl implements MemberService {
                 .email(member.getEmail())
                 .gender(member.getGender())
                 .birthday(member.getBirthday())
-                .profileImgUrl(member.getProfileImageUrl())
+                .profileImageUrl(member.getProfileImageUrl())
                 .followMemberCount(member.getFollowList().stream().count())
                 .followedMemberCount(member.getFollowedList().stream().count())
                 // 팔로우 목록 변환
                 .followList(member.getFollowList().stream()
-                        .map(MemberFollow -> MemberInfoDto.builder()
+                        .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollowed().getId())
                                 .userNickname(MemberFollow.getFollowed().getNickname())
                                 .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
@@ -368,7 +367,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로워 목록 변환
                 .followedList(member.getFollowedList().stream()
-                        .map(MemberFollow -> MemberInfoDto.builder()
+                        .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollow().getId())
                                 .userNickname(MemberFollow.getFollow().getNickname())
                                 .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
@@ -378,7 +377,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
                 .followReqList(member.getFollowReqList().stream()
-                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                        .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowRec().getId())
                                 .userNickname(MemberFollowReq.getFollowRec().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
@@ -388,7 +387,7 @@ public class MemberServiceImpl implements MemberService {
                 )
                 // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
                 .followRecList(member.getFollowRecList().stream()
-                        .map(MemberFollowReq -> MemberInfoDto.builder()
+                        .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowReq().getId())
                                 .userNickname(MemberFollowReq.getFollowReq().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())

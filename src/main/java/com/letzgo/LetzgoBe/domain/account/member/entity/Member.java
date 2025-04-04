@@ -20,23 +20,18 @@ import java.util.List;
 @DynamicInsert
 public class Member extends BaseEntity {
     @Column(length = 20)
-    @Size(max = 20)
     private String name;
 
     @Column(length = 20)
-    @Size(max = 20)
     private String nickname;
 
     @Column(length = 20)
-    @Size(max = 20)
     private String phone;
 
     @Column(length = 50)
-    @Size(max = 50)
     private String email;
 
     @Column(length = 1000)
-    @Size(max = 1000)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -63,7 +58,6 @@ public class Member extends BaseEntity {
     }
 
     @Column(length = 300)
-    @Size(max = 300)
     private String profileImageUrl = "";  // 프로필 사진 경로
 
     @OneToMany(mappedBy = "follow", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -74,7 +68,7 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "followReq", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberFollowReq> followReqList = new ArrayList<>();
-    
+
     @OneToMany(mappedBy = "followRec", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MemberFollowReq> followRecList = new ArrayList<>();
 

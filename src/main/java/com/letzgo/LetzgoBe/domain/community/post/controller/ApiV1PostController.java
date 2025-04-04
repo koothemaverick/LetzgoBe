@@ -38,7 +38,7 @@ public class ApiV1PostController {
     // 해당 사용자가 작성한 게시글 조회
     @GetMapping("/member/{memberId}")
     public ApiResponse<DetailPostDto> getMemberPost(@ModelAttribute PostPage request,
-                                                    @PathVariable("memberId") Long memberId, @LoginUser LoginUserDto loginUser) {
+                                                    @PathVariable("memberId") Long memberId) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(postService.findByMemberId(memberId, pageable)));
     }

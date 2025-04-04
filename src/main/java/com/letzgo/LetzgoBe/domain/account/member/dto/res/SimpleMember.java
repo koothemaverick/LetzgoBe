@@ -1,11 +1,11 @@
-package com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res;
+package com.letzgo.LetzgoBe.domain.account.member.dto.res;
 
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class MemberInfoDto {
+public class SimpleMember {
     private Long userId;
     private String userNickname;
     private String profileImageUrl;
