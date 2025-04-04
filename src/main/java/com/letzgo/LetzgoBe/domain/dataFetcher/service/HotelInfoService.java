@@ -32,7 +32,7 @@ public class HotelInfoService {
         }
     }
 
-    public void getListPageInfo(String ListPageUrl) {
+    private void getListPageInfo(String ListPageUrl) {
         for (int i = 3; i <= 22; i++) {
             try {
                 driver.get(ListPageUrl);
@@ -64,7 +64,7 @@ public class HotelInfoService {
             }
         }
     }
-    public void getDetailPageInfo(String DetailPageUrl, HotelDto hotelDto) {
+    private void getDetailPageInfo(String DetailPageUrl, HotelDto hotelDto) {
         try {
             // 웹페이지 열기
             driver.get(DetailPageUrl);

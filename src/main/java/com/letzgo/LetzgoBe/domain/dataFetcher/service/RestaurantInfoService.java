@@ -26,7 +26,7 @@ public class RestaurantInfoService {
         }
     }
 
-    public void getListPageInfo(String ListPageUrl) {
+    private void getListPageInfo(String ListPageUrl) {
         try {
             driver.get(ListPageUrl);
 
@@ -55,7 +55,7 @@ public class RestaurantInfoService {
 
     }
 
-    public void getDetailPageInfo(List<WebElement> links) {
+    private void getDetailPageInfo(List<WebElement> links) {
         String originalWindow = driver.getWindowHandle();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
@@ -131,8 +131,6 @@ public class RestaurantInfoService {
                         .category(category)
                         .imagePath(imagePath)
                         .build();
-
-                System.out.println(restaurant);
 
                 restaurantRepository.save(restaurant);
             }

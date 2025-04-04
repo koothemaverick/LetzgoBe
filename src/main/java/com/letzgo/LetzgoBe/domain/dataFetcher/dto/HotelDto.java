@@ -8,6 +8,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 public class HotelDto {
+
     String name;
     String location;
     Integer sukbakPrice;

@@ -16,5 +16,8 @@ spring:
 
 schedule:
   use: true
-  cron: 0 12 * * *
-  use-page: 10
+  hotel:
+      use-page: 10
+      cron: 0 0 0 * * *
+  restaurant:
+      cron: 0 0 6 * * *
