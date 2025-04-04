@@ -1,6 +1,5 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.scheduler;
 
-import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Restaurant;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.HotelInfoService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.RestaurantInfoService;
 import lombok.RequiredArgsConstructor;
