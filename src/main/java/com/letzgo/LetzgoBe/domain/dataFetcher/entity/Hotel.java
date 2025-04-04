@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.hotel.entity;
+package com.letzgo.LetzgoBe.domain.dataFetcher.entity;
 
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;

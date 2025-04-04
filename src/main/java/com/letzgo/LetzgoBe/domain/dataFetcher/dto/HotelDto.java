@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.hotel.dto;
+package com.letzgo.LetzgoBe.domain.dataFetcher.dto;
 
 import lombok.*;
 

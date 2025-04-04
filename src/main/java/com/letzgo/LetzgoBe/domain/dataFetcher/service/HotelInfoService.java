@@ -1,8 +1,8 @@
-package com.letzgo.LetzgoBe.domain.hotel.service;
+package com.letzgo.LetzgoBe.domain.dataFetcher.service;
 
-import com.letzgo.LetzgoBe.domain.hotel.dto.HotelDto;
-import com.letzgo.LetzgoBe.domain.hotel.entity.Hotel;
-import com.letzgo.LetzgoBe.domain.hotel.repository.HotelRepository;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.HotelDto;
+import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Hotel;
+import com.letzgo.LetzgoBe.domain.dataFetcher.repository.HotelRepository;
 import lombok.RequiredArgsConstructor;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;

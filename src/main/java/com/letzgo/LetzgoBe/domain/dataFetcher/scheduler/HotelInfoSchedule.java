@@ -1,6 +1,6 @@
-package com.letzgo.LetzgoBe.domain.hotel.scheduler;
+package com.letzgo.LetzgoBe.domain.dataFetcher.scheduler;
 
-import com.letzgo.LetzgoBe.domain.hotel.service.HotelInfoService;
+import com.letzgo.LetzgoBe.domain.dataFetcher.service.HotelInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
