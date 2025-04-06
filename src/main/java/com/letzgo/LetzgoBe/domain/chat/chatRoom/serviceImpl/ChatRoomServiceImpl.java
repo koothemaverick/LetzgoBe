@@ -8,7 +8,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReposit
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.ChatRoomDto;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.MemberInfoDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoom;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
@@ -333,7 +333,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .title(chatRoom.getTitle())
                 .memberCount(chatRoomMembers.size()) // 여기서 변경
                 .chatRoomMembers(chatRoomMembers.stream() // 여기서도 변경
-                        .map(chatRoomMember -> MemberInfoDto.builder()
+                        .map(chatRoomMember -> SimpleMember.builder()
                                 .userId(chatRoomMember.getMember().getId())
                                 .userNickname(chatRoomMember.getMember().getNickname()) // 이제 정상적으로 가져올 수 있음
                                 .profileImageUrl(chatRoomMember.getMember().getProfileImageUrl())

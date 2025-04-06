@@ -31,7 +31,6 @@ public class Comment extends BaseEntity {
     private List<CommentLike> likedMembers = new ArrayList<>();
 
     @Column(length = 1000)
-    @Size(max = 1000)
     private String content;
     private Long superCommentId;
 }

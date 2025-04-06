@@ -3,8 +3,8 @@ package com.letzgo.LetzgoBe.domain.account.member.controller;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberInfo;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberInfo;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -31,25 +31,25 @@ public class ApiV1MemberController {
 
     // 본인 회원정보 조회
     @GetMapping
-    public ApiResponse<MemberInfo> getMyInfo(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<MemberDto> getMyInfo(@LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(memberService.getMyInfo(loginUser));
     }
 
     // 본인 상세회원정보 조회
     @GetMapping("/detail")
-    public ApiResponse<DetailMemberInfo> getMyDetailInfo(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<DetailMemberDto> getMyDetailInfo(@LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(memberService.getMyDetailInfo(loginUser));
     }
 
     // 다른 멤버의 회원정보 조회
     @GetMapping("/{memberId}")
-    public ApiResponse<MemberInfo> getMemberInfo(@PathVariable("memberId") Long memberId) {
+    public ApiResponse<MemberDto> getMemberInfo(@PathVariable("memberId") Long memberId) {
         return ApiResponse.of(memberService.getMemberInfo(memberId));
     }
 
     // 다른 멤버의 상세회원정보 조회
     @GetMapping("/detail/{memberId}")
-    public ApiResponse<DetailMemberInfo> getMemberDetailInfo(@PathVariable("memberId") Long memberId) {
+    public ApiResponse<DetailMemberDto> getMemberDetailInfo(@PathVariable("memberId") Long memberId) {
         return ApiResponse.of(memberService.getMemberDetailInfo(memberId));
     }
 
@@ -69,7 +69,7 @@ public class ApiV1MemberController {
 
     // 회원 검색하기
     @GetMapping("/search")
-    public ApiResponse<MemberInfo> searchMemberInfo(@ModelAttribute MemberPage request, @RequestParam(value = "keyword") String keyword) {
+    public ApiResponse<MemberDto> searchMemberInfo(@ModelAttribute MemberPage request, @RequestParam(value = "keyword") String keyword) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(memberService.searchMemberInfo(pageable, keyword)));
     }

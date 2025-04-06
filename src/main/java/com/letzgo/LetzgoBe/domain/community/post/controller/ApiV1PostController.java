@@ -23,7 +23,7 @@ import java.util.List;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value="/rest-api/v1/post",produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value="/rest-api/v1/post")
 @RequiredArgsConstructor
 public class ApiV1PostController {
     private final PostService postService;
@@ -38,7 +38,7 @@ public class ApiV1PostController {
     // 해당 사용자가 작성한 게시글 조회
     @GetMapping("/member/{memberId}")
     public ApiResponse<DetailPostDto> getMemberPost(@ModelAttribute PostPage request,
-                                                    @PathVariable("memberId") Long memberId, @LoginUser LoginUserDto loginUser) {
+                                                    @PathVariable("memberId") Long memberId) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(postService.findByMemberId(memberId, pageable)));
     }

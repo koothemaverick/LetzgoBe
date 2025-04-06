@@ -5,11 +5,11 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MemberInfo {
+public class MemberDto {
     private Long id;
     private String name;
     private String nickName;
-    private String profileImgUrl;
+    private String profileImageUrl;
     private Long followMemberCount;
     private Long followedMemberCount;
 }

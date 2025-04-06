@@ -1,9 +1,6 @@
 package com.letzgo.LetzgoBe.domain.account.member.dto.res;
 
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
-import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
-import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.MemberInfoDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class DetailMemberInfo {
+public class DetailMemberDto {
     private Long id;
     private String name;
     private String nickName;
@@ -20,11 +17,11 @@ public class DetailMemberInfo {
     private String email;
     private Member.Gender gender;  // 성별
     private LocalDate birthday;
-    private String profileImgUrl;
+    private String profileImageUrl;
     private Long followMemberCount;
     private Long followedMemberCount;
-    private List<MemberInfoDto> followList;
-    private List<MemberInfoDto> followedList;
-    private List<MemberInfoDto> followReqList;
-    private List<MemberInfoDto> followRecList;
+    private List<SimpleMember> followList;
+    private List<SimpleMember> followedList;
+    private List<SimpleMember> followReqList;
+    private List<SimpleMember> followRecList;
 }

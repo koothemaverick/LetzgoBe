@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value="/rest-api/v1/post/comment",produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value="/rest-api/v1/post/comment")
 @RequiredArgsConstructor
 public class ApiV1CommentController {
     private final CommentService commentService;
