@@ -1,8 +1,4 @@
-# 베이스 이미지 설정 (OpenJDK 사용)
-FROM openjdk:21-jdk-slim
-
-# Java 버전 확인 (확인 후 적절한 버전 설치)
-RUN java -version
+FROM amazoncorretto:21-al2023
 
 # 시스템 시간대 설정
 RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
@@ -12,7 +8,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
 WORKDIR /app
 
 # JAR 파일 복사
-COPY build/libs/server-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/LetzgoBe-0.0.1-SNAPSHOT.jar app.jar
 
 # 환경 변수 설정 (Spring 프로파일 & 시간대)
 ENV SPRING_PROFILES_ACTIVE=prod

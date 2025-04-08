@@ -13,7 +13,12 @@ public class LetzgoBeApplication {
 
 	public static void main(String[] args) {
 		// .env 파일 로드
-		Dotenv dotenv = Dotenv.load();
+		Dotenv dotenv = Dotenv.configure()
+				.directory(System.getenv().getOrDefault("DOTENV_PATH", "./")) // 환경변수 있으면 사용, 없으면 로컬 기본
+				.filename(".env")
+				.ignoreIfMalformed() // 에러 방지 옵션
+				.ignoreIfMissing()   // 파일 없을 경우 무시
+				.load();
 		System.setProperty("AWS_ACCESS_KEY_ID", dotenv.get("AWS_ACCESS_KEY_ID"));
 		System.setProperty("AWS_SECRET_ACCESS_KEY", dotenv.get("AWS_SECRET_ACCESS_KEY"));
 		System.setProperty("JWT_SECRET_KEY", dotenv.get("JWT_SECRET_KEY"));
@@ -25,6 +30,7 @@ public class LetzgoBeApplication {
 		System.setProperty("NAVER_CLIENT_SECRET", dotenv.get("NAVER_CLIENT_SECRET"));
 		System.setProperty("HOST_DB", dotenv.get("HOST_DB"));
 		System.setProperty("HOST_RABBITMQ", dotenv.get("HOST_RABBITMQ"));
+		System.setProperty("GOOGLE_API_KEY", dotenv.get("GOOGLE_API_KEY"));
 
 		SpringApplication.run(LetzgoBeApplication.class, args);
 	}

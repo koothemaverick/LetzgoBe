@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://${host.db}:5432/meta_db
+    url: jdbc:postgresql://${HOST_DB}:5432/meta_db
     username: admin
-    password: ${spring.datasource.password}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -17,24 +17,24 @@ spring:
       host: letzgo-redis
       port: 6379
     mongodb:
-      uri: mongodb://admin:${spring.datasource.password}@${host.db}:27017/meta_db?authSource=admin
+      uri: mongodb://admin:${POSTGRES_PASSWORD}@${HOST_DB}:27017/meta_db?authSource=admin
       database: meta_db
     rabbitmq:
-      host: ${host.rabbitmq}
+      host: ${HOST_RABBITMQ}
       port: 5672
       username: admin
-      password: admin
-    messaging:
-      stomp:
-        broker-relay:
-          host: ${host.rabbitmq}  # RabbitMQ 서버 IP
-          port: 61613           # STOMP 기본 포트
-          system-login: admin   # RabbitMQ 로그인 계정
-          system-passcode: ${spring.datasource.password}
-          relay-host: ${host.rabbitmq}
-          relay-port: 61613
-          client-login: admin
-          client-passcode: ${spring.datasource.password}
+      password: ${POSTGRES_PASSWORD}
+  messaging:
+    stomp:
+      broker-relay:
+        host: ${HOST_RABBITMQ}  # RabbitMQ 서버 IP
+        port: 61613           # STOMP 기본 포트
+        system-login: admin   # RabbitMQ 로그인 계정
+        system-passcode: ${POSTGRES_PASSWORD}
+        relay-host: ${HOST_RABBITMQ}
+        relay-port: 61613
+        client-login: admin
+        client-passcode: ${POSTGRES_PASSWORD}
 
 logging:
   level:
