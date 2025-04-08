@@ -13,11 +13,3 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 52MB
-
-schedule:
-  use: true
-  hotel:
-    use-page: 10
-    cron: 0 0 0 * * *
-  restaurant:
-    cron: 0 0 6 * * *
