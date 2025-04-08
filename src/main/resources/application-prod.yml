@@ -23,7 +23,7 @@ spring:
       host: ${HOST_RABBITMQ}
       port: 5672
       username: admin
-      password: admin
+      password: ${POSTGRES_PASSWORD}
   messaging:
     stomp:
       broker-relay:

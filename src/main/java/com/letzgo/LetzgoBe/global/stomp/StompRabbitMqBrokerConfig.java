@@ -18,6 +18,10 @@ public class StompRabbitMqBrokerConfig implements WebSocketMessageBrokerConfigur
     private String host;
     @Value("${spring.messaging.stomp.broker-relay.port}")
     private int port;
+    @Value("${spring.messaging.stomp.broker-relay.system-login}")
+    private String login;
+    @Value("${spring.messaging.stomp.broker-relay.system-passcode}")
+    private String passcode;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -33,10 +37,10 @@ public class StompRabbitMqBrokerConfig implements WebSocketMessageBrokerConfigur
                 .enableStompBrokerRelay("/topic")
                 .setRelayHost(host)
                 .setRelayPort(port)
-                .setClientLogin("admin")
-                .setClientPasscode("admin")
-                .setSystemLogin("admin")
-                .setSystemPasscode("admin");
+                .setClientLogin(login)
+                .setClientPasscode(passcode)
+                .setSystemLogin(login)
+                .setSystemPasscode(passcode);
     }
 
     @Bean
