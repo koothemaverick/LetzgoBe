@@ -6,7 +6,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show-sql: false      # 운영 환경에서는 보통 false로 설정
@@ -14,16 +14,16 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
-      host: letzgo-redis
+      host: redis_container
       port: 6379
     mongodb:
       uri: mongodb://admin:${POSTGRES_PASSWORD}@${HOST_DB}:27017/meta_db?authSource=admin
       database: meta_db
-    rabbitmq:
-      host: ${HOST_RABBITMQ}
-      port: 5672
-      username: admin
-      password: ${POSTGRES_PASSWORD}
+  rabbitmq:
+    host: ${HOST_RABBITMQ}
+    port: 5672
+    username: admin
+    password: ${POSTGRES_PASSWORD}
   messaging:
     stomp:
       broker-relay:
@@ -31,8 +31,6 @@ spring:
         port: 61613           # STOMP 기본 포트
         system-login: admin   # RabbitMQ 로그인 계정
         system-passcode: ${POSTGRES_PASSWORD}
-        relay-host: ${HOST_RABBITMQ}
-        relay-port: 61613
         client-login: admin
         client-passcode: ${POSTGRES_PASSWORD}
 

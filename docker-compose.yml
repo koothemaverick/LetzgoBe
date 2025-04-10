@@ -51,7 +51,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
-# Mac M2칩
+## Mac M2칩
 #  selenium:
 #    image: seleniarm/standalone-chromium:latest
 #    container_name: selenium
@@ -94,6 +94,8 @@ volumes:
 #      timeout: 3s
 #      retries: 5
 #      start_period: 3s
+#    networks:
+#      - ec2-user_default
 #
 #  selenium:
 #    image: selenium/standalone-chrome:latest
@@ -101,6 +103,8 @@ volumes:
 #    ports:
 #      - "4444:4444"  # WebDriver remote port
 #    shm_size: 2g  # 크롬이 Out of memory 안 나도록 공유 메모리 증가
+#    networks:
+#      - ec2-user_default
 #
 #  app:
 #    image: junhui9789/letzgo-app:latest
@@ -120,6 +124,29 @@ volumes:
 #        condition: service_healthy  # Redis가 정상 작동할 때까지 대기
 #      selenium:
 #        condition: service_started
+#    networks:
+#      - ec2-user_default
+#      - proxy-network
+#
+#  nginx-proxy-manager:
+#    image: 'jc21/nginx-proxy-manager:latest'
+#    container_name: nginx-proxy-manager
+#    restart: unless-stopped
+#    ports:
+#      - '80:80'    # HTTP 포트
+#      - '443:443'  # HTTPS 포트
+#      - '81:81'    # 관리자 웹 인터페이스 포트
+#    volumes:
+#      - ./data:/data
+#      - ./letsencrypt:/etc/letsencrypt
+#    networks:
+#      - proxy-network
 #
 #volumes:
 #  redis-data:
+#
+#networks:
+#  ec2-user_default:
+#    driver: bridge
+#  proxy-network:
+#    driver: bridge
