@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ReturnCode {
     SUCCESS(000, "SUECCESS_001", "요청에 성공하였습니다."),
+    INTERNAL_SERVER_ERROR(500, "INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다."),
 
     // Page 관련 에러
     PAGE_REQUEST_FAIL(401, "PAGE_001", "적절하지 않은 페이지 요청입니다."),

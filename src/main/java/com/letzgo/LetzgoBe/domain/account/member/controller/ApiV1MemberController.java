@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/rest-api/v1/member")
@@ -55,8 +56,10 @@ public class ApiV1MemberController {
 
     // 회원정보 수정
     @PutMapping
-    public ApiResponse<String> updateMemberInfo(@RequestBody @Valid MemberForm memberForm, @LoginUser LoginUserDto loginUser) {
-        memberService.updateMember(memberForm, loginUser);
+    public ApiResponse<String> updateMemberInfo(@RequestPart(value = "memberForm") @Valid MemberForm memberForm,
+                                                @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
+                                                @LoginUser LoginUserDto loginUser) {
+        memberService.updateMember(memberForm, imageFile, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 

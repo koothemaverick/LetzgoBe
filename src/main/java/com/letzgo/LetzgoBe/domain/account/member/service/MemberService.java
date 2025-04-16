@@ -7,6 +7,7 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
     // 회원가입
@@ -25,7 +26,7 @@ public interface MemberService {
     DetailMemberDto getMemberDetailInfo(Long memberId);
 
     // 회원정보 수정
-    void updateMember(MemberForm memberForm, LoginUserDto loginUser);
+    void updateMember(MemberForm memberForm, MultipartFile imageFile, LoginUserDto loginUser);
 
     // 회원탈퇴
     void deleteMember(LoginUserDto loginUser);

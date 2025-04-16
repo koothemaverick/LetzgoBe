@@ -20,6 +20,7 @@ import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
+import com.letzgo.LetzgoBe.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,6 +47,7 @@ public class MemberServiceImpl implements MemberService {
     private final ChatRoomService chatRoomService;
     private final MemberFollowReqRepository memberFollowReqRepository;
     private final MemberFollowRepository memberFollowRepository;
+    private final S3Service s3Service;
 
     // 회원가입
     @Override
@@ -102,7 +106,26 @@ public class MemberServiceImpl implements MemberService {
     // 회원정보 수정
     @Override
     @Transactional
-    public void updateMember(MemberForm memberForm, LoginUserDto loginUser) {
+    public void updateMember(MemberForm memberForm, MultipartFile imageFile, LoginUserDto loginUser) {
+        /// 기존 이미지 삭제 후 입력 받은 이미지 S3에 저장
+        String imageUrl = loginUser.getProfileImageUrl(); // 기본적으로 기존 이미지 URL을 사용
+        if (imageFile != null && !imageFile.isEmpty()) {
+            // 기존 이미지 없으면 바로 새로운 이미지 저장
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                s3Service.deleteFile(imageUrl);
+            }
+            try {
+                imageUrl = s3Service.uploadFile(imageFile, "profile-image");
+            } catch (IOException e) {
+                throw new ServiceException(ReturnCode.INTERNAL_ERROR);
+            }
+        } else {
+            // imageFile이 없으면 기존 이미지가 있다면 삭제한다
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                s3Service.deleteFile(imageUrl); // 기존 이미지 삭제
+            }
+            imageUrl = null;
+        }
         if (memberForm.getName() != null) {
             loginUser.setName(memberForm.getName());
         }
@@ -124,6 +147,7 @@ public class MemberServiceImpl implements MemberService {
         if (memberForm.getBirthday() != null) {
             loginUser.setBirthday(memberForm.getBirthday());
         }
+        loginUser.setProfileImageUrl(imageUrl);
         // LoginUserDto를 Member 엔티티로 변환
         Member memberEntity = loginUser.ConvertToMember();
         memberRepository.save(memberEntity);
@@ -174,11 +198,11 @@ public class MemberServiceImpl implements MemberService {
         if (already_requested) {
             throw new ServiceException(ReturnCode.ALREADY_REQUESTED);
         }
-        MemberFollowReq followRequest = MemberFollowReq.builder()
+        MemberFollowReq memberFollowReq = MemberFollowReq.builder()
                 .followReq(followReq)
                 .followRec(followRec)
                 .build();
-        memberFollowReqRepository.save(followRequest);
+        memberFollowReqRepository.save(memberFollowReq);
     }
 
     // 팔로우 요청 취소하기
@@ -188,9 +212,9 @@ public class MemberServiceImpl implements MemberService {
         Member followReq = loginUser.ConvertToMember();
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        MemberFollowReq followRequest = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
+        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
-        memberFollowReqRepository.delete(followRequest);
+        memberFollowReqRepository.delete(memberFollowReq);
     }
 
     // 팔로우 요청 수락하기
@@ -200,14 +224,14 @@ public class MemberServiceImpl implements MemberService {
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member receiver = loginUser.ConvertToMember();
-
-        // 요청받은 사용자의 followRecList에서 요청자 제거 및 followedList에 추가
-        if (receiver.getFollowRecList().removeIf(req -> req.getFollowReq().getId().equals(memberId))) {
-            receiver.getFollowList().add(new MemberFollow(requester, receiver));
-        } else {
-            throw new ServiceException(ReturnCode.REQUEST_NOT_FOUND);
-        }
-        memberRepository.save(receiver);
+        MemberFollowReq followReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
+                .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
+        memberFollowReqRepository.delete(followReq);
+        MemberFollow memberFollow = MemberFollow.builder()
+                .follow(requester)
+                .followed(receiver)
+                .build();
+        memberFollowRepository.save(memberFollow);
     }
 
     // 팔로우 요청 거절하기
@@ -217,13 +241,9 @@ public class MemberServiceImpl implements MemberService {
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member receiver = loginUser.ConvertToMember();
-
-        // 요청받은 사용자의 followRecList에서 요청자 제거
-        if (receiver.getFollowRecList().removeIf(req -> req.getFollowReq().getId().equals(memberId))) {
-        } else {
-            throw new ServiceException(ReturnCode.REQUEST_NOT_FOUND);
-        }
-        memberRepository.save(receiver);
+        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
+                .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
+        memberFollowReqRepository.delete(memberFollowReq);
     }
 
     // 팔로우 취소하기
@@ -245,13 +265,9 @@ public class MemberServiceImpl implements MemberService {
         Member follow = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member followed = loginUser.ConvertToMember();
-
-        // 요청받은 사용자의 followedList에서 요청자 제거
-        if (followed.getFollowedList().removeIf(req -> req.getFollow().getId().equals(memberId))) {
-        } else {
-            throw new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND);
-        }
-        memberRepository.save(followed);
+        MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
+                .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
+        memberFollowRepository.delete(memberFollow);
     }
 
     // 요청 페이지 수 제한
