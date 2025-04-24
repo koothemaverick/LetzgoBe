@@ -25,13 +25,13 @@ public class ApiV1OAuth2Controller {
 
     // 소셜 로그인 리디렉션 URL
     @GetMapping("/redirect-url/{provider}")
-    public String redirectToProvider(@PathVariable("provider") String provider) {
+    public ApiResponse<String> redirectToProvider(@PathVariable("provider") String provider) {
         String authUrl = oAuth2Service.getAuthUrl(provider);
-        return "redirect:" + authUrl;
+        return ApiResponse.of(authUrl);
     }
 
     // 소셜 로그인
-    @PostMapping("/{provider}")
+    @GetMapping("/{provider}")
     public ApiResponse<Auth> socialLogin(@PathVariable("provider") String provider, @RequestParam(value = "code") String code) {
         Map<String, String> socialUser = oAuth2Service.getUserInfo(provider, code);
         String email = socialUser.get("email");
