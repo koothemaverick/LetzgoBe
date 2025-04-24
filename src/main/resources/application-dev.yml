@@ -55,6 +55,9 @@ app:
         tokenUri: "https://kauth.kakao.com/oauth/token"
         userInfoUri: "https://kapi.kakao.com/v2/user/me"
 
+frontend:
+  oauth-redirect: http://localhost:5173/login
+
 logging:
   level:
     org.springframework.web: DEBUG
