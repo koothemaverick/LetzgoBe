@@ -31,7 +31,7 @@ public class ApiV1OAuth2Controller {
     }
 
     // 소셜 로그인
-    @GetMapping("/{provider}")
+    @PostMapping("/{provider}")
     public ApiResponse<Auth> socialLogin(@PathVariable("provider") String provider, @RequestParam(value = "code") String code) {
         Map<String, String> socialUser = oAuth2Service.getUserInfo(provider, code);
         String email = socialUser.get("email");
