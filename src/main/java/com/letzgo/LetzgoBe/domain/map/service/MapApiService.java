@@ -61,15 +61,22 @@ public class MapApiService {
                 .await(); //무료사용한도:5,000번/한달 그이상 호출시 과금됨
         log.info("구글API(PlaceAPI(기존)-텍스트 검색) 호출됨");
 
-
         List<PlaceDto> placeDtos = new ArrayList<>();
+
         for (int i = 0; i < num; i++) {
             if ((apiResponse.results[i] != null) && (i < 20)) {
+                PlacesSearchResult result = apiResponse.results[i];
+
+                String photoRef = null;
+                if (result.photos != null && result.photos.length > 0) {
+                    photoRef = result.photos[0].photoReference;
+                }
+
                 PlaceDto nearPlace = PlaceDto.builder()
                         .name(apiResponse.results[i].name)
                         .address(apiResponse.results[i].formattedAddress)
                         .placeId(apiResponse.results[i].placeId)
-                        .placePhoto(apiResponse.results[i].photos[0].photoReference)
+                        .placePhoto(photoRef)
                         .lat(apiResponse.results[i].geometry.location.lat)
                         .lng(apiResponse.results[i].geometry.location.lng)
                         .build();
