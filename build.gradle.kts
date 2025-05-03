@@ -64,13 +64,18 @@ dependencies {
 	implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 	implementation("io.github.cdimascio:dotenv-java:2.2.0")
 
-	// rabbitMQ
-	implementation("org.springframework.boot:spring-boot-starter-websocket")
-	implementation("org.springframework.boot:spring-boot-starter-amqp")
-	testImplementation("org.springframework.amqp:spring-rabbit-test")
-
 	// MongoDB
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+
+	// kafka
+	implementation("org.springframework.kafka:spring-kafka")
+
+	// fcm
+	implementation("com.squareup.okhttp3:okhttp:4.12.0") // 최신 안정 버전
+	implementation("com.google.auth:google-auth-library-oauth2-http:1.19.0")
+
+	// Websocket
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 tasks.withType<Test> {

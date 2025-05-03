@@ -1,5 +1,7 @@
 package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
@@ -18,6 +20,7 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
+import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,6 +52,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberFollowReqRepository memberFollowReqRepository;
     private final MemberFollowRepository memberFollowRepository;
     private final S3Service s3Service;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     // 회원가입
     @Override
@@ -203,6 +209,19 @@ public class MemberServiceImpl implements MemberService {
                 .followRec(followRec)
                 .build();
         memberFollowReqRepository.save(memberFollowReq);
+        // 팔로우 요청 이벤트 생성
+        Notification notification = Notification.builder()
+                .receiverId(followRec.getId())
+                .objectId(memberFollowReq.getId())
+                .content(loginUser.getName() + "님이 팔로우를 요청하였습니다")
+                .targetObject(Notification.TargetObject.Follow)
+                .build();
+        try {
+            String message = objectMapper.writeValueAsString(notification);
+            kafkaTemplate.send("follow-topic", message);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize Notification: {}", e.getMessage());
+        }
     }
 
     // 팔로우 요청 취소하기
@@ -232,6 +251,19 @@ public class MemberServiceImpl implements MemberService {
                 .followed(receiver)
                 .build();
         memberFollowRepository.save(memberFollow);
+        // 팔로우 수락 이벤트 생성
+        Notification notification = Notification.builder()
+                .receiverId(memberId)
+                .objectId(memberFollow.getId())
+                .content(loginUser.getName() + "님이 팔로우 요청을 수락하였습니다")
+                .targetObject(Notification.TargetObject.Follow)
+                .build();
+        try {
+            String message = objectMapper.writeValueAsString(notification);
+            kafkaTemplate.send("follow-topic", message);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize Notification: {}", e.getMessage());
+        }
     }
 
     // 팔로우 요청 거절하기
@@ -254,7 +286,7 @@ public class MemberServiceImpl implements MemberService {
         Member followed = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
-                .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
+                .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOW_NOT_FOUND));
         memberFollowRepository.delete(memberFollow);
     }
 

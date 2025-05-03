@@ -74,6 +74,9 @@ public enum ReturnCode {
     INVALID_KICK_MEMBER(404, "CHATROOM_005", "강퇴할 수 없는 사용자입니다."),
     INVALID_DELEGATE_MEMBER(404, "CHATROOM_006", "위임할 수 없는 사용자입니다."),
 
+    // ChatRoomMember 관련 에러
+    CHATROOM_MEMBER_NOT_FOUND(404, "CHATROOM_001", "채팅방을 찾을 수 없습니다."),
+
     // ChatMessage 관련 에러
     CHATMESSAGE_NOT_FOUND(404, "CHATMESSAGE_001", "채팅 메시지를 찾을 수 없습니다."),
 
@@ -107,6 +110,7 @@ public enum ReturnCode {
     REQUEST_NOT_FOUND(404, "FOLLOW_002", "팔로우 요청을 찾을 수 없습니다."),
     ALREADY_FOLLOW(404, "FOLLOW_003", "이미 팔로우 중인 사용자입니다."),
     FOLLOWER_NOT_FOUND(404, "FOLLOW_004", "팔로워를 찾을 수 없습니다."),
+    FOLLOW_NOT_FOUND(404, "FOLLOW_005", "팔로우한 사용자 찾을 수 없습니다."),
 
     //board 관련 에러
     BOARD_NOT_FOUND(400,"BOARD_001","게시글을 찾을 수 없습니다."),
@@ -115,11 +119,11 @@ public enum ReturnCode {
     BOARDCOMMENT_NOT_FOUND(400,"BOARDCOMMENT_001","게시글의 댓글을 찾을 수 없습니다."),
 
     // 알림 관련 에러
-    ALERT_NOT_FOUND(404, "ALERT_001", "해당 알림을 찾을 수 없습니다."),
-    MAP_TO_JSON_FAILED(500, "ALERT_002", "맵을 JSON으로 변환하는데 실패했습니다."),
-    NOT_AUTHORIZED(401, "ALERT_003", "권한이 없습니다."),
-    NAVI_VALIDATE_ERROR(400, "ALERT_004", "navigationData에 필수 키가 없습니다"),
-    ARGS_VALIDATE_ERROR(400, "ALERT_005", "메시지 인자가 부족합니다."),
+    NOTIFICATION_NOT_FOUND(404, "NOTIFICATION_001", "해당 알림을 찾을 수 없습니다."),
+    MAP_TO_JSON_FAILED(500, "NOTIFICATION_002", "맵을 JSON으로 변환하는데 실패했습니다."),
+    NOT_AUTHORIZED(401, "NOTIFICATION_003", "권한이 없습니다."),
+    NAVI_VALIDATE_ERROR(400, "NOTIFICATION_004", "navigationData에 필수 키가 없습니다"),
+    ARGS_VALIDATE_ERROR(400, "NOTIFICATION_005", "메시지 인자가 부족합니다."),
 
     // Business 에러 (500번대)
     INTERNAL_ERROR(500, "SYS_001", "내부 시스템 에러"),

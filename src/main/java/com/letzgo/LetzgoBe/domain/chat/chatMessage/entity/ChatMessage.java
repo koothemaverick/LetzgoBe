@@ -13,6 +13,7 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,5 +36,6 @@ public class ChatMessage extends BaseEntity {
     @Column(columnDefinition = "jsonb") // PostgreSQL의 jsonb 타입 사용
     private List<String> imageUrls;
 
-    private Long readCount;
+    @OneToMany(mappedBy = "chatMessage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatMessageRead> chatMessageReads = new ArrayList<>();
 }

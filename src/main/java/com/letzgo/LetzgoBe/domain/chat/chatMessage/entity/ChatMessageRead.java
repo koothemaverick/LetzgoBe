@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.chat.chatRoom.entity;
+package com.letzgo.LetzgoBe.domain.chat.chatMessage.entity;
 
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
@@ -9,20 +9,23 @@ import jakarta.persistence.ManyToOne;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Setter
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @SuperBuilder
-public class ChatRoomMember extends BaseEntity {
+public class ChatMessageRead extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "chat_message_id")
+    private ChatMessage chatMessage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
     private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
-
-    private Long lastReadMessageId;
+    private LocalDateTime readAt;
 }
+

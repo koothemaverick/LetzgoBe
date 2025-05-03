@@ -19,20 +19,6 @@ spring:
     mongodb:
       uri: mongodb://admin:${POSTGRES_PASSWORD}@${HOST_DB}:27017/meta_db?authSource=admin
       database: meta_db
-  rabbitmq:
-    host: ${HOST_RABBITMQ}
-    port: 5672
-    username: admin
-    password: ${POSTGRES_PASSWORD}
-  messaging:
-    stomp:
-      broker-relay:
-        host: ${HOST_RABBITMQ}  # RabbitMQ 서버 IP
-        port: 61613           # STOMP 기본 포트
-        system-login: admin   # RabbitMQ 로그인 계정
-        system-passcode: ${POSTGRES_PASSWORD}
-        client-login: admin
-        client-passcode: ${POSTGRES_PASSWORD}
 
 app:
   oauth2:
@@ -58,9 +44,67 @@ app:
 frontend:
   oauth-redirect: http://localhost:5173/login
 
+fcm:
+  service-account-file: /app/env/fcm-service-account.json
+  project-id: 30409426097
+
 logging:
   level:
     org.springframework.web: INFO
     team.letzgo: INFO
     org.hibernate.SQL: WARN
     org.hibernate.type.descriptor.sql: WARN
+
+
+
+#RedPanda
+
+#version: '3.8'
+#
+#services:
+#  redpanda:
+#    image: docker.redpanda.com/redpandadata/redpanda:latest
+#    container_name: redpanda-0
+#    restart: unless-stopped
+#    command:
+#      - redpanda
+#      - start
+#      - --mode
+#      - dev-container
+#      - --smp
+#      - "1"
+#      - --memory
+#      - 512M
+#      - --reserve-memory
+#      - 256M
+#      - --default-log-level=warn
+#      - --kafka-addr
+#      - PLAINTEXT://0.0.0.0:9092
+#      - --advertise-kafka-addr
+#      - PLAINTEXT://175.45.192.38:9092
+#      - --pandaproxy-addr
+#      - 0.0.0.0:8082
+#      - --advertise-pandaproxy-addr
+#      - 175.45.192.38:8082
+#      - --schema-registry-addr
+#      - 0.0.0.0:8081
+#      - --rpc-addr
+#      - 0.0.0.0:33145
+#      - --advertise-rpc-addr
+#      - 175.45.192.38:33145
+#    ports:
+#      - "9092:9092"     # Kafka API
+#      - "8081:8081"     # Schema Registry
+#      - "8082:8082"     # PandaProxy
+#      - "9644:9644"     # Admin API
+#    volumes:
+#      - redpanda_data:/var/lib/redpanda/data
+#    networks:
+#      - redpanda_network
+#
+#volumes:
+#  redpanda_data:
+#
+#networks:
+#  redpanda_network:
+#    driver: bridge

@@ -19,20 +19,6 @@ spring:
     mongodb:
       uri: mongodb://admin:admin@localhost:27017/meta_db?authSource=admin
       database: meta_db
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: admin
-  messaging:
-    stomp:
-      broker-relay:
-        host: localhost  # RabbitMQ 서버 IP
-        port: 61613           # STOMP 기본 포트
-        system-login: admin   # RabbitMQ 로그인 계정
-        system-passcode: admin
-        client-login: admin
-        client-passcode: admin
 
 app:
   oauth2:
@@ -57,6 +43,10 @@ app:
 
 frontend:
   oauth-redirect: http://localhost:5173/login
+
+fcm:
+  service-account-file: classpath:fcm-service-account.json
+  project-id: 30409426097
 
 logging:
   level:

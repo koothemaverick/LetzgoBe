@@ -20,6 +20,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     // 해당 채팅방의 메시지 리스트 조회
     List<ChatMessage> findByChatRoom(ChatRoom chatRoom);
 
+    // 해당 채팅방의 메시지ID 리스트 조회
+    @Query("SELECT m.id FROM ChatMessage m WHERE m.chatRoom.id = :chatRoomId")
+    List<Long> findAllMessageIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+
     // 가장 최근 메시지 조회
     ChatMessage findTopByChatRoomIdOrderByIdDesc(Long chatRoomId);
 

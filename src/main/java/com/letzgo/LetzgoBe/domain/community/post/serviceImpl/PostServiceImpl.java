@@ -1,5 +1,7 @@
 package com.letzgo.LetzgoBe.domain.community.post.serviceImpl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
@@ -15,6 +17,7 @@ import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostSaveRepository;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
+import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
@@ -23,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,12 +40,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final ApplicationEventPublisher publisher;
     private final CommentService commentService;
     private final S3Service s3Service;
-    private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
-    private final PostSaveRepository postSaveRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
@@ -130,6 +133,19 @@ public class PostServiceImpl implements PostService {
         }
         PostLike postLike = new PostLike(loginUser.ConvertToMember(), post);
         post.getLikedMembers().add(postLike);
+        // 게시글 좋아요 이벤트 생성
+        Notification notification = Notification.builder()
+                .receiverId(post.getMember().getId())
+                .objectId(postId)
+                .content(loginUser.getName() + "님이 게시글에 좋아요를 눌렀습니다")
+                .targetObject(Notification.TargetObject.Post)
+                .build();
+        try {
+            String message = objectMapper.writeValueAsString(notification);
+            kafkaTemplate.send("comment-topic", message);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize Notification: {}", e.getMessage());
+        }
     }
 
     // 게시글 좋아요 취소

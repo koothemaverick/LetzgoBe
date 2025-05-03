@@ -1,11 +1,16 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.eventListener.ChatMessageCreatedEvent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
@@ -16,10 +21,11 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
+import com.letzgo.LetzgoBe.global.webSocket.ChatWebSocketHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,10 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,12 +44,33 @@ import java.util.stream.Collectors;
 public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final MemberRepository memberRepository;
     private final MessageContentRepository messageContentRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
+    private final ApplicationEventPublisher eventPublisher;
 
-    // 해당 채팅방의 메시지 실시간 조회 시작
+    // 메시지 읽음 처리
+    @Override
+    @Transactional
+    public void readChatMessage(Long messageId, Long memberId) {
+        ChatMessage chatMessage = chatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
+        boolean alreadyRead = chatMessage.getChatMessageReads().stream()
+                .anyMatch(read -> read.getMember().getId().equals(memberId));
+        if (!alreadyRead) {
+            ChatMessageRead readRecord = ChatMessageRead.builder()
+                    .chatMessage(chatMessage)
+                    .member(memberRepository.findById(memberId)
+                            .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND)))
+                    .readAt(LocalDateTime.now())
+                    .build();
+            chatMessageReadRepository.save(readRecord);
+        }
+    }
+
+    // 해당 채팅방의 이전 메시지 가져오기
     @Override
     @Transactional
     public Page<ChatMessageDto> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
@@ -58,8 +83,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
+
         // 해당 채팅방 내의 모든 메시지 읽음 처리 & 해당 채팅방 메시지 가져오기
-        readAllChatMessages(loginUser.getId(), chatRoom, chatRoomId);
+        readAllChatMessages(loginUser.getId(), chatRoomId);
         Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
 
         // MongoDB에서 메시지 내용 불러오기
@@ -73,7 +99,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         message -> Long.parseLong(message.getId()),
                         message -> Objects.requireNonNullElse(message.getContent(), "") // null이면 빈 문자열 처리
                 ));
-
         return chatMessages.map(chatMessage -> {
             String content = messageContentMap.getOrDefault(chatMessage.getId(), ""); // 없으면 빈 문자열
             return convertToChatMessageDto(chatMessage, content);
@@ -93,6 +118,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
+
         // 채팅방 내 모든 메시지 ID 조회
         Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
         List<String> stringMessageIds = chatMessages.stream()
@@ -118,29 +144,29 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     return convertToChatMessageDto(chatMessage, content);
                 })
                 .collect(Collectors.toList());
-
         return new PageImpl<>(chatMessageDtos, pageable, chatMessageDtos.size());
     }
 
     // 해당 채팅방에서 메시지 생성
     @Override
     @Transactional
-    public void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, LoginUserDto loginUser) {
+    public void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
 
         // 채팅방 참여 멤버만 메시지 생성 가능
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(member.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
-        Long inactiveMemberNum = countInactiveMembers(chatRoomId);
+        // 메시지 저장
         ChatMessage chatMessage = ChatMessage.builder()
-                .member(loginUser.ConvertToMember())
+                .member(member)
                 .chatRoom(chatRoom)
-                .readCount(inactiveMemberNum)
                 .build();
         chatMessageRepository.save(chatMessage);
 
@@ -152,14 +178,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .build();
         messageContentRepository.save(messageContent);
 
-        rabbitTemplate.convertAndSend("amq.topic", "chatRoom" + chatRoomId + "MessageCreated",
-                convertToChatMessageDto(chatMessage, messageContent.getContent()));
+        // 메시지 보낸 사람은 자동으로 "읽음" 처리
+        ChatMessageRead readRecord = ChatMessageRead.builder()
+                .chatMessage(chatMessage)
+                .member(member)
+                .readAt(LocalDateTime.now())
+                .build();
+        chatMessageReadRepository.save(readRecord);
     }
 
     // 해당 채팅방에서 이미지 메시지 생성
     @Override
     @Transactional
-    public ChatMessageDto writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
@@ -170,14 +201,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
-        if (imageFiles == null || imageFiles.isEmpty()) {
+        // 이미지 파일 검증
+        if (imageFiles == null || imageFiles.isEmpty() || imageFiles.size() > 5) {
             throw new ServiceException(ReturnCode.FILE_UPLOAD_ERROR);
         }
-
-        if (imageFiles.size() > 5) {
-            throw new ServiceException(ReturnCode.FILE_UPLOAD_ERROR);
-        }
-
         List<String> imageUrls = new ArrayList<>();
         for (MultipartFile imageFile : imageFiles) {
             if (!imageFile.isEmpty()) {
@@ -190,15 +217,26 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
 
-        Long inactiveMemberNum = countInactiveMembers(chatRoomId);
+        // 채팅 메시지 생성
         ChatMessage chatMessage = ChatMessage.builder()
                 .member(loginUser.ConvertToMember())
                 .chatRoom(chatRoom)
                 .imageUrls(imageUrls)
-                .readCount(inactiveMemberNum)
                 .build();
         chatMessageRepository.save(chatMessage);
-        return convertToChatMessageDto(chatMessage, null);
+
+        // 보낸 사람은 바로 읽음 처리
+        Member sender = loginUser.ConvertToMember();
+        ChatMessageRead readRecord = ChatMessageRead.builder()
+                .chatMessage(chatMessage)
+                .member(sender)
+                .readAt(LocalDateTime.now())
+                .build();
+        chatMessageReadRepository.save(readRecord);
+
+        // 메시지 생성 이벤트 발행
+        ChatMessageDto chatMessageDto = convertToChatMessageDto(chatMessage, null);
+        eventPublisher.publishEvent(new ChatMessageCreatedEvent(chatRoomId, chatMessageDto));
     }
 
     // 해당 메시지 삭제
@@ -206,11 +244,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Transactional
     public void deleteChatMessage(Long messageId, LoginUserDto loginUser) {
         ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
-        // 작성자만 삭제 가능
         if (!chatMessage.getMember().getId().equals(loginUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
-
         if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {
             s3Service.deleteAllFile(chatMessage.getImageUrls());
         }
@@ -235,18 +271,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageRepository.deleteAll(messages);
     }
 
-    // 해당 채팅방의 메시지 실시간 조회 중단
-    @Override
-    @Transactional
-    public void updateLastReadMessage(Long chatRoomId, LoginUserDto loginUser) {
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
-        chatRoomMember.setActive(false);
-
-        ChatMessage lastReadMessage = chatMessageRepository.findTopByChatRoomIdOrderByIdDesc(chatRoomId);
-        chatRoomMember.setLastReadMessageId(lastReadMessage != null ? lastReadMessage.getId() : null);
-        chatRoomMemberRepository.save(chatRoomMember);
-    }
-
     // 해당 멤버가 작성한 모든 메시지 삭제
     @Override
     @Transactional
@@ -265,44 +289,41 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     // 해당 채팅방 내의 모든 메시지 읽음 처리
     @Transactional
-    public void readAllChatMessages(Long currentMemberId, ChatRoom chatRoom, Long chatRoomId){
-        ChatRoomMember chatRoomMember = chatRoom.getChatRoomMembers().stream()
-                .filter(member -> member.getMember().getId().equals(currentMemberId))
-                .findFirst()
+    public void readAllChatMessages(Long memberId, Long chatRoomId) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
 
-        // 채팅방 미참여중인 멤버가 참여 했을때만 실행
-        if (!chatRoomMember.isActive()) {
-            Long lastReadMessageId = chatRoomMember.getLastReadMessageId();
-            List<ChatMessage> chatMessages;
-            if (lastReadMessageId == null) {
-                // 처음 들어오는 경우, 모든 메시지의 readCount -1 처리
-                chatMessages = chatMessageRepository.findByChatRoom(chatRoom);
-            } else {
-                // 마지막으로 읽은 메시지 이후에 생성된 메시지들만 readCount -1 처리
-                chatMessages = chatMessageRepository.findByChatRoomIdAndIdGreaterThan(chatRoomId, lastReadMessageId);
-            }
-            List<ChatMessage> updatedMessages = chatMessages.stream()
-                    .peek(chatMessage -> {
-                        if (chatMessage.getReadCount() > 0) {
-                            chatMessage.setReadCount(chatMessage.getReadCount() - 1);
-                        }
-                    })
-                    .collect(Collectors.toList());
-            chatMessageRepository.saveAll(updatedMessages);
+        // 채팅방의 모든 메시지 ID 조회 (ID만 가져와서 가볍게 처리)
+        List<Long> messageIds = chatMessageRepository.findAllMessageIdsByChatRoomId(chatRoomId);
+        if (messageIds.isEmpty()) {
+            return; // 메시지가 없으면 처리할 게 없음
         }
-        chatRoomMember.setActive(true);
 
-        // 마지막으로 읽은 메시지ID 초기화
-        ChatMessage lastReadMessage = chatMessageRepository.findTopByChatRoomIdOrderByIdDesc(chatRoomId);
-        chatRoomMember.setLastReadMessageId(lastReadMessage != null ? lastReadMessage.getId() : null);
+        // 이미 읽은 메시지 ID들 조회
+        List<Long> alreadyReadMessageIds = chatMessageReadRepository.findMessageIdsByMemberIdAndChatRoomId(memberId, chatRoomId);
+
+        // 아직 읽지 않은 메시지 ID 추출
+        List<Long> unreadMessageIds = messageIds.stream()
+                .filter(id -> !alreadyReadMessageIds.contains(id))
+                .toList();
+
+        // 읽음 기록 저장
+        List<ChatMessageRead> readRecords = (List<ChatMessageRead>) unreadMessageIds.stream()
+                .map(messageId -> ChatMessageRead.builder()
+                        .chatMessage(ChatMessage.builder().id(messageId).build())
+                        .member(member)
+                        .readAt(LocalDateTime.now())
+                        .build())
+                .toList();
+        chatMessageReadRepository.saveAll(readRecords);
+
+        // chatRoomMember 상태 업데이트 (lastReadMessageId)
+        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(chatRoomId, memberId);
+        Long lastReadMessageId = messageIds.stream()
+                .max(Long::compareTo)
+                .orElse(null);
+        chatRoomMember.setLastReadMessageId(lastReadMessageId);
         chatRoomMemberRepository.save(chatRoomMember);
-    }
-
-    // 해당 채팅방에 실시간 참여중이 아닌 인원수(lastReadMessageId=null인 chatRoomMember 인원수)
-    @Transactional(readOnly = true)
-    public Long countInactiveMembers(Long chatRoomId){
-        return chatRoomMemberRepository.countInActiveMembers(chatRoomId);
     }
 
     // 요청 페이지 수 제한
@@ -315,6 +336,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     // ChatMessage를 ChatMessageDto로 변환
     private ChatMessageDto convertToChatMessageDto(ChatMessage chatMessage, String content) {
+        Long readMemberCount = chatMessageReadRepository.countByChatMessageId(chatMessage.getId());
+        int totalMemberCount = chatMessage.getChatRoom().getChatRoomMembers().size();
+        Long unreadCount = (long) totalMemberCount - readMemberCount;
         return ChatMessageDto.builder()
                 .id(chatMessage.getId())
                 .memberId(chatMessage.getMember().getId())
@@ -322,7 +346,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .profileImageUrl(chatMessage.getMember().getProfileImageUrl())
                 .content(content)
                 .imageUrls(chatMessage.getImageUrls())
-                .readCount(chatMessage.getReadCount())
+                .readCount(unreadCount)
                 .createdAt(chatMessage.getCreatedAt())
                 .build();
     }
