@@ -10,8 +10,13 @@ import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.account.oauth2.service.OAuth2Service;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Map;
 
 @RestController
@@ -23,37 +28,56 @@ public class ApiV1OAuth2Controller {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
 
+    @Value("${frontend.oauth-redirect}")
+    private String frontendRedirect;
+
     // 소셜 로그인 리디렉션 URL
     @GetMapping("/redirect-url/{provider}")
-    public String redirectToProvider(@PathVariable("provider") String provider) {
+    public ApiResponse<String> redirectToProvider(@PathVariable("provider") String provider) {
         String authUrl = oAuth2Service.getAuthUrl(provider);
-        return "redirect:" + authUrl;
+        return ApiResponse.of(authUrl);
     }
 
     // 소셜 로그인
     @GetMapping("/{provider}")
-    public ApiResponse<Auth> socialLogin(@PathVariable("provider") String provider, @RequestParam(value = "code") String code) {
+    public ResponseEntity<Void> socialLogin(
+            @PathVariable("provider") String provider,
+            @RequestParam("code") String code) {
+
+        // 소셜 유저 정보 조회
         Map<String, String> socialUser = oAuth2Service.getUserInfo(provider, code);
         String email = socialUser.get("email");
         String name = socialUser.get("name");
-        // 이미 존재하는 회원이면 로그인 처리
+
+        // 로그인 또는 회원가입 처리
+        LoginForm socialLoginForm;
         if (memberRepository.existsByEmail(email)) {
-            LoginForm socialLoginForm = LoginForm.builder().email(email).build();
-            return ApiResponse.of(authService.login(socialLoginForm, true));
+            socialLoginForm = LoginForm.builder().email(email).build();
+        } else {
+            MemberForm memberForm = MemberForm.builder()
+                    .email(email)
+                    .name(name)
+                    .nickname(name)
+                    .phone(null)
+                    .gender(null)
+                    .birthday(null)
+                    .password("")
+                    .build();
+            Member newMember = memberService.signup(memberForm);
+            socialLoginForm = LoginForm.builder().email(newMember.getEmail()).build();
         }
-        // 회원가입
-        MemberForm memberForm = MemberForm.builder()
-                .email(email)
-                .name(name)
-                .nickname(name)  // 소셜 로그인에서는 닉네임을 이름으로 설정
-                .phone(null)      // 소셜 로그인에는 전화번호가 없으므로 null로 설정
-                .gender(null)     // 성별이 없을 경우 null
-                .birthday(null)   // 생일이 없을 경우 null
-                .password("")   // 비밀번호는 필요없음
+        Auth auth = authService.login(socialLoginForm, true);
+        String accessToken = auth.getAccessToken();
+        String refreshToken = auth.getRefreshToken();
+
+        // 프론트엔드 리디렉션 주소에 토큰을 쿼리로 포함
+        String redirectUrl = UriComponentsBuilder.fromUriString(frontendRedirect)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
+                .build()
+                .toUriString();
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(redirectUrl))
                 .build();
-        Member newMember = memberService.signup(memberForm);
-        // 회원가입 후 로그인 처리
-        LoginForm socialLoginForm = LoginForm.builder().email(newMember.getEmail()).build();
-        return ApiResponse.of(authService.login(socialLoginForm, true));
     }
 }

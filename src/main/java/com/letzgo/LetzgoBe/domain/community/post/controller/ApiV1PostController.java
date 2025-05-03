@@ -95,8 +95,8 @@ public class ApiV1PostController {
     // 게시글 생성
     @PostMapping
     public ApiResponse<String> addPost(@RequestPart(value = "postForm") @Valid PostForm postForm,
-                                           @RequestPart(value = "imageFile") List<MultipartFile> imageFiles,
-                                        @LoginUser LoginUserDto loginUser) {
+                                       @RequestPart(value = "imageFile") List<MultipartFile> imageFiles,
+                                       @LoginUser LoginUserDto loginUser) {
         postService.addPost(postForm, imageFiles, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
