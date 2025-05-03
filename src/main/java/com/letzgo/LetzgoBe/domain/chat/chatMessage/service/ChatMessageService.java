@@ -11,26 +11,26 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ChatMessageService {
-    // 해당 채팅방의 메시지 실시간 조회 시작
+    // 메시지 읽음 처리
+    void readChatMessage(Long messageId, Long memberId);
+
+    // 해당 채팅방의 이전 메시지 가져오기
     Page<ChatMessageDto> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 검색(내용)
     Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 생성
-    void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, LoginUserDto loginUser);
+    void writeChatMessage(Long chatRoomId, ChatMessageForm chatMessageForm, Long memberId);
 
     // 해당 채팅방에서 이미지 메시지 생성
-    ChatMessageDto writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 메시지 삭제
     void deleteChatMessage(Long messageId, LoginUserDto loginUser);
 
     // 해당 채팅방의 모든 메시지 삭제
     void deleteAllChatMessages(Long chatRoomId);
-
-    // 해당 채팅방의 메시지 실시간 조회 중단
-    void updateLastReadMessage(Long chatRoomId, LoginUserDto loginUser);
 
     // 해당 멤버가 작성한 모든 메시지 삭제
     void deleteMembersAllChatMessages(Long memberId);

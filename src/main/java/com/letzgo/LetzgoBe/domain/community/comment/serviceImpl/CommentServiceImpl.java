@@ -1,5 +1,7 @@
 package com.letzgo.LetzgoBe.domain.community.comment.serviceImpl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentForm;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentDto;
@@ -10,6 +12,7 @@ import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
+import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import jakarta.validation.Valid;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +32,8 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
@@ -51,6 +57,19 @@ public class CommentServiceImpl implements CommentService {
         }
         CommentLike commentLike = new CommentLike(loginUser.ConvertToMember(), comment);
         comment.getLikedMembers().add(commentLike);
+        // 댓글 좋아요 이벤트 생성
+        Notification notification = Notification.builder()
+                .receiverId(comment.getMember().getId())
+                .objectId(commentId)
+                .content(loginUser.getName() + "님이 댓글에 좋아요를 눌렀습니다")
+                .targetObject(Notification.TargetObject.Comment)
+                .build();
+        try {
+            String message = objectMapper.writeValueAsString(notification);
+            kafkaTemplate.send("comment-topic", message);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize Notification: {}", e.getMessage());
+        }
     }
 
     // 댓글 좋아요 취소
@@ -79,6 +98,19 @@ public class CommentServiceImpl implements CommentService {
                 .superCommentId(commentForm.getSuperCommentId())
                 .build();
         commentRepository.save(comment);
+        // 댓글 작성 이벤트 생성
+        Notification notification = Notification.builder()
+                .receiverId(post.getMember().getId())
+                .objectId(postId)
+                .content(loginUser.getName() + "님이 댓글을 작성하였습니다")
+                .targetObject(Notification.TargetObject.Post)
+                .build();
+        try {
+            String message = objectMapper.writeValueAsString(notification);
+            kafkaTemplate.send("post-topic", message);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize Notification: {}", e.getMessage());
+        }
     }
 
     // 해당 댓글 수정

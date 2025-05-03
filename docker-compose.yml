@@ -34,23 +34,6 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: rabbitmq_container
-    restart: always
-    environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: admin
-    ports:
-      - "5672:5672"
-      - "15672:15672" # RabbitMQ 관리 UI
-      - "61613:61613" # STOMP 프로토콜
-    command: >
-      sh -c "rabbitmq-plugins enable rabbitmq_stomp rabbitmq_web_stomp &&
-             rabbitmq-server"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-
 ## Mac M2칩
 #  selenium:
 #    image: seleniarm/standalone-chromium:latest
@@ -67,12 +50,31 @@ services:
       - "4444:4444"
     shm_size: 2g
 
+  redpanda-0:
+    image: docker.redpanda.com/redpandadata/redpanda:v23.3.6
+    container_name: redpanda-1
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp 1
+      - --memory 1G
+      - --reserve-memory 0M
+      - --node-id 0
+      - --check=false
+      - --kafka-addr PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr PLAINTEXT://localhost:9092
+    ports:
+      - "9092:9092"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+
 volumes:
   postgres_data:
   redis_data:
   mongo_data:
-  rabbitmq_data:
   selenium:
+  redpanda_data:
 
 
 
@@ -115,10 +117,11 @@ volumes:
 #      - ./env/.env
 #    environment:
 #      - SPRING_PROFILES_ACTIVE=prod
-#      - SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub  # 중요한 부분
+#      - SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub
 #      - DOTENV_PATH=/app/env
 #    volumes:
-#      - ./env:/app/env
+#      - ./env/.env:/app/.env
+#      - ./env/fcm-service-account.json:/app/fcm-service-account.json
 #    depends_on:
 #      redis:
 #        condition: service_healthy  # Redis가 정상 작동할 때까지 대기

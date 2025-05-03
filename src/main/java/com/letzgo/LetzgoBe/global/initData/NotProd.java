@@ -103,32 +103,32 @@ public class NotProd {
                         .build();
                 ChatRoomDto groupChatRoom = chatRoomService.addChatRoom(groupChatRoomForm, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
 
-                // 유저 1, 2의 1:1 채팅
-                ChatMessageForm chatMessageForm1 = ChatMessageForm.builder()
-                        .content("점심 먹었어?")
-                        .build();
-                chatMessageService.writeChatMessage(dmChatRoom.getId(), chatMessageForm1, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
-
-                ChatMessageForm chatMessageForm2 = ChatMessageForm.builder()
-                        .content("아직 안먹었는데 돈까스 ㄱㄱ?")
-                        .build();
-                chatMessageService.writeChatMessage(dmChatRoom.getId(), chatMessageForm2, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
-
-                // 유저 1, 2, 3의 단체 채팅
-                ChatMessageForm chatMessageForm3 = ChatMessageForm.builder()
-                        .content("안녕하세요!")
-                        .build();
-                chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm3, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
-
-                ChatMessageForm chatMessageForm4 = ChatMessageForm.builder()
-                        .content("안녕하세용")
-                        .build();
-                chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm4, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
-
-                ChatMessageForm chatMessageForm5 = ChatMessageForm.builder()
-                        .content("반가워요!!")
-                        .build();
-               chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm5, LoginUserDto.ConvertToLoginUserDto(members.get(2)));
+//                // 유저 1, 2의 1:1 채팅
+//                ChatMessageForm chatMessageForm1 = ChatMessageForm.builder()
+//                        .content("점심 먹었어?")
+//                        .build();
+//                chatMessageService.writeChatMessage(dmChatRoom.getId(), chatMessageForm1, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+//
+//                ChatMessageForm chatMessageForm2 = ChatMessageForm.builder()
+//                        .content("아직 안먹었는데 돈까스 ㄱㄱ?")
+//                        .build();
+//                chatMessageService.writeChatMessage(dmChatRoom.getId(), chatMessageForm2, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
+//
+//                // 유저 1, 2, 3의 단체 채팅
+//                ChatMessageForm chatMessageForm3 = ChatMessageForm.builder()
+//                        .content("안녕하세요!")
+//                        .build();
+//                chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm3, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+//
+//                ChatMessageForm chatMessageForm4 = ChatMessageForm.builder()
+//                        .content("안녕하세용")
+//                        .build();
+//                chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm4, LoginUserDto.ConvertToLoginUserDto(members.get(1)));
+//
+//                ChatMessageForm chatMessageForm5 = ChatMessageForm.builder()
+//                        .content("반가워요!!")
+//                        .build();
+//                chatMessageService.writeChatMessage(groupChatRoom.getId(), chatMessageForm5, LoginUserDto.ConvertToLoginUserDto(members.get(2)));
 
 
                 //장소데이터

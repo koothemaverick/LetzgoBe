@@ -26,19 +26,12 @@ import java.util.List;
 public class ApiV1ChatMessageController {
     private final ChatMessageService chatMessageService;
 
-    // 해당 채팅방의 메시지 실시간 조회 시작 [참여자 권한]
+    // 해당 채팅방의 이전 메시지 가져오기 [참여자 권한]
     @GetMapping("/{chatRoomId}")
     public ApiResponse<ChatMessageDto> findByChatRoomId(@ModelAttribute ChatMessagePage request,
                                                         @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser)));
-    }
-
-    // 해당 채팅방의 메시지 실시간 조회 중단 [참여자 권한]
-    @PutMapping("/{chatRoomId}")
-    public ApiResponse<String> updateLastReadMessage(@PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser){
-        chatMessageService.updateLastReadMessage(chatRoomId, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
@@ -49,21 +42,13 @@ public class ApiV1ChatMessageController {
         return ApiResponse.of(LetzgoPage.of(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser)));
     }
 
-    // 해당 채팅방에서 메시지 생성 [참여자 권한]
-    @MessageMapping("/{chatRoomId}") // stomp websocket 사용
-    public ApiResponse<String> writeChatMessage(@DestinationVariable @PathVariable("chatRoomId") Long chatRoomId,
-                                                @Valid ChatMessageForm chatMessageForm,
-                                                @LoginUser LoginUserDto loginUser) {
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
-    }
-
     // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
     @PostMapping("/image/{chatRoomId}")
-    public ApiResponse<ChatMessageDto> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
+    public ApiResponse<String> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
                                                  @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,
                                                  @LoginUser LoginUserDto loginUser) {
-        return ApiResponse.of(chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser));
+        chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser);
+        return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 메시지 삭제 [참여자 권한]
