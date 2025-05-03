@@ -172,15 +172,13 @@ public class NotProd {
                                 .member(member)
                                 .place(place)
                                 .title(member.getNickname() + "의 리뷰 " + (i + 1))
-                                .content("mock review 입니다.")
+                                .content("review 입니다.")
                                 .rating((i % 5) + 1)
                                 .build();
 
                         reviewRepository.save(review);
                     }
                 }
-
-
             }
         };
     }
