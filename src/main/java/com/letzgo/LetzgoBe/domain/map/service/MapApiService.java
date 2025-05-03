@@ -85,6 +85,7 @@ public class MapApiService {
             placeDtos.add(nearPlace);
         }
 
+        
         return placeDtos;
     }
 }
