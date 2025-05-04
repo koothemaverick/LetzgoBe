@@ -19,6 +19,8 @@ spring:
     mongodb:
       uri: mongodb://admin:${POSTGRES_PASSWORD}@${HOST_DB}:27017/meta_db?authSource=admin
       database: meta_db
+  kafka:
+    bootstrap-servers: 54.180.80.251:9092
 
 app:
   oauth2:
@@ -72,31 +74,31 @@ logging:
 #      - --mode
 #      - dev-container
 #      - --smp
-#      - "1"
+#      - "1"                   # vCPU 1개만 사용 (t3.small은 2vCPU 이므로 하나만 할당)
 #      - --memory
-#      - 512M
+#      - 1G                    # 전체 컨테이너에 1GB 메모리 할당 (2GB 중 절반)
 #      - --reserve-memory
-#      - 256M
+#      - 512M                  # 최소 512MB는 Redpanda가 항상 확보
 #      - --default-log-level=warn
 #      - --kafka-addr
 #      - PLAINTEXT://0.0.0.0:9092
 #      - --advertise-kafka-addr
-#      - PLAINTEXT://175.45.192.38:9092
+#      - PLAINTEXT://54.180.80.251:9092
 #      - --pandaproxy-addr
 #      - 0.0.0.0:8082
 #      - --advertise-pandaproxy-addr
-#      - 175.45.192.38:8082
+#      - 54.180.80.251:8082
 #      - --schema-registry-addr
 #      - 0.0.0.0:8081
 #      - --rpc-addr
 #      - 0.0.0.0:33145
 #      - --advertise-rpc-addr
-#      - 175.45.192.38:33145
+#      - 54.180.80.251:33145
 #    ports:
-#      - "9092:9092"     # Kafka API
-#      - "8081:8081"     # Schema Registry
-#      - "8082:8082"     # PandaProxy
-#      - "9644:9644"     # Admin API
+#      - "9092:9092"
+#      - "8081:8081"
+#      - "8082:8082"
+#      - "9644:9644"
 #    volumes:
 #      - redpanda_data:/var/lib/redpanda/data
 #    networks:
