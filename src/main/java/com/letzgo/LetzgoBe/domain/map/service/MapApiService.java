@@ -34,7 +34,7 @@ public class MapApiService {
 
         String photoRef = null;
         //사진호출용 스트링(최대10개)중 첫번째만사용
-        if(placeDetails.photos != null) {
+        if (placeDetails.photos != null) {
             Photo[] photos = placeDetails.photos;
             photoRef = photos[0].photoReference;
         }
@@ -61,22 +61,31 @@ public class MapApiService {
                 .await(); //무료사용한도:5,000번/한달 그이상 호출시 과금됨
         log.info("구글API(PlaceAPI(기존)-텍스트 검색) 호출됨");
 
-
         List<PlaceDto> placeDtos = new ArrayList<>();
-        for (int i = 0; i < num; i++) {
-            if ((apiResponse.results[i] != null) && (i < 20)) {
-                PlaceDto nearPlace = PlaceDto.builder()
-                        .name(apiResponse.results[i].name)
-                        .address(apiResponse.results[i].formattedAddress)
-                        .placeId(apiResponse.results[i].placeId)
-                        .placePhoto(apiResponse.results[i].photos[0].photoReference)
-                        .lat(apiResponse.results[i].geometry.location.lat)
-                        .lng(apiResponse.results[i].geometry.location.lng)
-                        .build();
 
-                placeDtos.add(nearPlace);
+        int resultCount = Math.min(apiResponse.results.length, Math.min(num, 20));
+
+        for (int i = 0; i < resultCount; i++) {
+
+            PlacesSearchResult result = apiResponse.results[i];
+
+            String photoRef = null;
+            if (result.photos != null && result.photos.length > 0) {
+                photoRef = result.photos[0].photoReference;
             }
+
+            PlaceDto nearPlace = PlaceDto.builder()
+                    .name(apiResponse.results[i].name)
+                    .address(apiResponse.results[i].formattedAddress)
+                    .placeId(apiResponse.results[i].placeId)
+                    .placePhoto(photoRef)
+                    .lat(apiResponse.results[i].geometry.location.lat)
+                    .lng(apiResponse.results[i].geometry.location.lng)
+                    .build();
+            placeDtos.add(nearPlace);
         }
+
+        
         return placeDtos;
     }
 }
