@@ -21,6 +21,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public Page<ChatRoomDto> getChatRoom(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, loginUser.ConvertToMember());
-        return chatRooms.map(this::convertToChatRoomDto);
+        return chatRooms.map(chatRoom -> convertToChatRoomDto(chatRoom, loginUser.getId()));
     }
 
     // 채팅방 생성(DM/그룹)
@@ -101,7 +102,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         chatRoom.setChatRoomMembers(chatRoomMembers);
         chatRoomRepository.save(chatRoom);
-        return convertToChatRoomDto(chatRoom);
+        return convertToChatRoomDto(chatRoom, loginUser.getId());
     }
 
     // 채팅방 이름 수정(그룹)
@@ -314,19 +315,24 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     // ChatRoom을 ChatRoomDto로 변환
-    private ChatRoomDto convertToChatRoomDto(ChatRoom chatRoom) {
+    private ChatRoomDto convertToChatRoomDto(ChatRoom chatRoom, Long memberId) {
         // Fetch Join으로 가져온 ChatRoomMembers 사용
         List<ChatRoomMember> chatRoomMembers = chatRoomRepository.findChatRoomMembersWithMember(chatRoom.getId());
 
         // 가장 최근 메시지의 ID 조회
-        Optional<Long> latestMessageId = chatMessageRepository.findLatestMessageIdByChatRoomId(chatRoom.getId());
+        List<Long> messageIds = chatMessageRepository.findLatestMessageIdsByChatRoomId(chatRoom.getId(), PageRequest.of(0, 1));
+        Long latestMessageId = messageIds.stream().findFirst().orElse(null);
 
         // 해당 메시지 ID로 MongoDB에서 메시지 내용 조회
-        String lastMessage = latestMessageId
-                .flatMap(id -> messageContentRepository.findById(id.toString())) // MongoDB에서 메시지 조회
-                .map(MessageContent::getContent) // content 값 가져오기
-                .orElse(""); // 메시지가 없으면 빈 문자열 반환
+        String lastMessage = "";
+        if (latestMessageId != null) {
+            lastMessage = messageContentRepository.findById(latestMessageId.toString())
+                    .map(MessageContent::getContent)
+                    .orElse("");  // 메시지가 없으면 빈 문자열 반환
+        }
 
+        // 본인이 안 읽은 메시지 수 계산
+        Long unreadCount = getUnreadCount(chatRoom.getId(), memberId);
         return ChatRoomDto.builder()
                 .id(chatRoom.getId())
                 .memberId(chatRoom.getMember().getId())
@@ -340,7 +346,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                                 .build()
                         )
                         .collect(Collectors.toList()))
+                .unreadCount(unreadCount)
                 .lastMessage(lastMessage)
                 .build();
+    }
+
+    // 본인이 안 읽은 메시지 수 계산
+    private Long getUnreadCount(Long chatRoomId, Long memberId) {
+        return chatMessageRepository.countUnreadMessages(chatRoomId, memberId);
     }
 }

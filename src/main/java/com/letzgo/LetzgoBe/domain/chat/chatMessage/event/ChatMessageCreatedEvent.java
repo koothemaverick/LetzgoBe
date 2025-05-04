@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.chat.chatMessage.eventListener;
+package com.letzgo.LetzgoBe.domain.chat.chatMessage.event;
 
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
 import lombok.Getter;

@@ -3,13 +3,14 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatReadAllEvent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.eventListener.ChatMessageCreatedEvent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageCreatedEvent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -21,14 +22,11 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
-import com.letzgo.LetzgoBe.global.webSocket.ChatWebSocketHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,13 +55,17 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public void readChatMessage(Long messageId, Long memberId) {
         ChatMessage chatMessage = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
-        boolean alreadyRead = chatMessage.getChatMessageReads().stream()
-                .anyMatch(read -> read.getMember().getId().equals(memberId));
-        if (!alreadyRead) {
+        if (chatMessage.getChatMessageReads() == null) {
+            chatMessage.setChatMessageReads(new ArrayList<>()); // Initialize the list if it's null
+        }
+        // DB에서 읽은 기록이 있는지 확인
+        Optional<ChatMessageRead> existingRead = chatMessageReadRepository.findByChatMessageIdAndMemberId(messageId, memberId);
+        if (!existingRead.isPresent()) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
             ChatMessageRead readRecord = ChatMessageRead.builder()
                     .chatMessage(chatMessage)
-                    .member(memberRepository.findById(memberId)
-                            .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND)))
+                    .member(member)
                     .readAt(LocalDateTime.now())
                     .build();
             chatMessageReadRepository.save(readRecord);
@@ -86,7 +88,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 해당 채팅방 내의 모든 메시지 읽음 처리 & 해당 채팅방 메시지 가져오기
         readAllChatMessages(loginUser.getId(), chatRoomId);
-        Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.ASC, "createdAt")  // createdAt 기준 오름차순 정렬
+        );
+        Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, sortedPageable);
 
         // MongoDB에서 메시지 내용 불러오기
         List<String> stringMessageIds = chatMessages.stream()
@@ -209,7 +216,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         for (MultipartFile imageFile : imageFiles) {
             if (!imageFile.isEmpty()) {
                 try {
-                    String imageUrl = s3Service.uploadFile(imageFile, "commPost-images");
+                    String imageUrl = s3Service.uploadFile(imageFile, "chat-images");
                     imageUrls.add(imageUrl);
                 } catch (IOException e) {
                     throw new ServiceException(ReturnCode.INTERNAL_ERROR);
@@ -324,6 +331,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .orElse(null);
         chatRoomMember.setLastReadMessageId(lastReadMessageId);
         chatRoomMemberRepository.save(chatRoomMember);
+
+        // 읽음 상태 이벤트 발행
+        ChatReadAllEvent event = new ChatReadAllEvent(chatRoomId, memberId, lastReadMessageId);
+        eventPublisher.publishEvent(event);
     }
 
     // 요청 페이지 수 제한
@@ -346,7 +357,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .profileImageUrl(chatMessage.getMember().getProfileImageUrl())
                 .content(content)
                 .imageUrls(chatMessage.getImageUrls())
-                .readCount(unreadCount)
+                .unreadCount(unreadCount)
                 .createdAt(chatMessage.getCreatedAt())
                 .build();
     }

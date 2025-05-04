@@ -24,16 +24,19 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     @Query("SELECT m.id FROM ChatMessage m WHERE m.chatRoom.id = :chatRoomId")
     List<Long> findAllMessageIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
-    // 가장 최근 메시지 조회
-    ChatMessage findTopByChatRoomIdOrderByIdDesc(Long chatRoomId);
-
-    // 해당 채팅방의 해당 메시지 이후에 작성된 메시지 리스트 조회
-    List<ChatMessage> findByChatRoomIdAndIdGreaterThan(Long chatRoomId, Long lastReadMessageId);
-
     // 가장 최근 메시지의 ID를 가져오는 메서드
-    @Query("SELECT cm.id FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId ORDER BY cm.createdAt DESC LIMIT 1")
-    Optional<Long> findLatestMessageIdByChatRoomId(@Param("chatRoomId") Long chatRoomId);
+    @Query("SELECT cm.id FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId ORDER BY cm.createdAt DESC")
+    List<Long> findLatestMessageIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
 
     // 해당 멤버가 작성한 모든 메시지 삭제
     List<ChatMessage> findByMemberId(Long memberId);
+
+    // 본인이 안 읽은 메시지 수 계산
+    @Query("SELECT COUNT(cm) FROM ChatMessage cm " +
+            "WHERE cm.chatRoom.id = :chatRoomId " +
+            "AND NOT EXISTS (" +
+            "   SELECT 1 FROM ChatMessageRead cmr " +
+            "   WHERE cmr.chatMessage.id = cm.id AND cmr.member.id = :memberId" +
+            ")")
+    Long countUnreadMessages(@Param("chatRoomId") Long chatRoomId, @Param("memberId") Long memberId);
 }

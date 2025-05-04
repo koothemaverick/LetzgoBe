@@ -1,13 +1,10 @@
 package com.letzgo.LetzgoBe.global.webSocket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.eventListener.ChatMessageCreatedEvent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.webSocket.payload.ChatMessagePayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -47,16 +44,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             broadcastToRoom(payload.getChatRoomId(), message.getPayload());
         } else {
             log.warn("Unknown messageType: " + payload.getMessageType());
-        }
-    }
-
-    @EventListener
-    public void handleChatMessageCreated(ChatMessageCreatedEvent event) {
-        try {
-            String payload = objectMapper.writeValueAsString(event.getChatMessageDto());
-            broadcastToRoom(event.getChatRoomId(), payload);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize chat message", e);
         }
     }
 

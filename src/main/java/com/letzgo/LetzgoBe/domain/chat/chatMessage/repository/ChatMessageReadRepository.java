@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ChatMessageReadRepository extends JpaRepository<ChatMessageRead, Long> {
@@ -16,4 +17,7 @@ public interface ChatMessageReadRepository extends JpaRepository<ChatMessageRead
 
     // 메시지 읽은 수 조회
     Long countByChatMessageId(Long chatMessageId);
+
+    // DB에서 읽은 기록이 있는지 확인
+    Optional<ChatMessageRead> findByChatMessageIdAndMemberId(Long chatMessageId, Long memberId);
 }
