@@ -15,6 +15,6 @@ public class ChatMessageDto {
     private String profileImageUrl;
     private String content;
     private List<String> imageUrls;
-    private Long readCount;
+    private Long unreadCount;
     private LocalDateTime createdAt;
 }
