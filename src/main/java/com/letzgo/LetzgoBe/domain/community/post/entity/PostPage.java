@@ -7,7 +7,7 @@ import lombok.Getter;
 public class PostPage {
     // 기본 page, size
     private int page = 0;
-    private int size = 24;
+    private int size = 20;
     @Getter
-    private static final int maxPageSize = 24;
+    private static final int maxPageSize = 20;
 }

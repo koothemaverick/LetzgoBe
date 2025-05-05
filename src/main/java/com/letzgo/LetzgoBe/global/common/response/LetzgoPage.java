@@ -23,4 +23,3 @@ public class LetzgoPage<T> {
         return converted;
     }
 }
-

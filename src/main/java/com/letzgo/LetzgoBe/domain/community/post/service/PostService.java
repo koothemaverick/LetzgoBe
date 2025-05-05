@@ -13,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PostService {
+    // 본인 & 팔로우한 유저의 게시글 조회
+    Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable);
+
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable);
 

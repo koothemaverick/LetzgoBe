@@ -34,4 +34,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 해당 멤버가 작성한 모든 게시글 삭제
     List<Post> findPostsByMemberId(Long memberId);
+
+    // 사용자ID 리스트로 게시글 최신순 조회
+    Page<Post> findByMemberIdInOrderByCreatedAtDesc(List<Long> memberIds, Pageable pageable);
 }
