@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.community.post.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
@@ -43,8 +44,24 @@ public class PostServiceImpl implements PostService {
     private final CommentService commentService;
     private final S3Service s3Service;
     private final CommentRepository commentRepository;
+    private final MemberFollowRepository memberFollowRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+
+    // 본인 & 팔로우한 유저의 게시글 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable){
+        checkPageSize(pageable.getPageSize());
+        Long loginUserId = loginUser.getId();
+        List<Long> followingMemberIds = memberFollowRepository.findFollowedMemberIdsByFollowerId(loginUserId);
+
+        // 본인 ID + 팔로우한 사람들 ID 포함한 리스트 생성
+        List<Long> targetMemberIds = new ArrayList<>(followingMemberIds);
+        targetMemberIds.add(loginUserId);
+        Page<Post> posts = postRepository.findByMemberIdInOrderByCreatedAtDesc(targetMemberIds, pageable);
+        return posts.map(this::convertToDetailPostDto);
+    }
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override

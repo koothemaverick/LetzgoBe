@@ -13,6 +13,7 @@ import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class ApiV1PostController {
     private final PostService postService;
+
+    // 본인 & 팔로우한 유저의 게시글 조회
+    @GetMapping("/main")
+    public ApiResponse<DetailPostDto> getMainPost(@ModelAttribute PostPage request, @LoginUser LoginUserDto loginUser) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+        return ApiResponse.of(LetzgoPage.of(postService.getMainPost(loginUser, pageable)));
+    }
 
     // 사용자 위치 주변 게시글 조회
     @GetMapping("/surroundings")
