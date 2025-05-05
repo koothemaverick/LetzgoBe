@@ -11,6 +11,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
+import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
@@ -18,17 +19,13 @@ import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
 import com.letzgo.LetzgoBe.domain.map.repository.ReviewRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
+import com.letzgo.LetzgoBe.global.initData.utils.CommentUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +44,7 @@ public class NotProdService {
     private final PlaceRepository placeRepository;
     private final ReviewRepository reviewRepository;
     private final PostService postService;
+    private final CommentUtils commentUtils;
 
     @Transactional
     public void initDummyData() {
@@ -58,6 +56,12 @@ public class NotProdService {
 
         // 5명 모두 게시글 1개씩 작성
         createPosts(members);
+
+        // 유저 3, 4, 5가 모든 게시글에 대해 좋아요 누름
+        createPostLikes(members);
+
+        // 모든 게시글에 서로 댓글&답글 작성
+        createComments(members);
 
         // 유저 1이 1:1 채팅방 생성 (대상: 유저 2)
         createDmChatRoom(members);
@@ -120,11 +124,11 @@ public class NotProdService {
 
     // 5명 모두 게시글 1개씩 작성
     private void createPosts(List<Member> members) {
-        createPost(members.get(0), "오늘은 #더현대서울 다녀왔어요! 햇살 가득한 실내 공간이 진짜 예쁘더라고요ㅎㅎ...", "static/hyundai.jpeg", "static/hyundaiburger.jpeg", 126.925978, 37.525477);
-        createPost(members.get(1), "🌆 오늘은 #송도센트럴파크 나들이! 푸른 하늘 아래 우뚝 선 포스코타워가 진짜 웅장하더라고요.", "static/songdo.jpeg", "static/songdoburger.jpeg", 126.632844, 37.392872);
-        createPost(members.get(2), "🌊 #강릉 #주문진해수욕장 다녀왔어요! 잔잔한 작은 해변가에서 바다 바람 맞으면서 힐링…", "static/sea.jpeg", "static/seafood.jpeg", 128.821432, 37.894882);
-        createPost(members.get(3), "🏙️ #부산 #엘시티 다녀왔어요! 엘시티의 현대적이고 세련된 모습은 정말 압도적이었어요.", "static/busan.jpeg", "static/busan1.jpeg", 129.132837, 35.160736);
-        createPost(members.get(4), "🌴 #제주도 여행의 완벽한 하루! 먼저 더클리프에서 바다를 바라보며 여유롭게 시간을 보냈어요.", "static/jejufood.jpeg", "static/jejucafe.jpeg", 126.560701, 33.499848);
+        createPost(members.get(0),     "오늘은 더현대서울 다녀왔어요! 햇살 가득한 실내 공간이 진짜 예쁘더라고요ㅎㅎ 여유롭게 돌아다니며 구경하다가 출출해서 들른 곳은 #다운타운버거 햄버거 맛집! 고기 패티도 두툼하고 소스도 찰떡이라 만족스러운 한 끼였어요. 쇼핑도 좋지만 이렇게 분위기 좋은 공간에서 힐링하는 맛이 있는 듯☺️ 다음엔 카페 투어도 해보고 싶네요!\n\n#더현대서울맛집 #서울핫플 #햄버거맛집 #힐링시간", "static/hyundai.jpeg", "static/hyundaiburger.jpeg", 126.925978, 37.525477);
+        createPost(members.get(1), "🌆 오늘은 #송도센트럴파크 나들이! 푸른 하늘 아래 우뚝 선 포스코타워가 진짜 웅장하더라고요. 사진 찍기 딱 좋은 스팟ㅎㅎ 산책하다가 출출해서 들른 곳은 바로 #GTS햄버거 🍔 고기 두툼하고 소스 조합이 미쳤어요...! 공원도 걷고 맛집도 즐기고 힐링 제대로 한 하루☺️ 다음엔 오리배도 꼭 타봐야겠다.\n\n#송도맛집 #포스코타워 #센트럴파크산책 #햄버거맛집 #힐링여행 #인천핫플", "static/songdo.jpeg", "static/songdoburger.jpeg", 126.632844, 37.392872);
+        createPost(members.get(2), "🌊 #강릉 #주문진해수욕장 다녀왔어요! 잔잔한 작은 해변가에서 바다 바람 맞으면서 힐링… 파도 소리에 마음까지 씻기는 기분이었어요 그리고 역시 주문진에서는 회를 먹어야 제맛이죠! 싱싱한 회 한 접시, 대게, 그리고 뜨끈한 해물라면에 소주 한 잔까지… 완벽한 코스ㅎㅎ 바다 보면서 먹으니 진짜 꿀맛이었어요🥹 다음에도 친구들이랑 또 오기로 약속! 강릉 바다+먹방 여행 추천합니다.\n\n#주문진맛집 #해산물파티 #강릉여행 #회맛집 #해변산책 #먹방투어 #강릉핫플", "static/sea.jpeg", "static/seafood.jpeg", 128.821432, 37.894882);
+        createPost(members.get(3), "🏙️ #부산 #엘시티 다녀왔어요! 엘시티의 현대적이고 세련된 모습은 정말 압도적이었어요. 길을 걷다가도 고개가 절로 올라가더라구요. 특히, 전망대에서 바라본 해운대 해수욕장의 풍경은 정말 멋졌어요. 파란 바다와 끝없이 펼쳐진 해변이 한눈에 들어오는 그 느낌… 바다와 도시가 어우러지는 멋진 순간이었답니다! 하늘과 바다, 그리고 도시의 아름다움을 모두 즐기고 온 하루. 부산의 매력을 다시 한 번 느끼고 왔어요ㅎㅎ\n\n#부산여행 #엘시티뷰 #해운대 #부산핫플 #엘시티전망대 #부산바다 #해운대해수욕장 #바다와도시", "static/busan.jpeg", "static/busan1.jpeg", 129.132837, 35.160736);
+        createPost(members.get(4), "🌴 #제주도 여행의 완벽한 하루! 먼저 더클리프에서 바다를 바라보며 여유롭게 시간을 보냈어요. 해변가를 전망하는 그 멋진 풍경은 정말 마음까지 힐링이었답니다ㅎㅎ 그리고 제주도에서 빼놓을 수 없는 국수바다! 정성껏 준비된 고기국수와 부드러운 편육 한 접시로 제주의 맛을 제대로 느꼈어요. 이 맛은 어디서도 못 느껴본 고소함과 깊은 풍미! 정말 제주도에서만 경험할 수 있는 특별한 맛이었어요.\n\n#제주여행 #더클리프 #국수바다 #해변전망 #고기국수 #편육 #제주도맛집 #힐링여행", "static/jejufood.jpeg", "static/jejucafe.jpeg", 126.560701, 33.499848);
     }
 
     // 게시글 생성
@@ -139,6 +143,22 @@ public class NotProdService {
                 getMultipartFileFromResource(imageFilePath2, imageFilePath2.substring(imageFilePath2.lastIndexOf("/") + 1))
         );
         postService.addPost(postForm, imageFiles, ConvertToLoginUserDto(member));
+    }
+
+    // 유저 3, 4, 5가 모든 게시글에 대해 좋아요 누름
+    @Transactional
+    public void createPostLikes(List<Member> members) {
+        List<Member> likingMembers = members.subList(2, members.size()); // 유저 3, 4, 5 (인덱스 2부터 시작)
+        for (Member member : likingMembers) {
+            for (long postId = 1L; postId <= 5L; postId++) {
+                postService.addPostLike(postId, ConvertToLoginUserDto(member)); // 게시글 좋아요 추가
+            }
+        }
+    }
+
+    // 모든 게시글에 서로 댓글&답글 작성
+    private void createComments(List<Member> members) {
+        commentUtils.createSampleCommentsForPosts(members);
     }
 
     // 유저 1이 1:1 채팅방 생성 (대상: 유저 2)
