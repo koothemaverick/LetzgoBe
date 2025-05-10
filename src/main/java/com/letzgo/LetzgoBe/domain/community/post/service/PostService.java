@@ -17,13 +17,13 @@ public interface PostService {
     Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable);
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
-    Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable);
+    Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 사용자가 작성한 게시글 조회
-    Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable);
+    Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 게시글 상세 조회
-    DetailPostDto findById(Long postId);
+    DetailPostDto findById(Long postId, LoginUserDto loginUser);
 
     // 해당 사용자가 저장한 게시글 조회
     Page<PostDto> getSavedPostByMember(Long memberId, Pageable pageable);

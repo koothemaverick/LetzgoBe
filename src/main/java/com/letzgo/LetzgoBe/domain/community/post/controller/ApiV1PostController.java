@@ -38,23 +38,26 @@ public class ApiV1PostController {
 
     // 사용자 위치 주변 게시글 조회
     @GetMapping("/surroundings")
-    public ApiResponse<DetailPostDto> getSurroundings(@ModelAttribute PostPage request, @RequestBody @Valid XYForm xyForm) {
+    public ApiResponse<DetailPostDto> getSurroundings(@ModelAttribute PostPage request,
+                                                      @RequestBody @Valid XYForm xyForm,
+                                                      @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(LetzgoPage.of(postService.findPostsWithinRadius(xyForm, pageable)));
+        return ApiResponse.of(LetzgoPage.of(postService.findPostsWithinRadius(xyForm, pageable, loginUser)));
     }
 
     // 해당 사용자가 작성한 게시글 조회
     @GetMapping("/member/{memberId}")
     public ApiResponse<DetailPostDto> getMemberPost(@ModelAttribute PostPage request,
-                                                    @PathVariable("memberId") Long memberId) {
+                                                    @PathVariable("memberId") Long memberId,
+                                                    @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(LetzgoPage.of(postService.findByMemberId(memberId, pageable)));
+        return ApiResponse.of(LetzgoPage.of(postService.findByMemberId(memberId, pageable, loginUser)));
     }
 
-    // 게시글 상세 조회
+    // 해당 게시글 상세 조회
     @GetMapping("/detail/{postId}")
-    public ApiResponse<DetailPostDto> getDetailPost(@PathVariable("postId") Long postId) {
-        return ApiResponse.of(postService.findById(postId));
+    public ApiResponse<DetailPostDto> getDetailPost(@PathVariable("postId") Long postId, @LoginUser LoginUserDto loginUser) {
+        return ApiResponse.of(postService.findById(postId, loginUser));
     }
 
     // 해당 사용자가 저장한 게시글 조회
