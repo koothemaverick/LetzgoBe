@@ -17,6 +17,7 @@ import com.letzgo.LetzgoBe.domain.community.post.entity.PostSave;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
+import com.letzgo.LetzgoBe.domain.community.post.repository.PostSaveQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
@@ -41,7 +42,7 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostLikeQueryRepository postLikeQueryRepository;
-    private final PostLikeRepository postLikeRepository;
+    private final PostSaveQueryRepository postSaveQueryRepository;
     private final CommentService commentService;
     private final S3Service s3Service;
     private final CommentRepository commentRepository;
@@ -289,6 +290,7 @@ public class PostServiceImpl implements PostService {
     // Post를 DetailPostDto로 변환
     private DetailPostDto convertToDetailPostDto(Post post, LoginUserDto loginUser) {
         boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
+        boolean saved = postSaveQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
         return DetailPostDto.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
@@ -301,6 +303,7 @@ public class PostServiceImpl implements PostService {
                 .content(post.getContent())
                 .imageUrls(post.getImageUrls())
                 .liked(liked)
+                .saved(saved)
                 .createdAt(post.getCreatedAt())
                 .build();
     }

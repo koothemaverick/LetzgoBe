@@ -20,5 +20,6 @@ public class DetailPostDto {
     private String content;
     private List<String> imageUrls;
     private Boolean liked;
+    private Boolean saved;
     private LocalDateTime createdAt;
 }
