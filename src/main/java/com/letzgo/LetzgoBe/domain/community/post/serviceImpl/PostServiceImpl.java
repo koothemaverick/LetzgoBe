@@ -14,9 +14,9 @@ import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostLike;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostPage;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostSave;
+import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
-import com.letzgo.LetzgoBe.domain.community.post.repository.PostSaveRepository;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
@@ -24,7 +24,6 @@ import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -41,6 +40,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
+    private final PostLikeQueryRepository postLikeQueryRepository;
+    private final PostLikeRepository postLikeRepository;
     private final CommentService commentService;
     private final S3Service s3Service;
     private final CommentRepository commentRepository;
@@ -60,35 +61,35 @@ public class PostServiceImpl implements PostService {
         List<Long> targetMemberIds = new ArrayList<>(followingMemberIds);
         targetMemberIds.add(loginUserId);
         Page<Post> posts = postRepository.findByMemberIdInOrderByCreatedAtDesc(targetMemberIds, pageable);
-        return posts.map(this::convertToDetailPostDto);
+        return posts.map(post -> convertToDetailPostDto(post, loginUser));
     }
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable){
+    public Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findPostsWithinRadius(
                 xyForm.getMapX(), xyForm.getMapY(), xyForm.getRadius(), pageable
         );
-        return posts.map(this::convertToDetailPostDto);
+        return posts.map(post -> convertToDetailPostDto(post, loginUser));
     }
 
     // 해당 사용자가 작성한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable){
+    public Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findByMemberId(memberId, pageable);
-        return posts.map(this::convertToDetailPostDto);
+        return posts.map(post -> convertToDetailPostDto(post, loginUser));
     }
 
     // 해당 게시글 상세 조회
     @Override
     @Transactional(readOnly = true)
-    public DetailPostDto findById(Long postId){
+    public DetailPostDto findById(Long postId, LoginUserDto loginUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
-        return convertToDetailPostDto(post);
+        return convertToDetailPostDto(post, loginUser);
     }
 
     // 해당 사용자가 저장한 게시글 조회
@@ -286,7 +287,8 @@ public class PostServiceImpl implements PostService {
     }
 
     // Post를 DetailPostDto로 변환
-    private DetailPostDto convertToDetailPostDto(Post post) {
+    private DetailPostDto convertToDetailPostDto(Post post, LoginUserDto loginUser) {
+        boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
         return DetailPostDto.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
@@ -298,6 +300,7 @@ public class PostServiceImpl implements PostService {
                 .mapY(post.getMapY())
                 .content(post.getContent())
                 .imageUrls(post.getImageUrls())
+                .liked(liked)
                 .createdAt(post.getCreatedAt())
                 .build();
     }
