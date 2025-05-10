@@ -22,9 +22,9 @@ public class HotelInfoService {
     private final HotelRepository hotelRepository;
 
     public void getHotelsInfo(int page) {
-        String[] regions = {"경기도"};
-//        String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
-//                "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
+        //String[] regions = {"경기도"};
+        String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
+                "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
         int progress = 0;
         for (String region : regions) {
             log.info("호텔정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
@@ -51,11 +51,11 @@ public class HotelInfoService {
                 String sukbak = null;
                 String daesil = null;
                 try {
-                    sukbak = driver.findElement(By.cssSelector("#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ") > div.css-gvoll6 > div.css-1by0ap6 > div.css-sg6wi7 > div:nth-child(1) > div > div.css-ukl1fa > div > div > span.css-5r5920")).getText();
+                    daesil = driver.findElement(By.cssSelector("#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ") > div.css-gvoll6 > div.css-1by0ap6 > div.css-sg6wi7 > div:nth-child(1) > div > div.css-ukl1fa > div > div > span.css-5r5920")).getText();
                 } catch (Exception e) {
                 }
                 try {
-                    daesil = driver.findElement(By.cssSelector("#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ") > div.css-gvoll6 > div.css-1by0ap6 > div.css-sg6wi7 > div:nth-child(2) > div > div.css-ukl1fa > div > div > span.css-5r5920")).getText();
+                    sukbak = driver.findElement(By.cssSelector("#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ") > div.css-gvoll6 > div.css-1by0ap6 > div.css-sg6wi7 > div:nth-child(2) > div > div.css-ukl1fa > div > div > span.css-5r5920")).getText();
                 } catch (Exception e) {
                 }
 
