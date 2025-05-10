@@ -9,10 +9,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class NaverClientConfig {
     private static final String BASE_URL = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode";
 
-    @Value("${NAVER_CLIENT_ID}")
+    @Value("${NAVER_CLOUDPLATFROM_ID}")
     private String clientId;
 
-    @Value("${NAVER_CLIENT_SECRET}")
+    @Value("${NAVER_CLOUDPLATFROM_SECRET}")
     private String clientSecret;
 
 
