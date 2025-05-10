@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.scheduler;
 
+import com.letzgo.LetzgoBe.domain.dataFetcher.service.GeocodingService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.HotelInfoService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.RestaurantInfoService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class DataFetchSchedule {
     private final HotelInfoService hotelInfoService;
     private final RestaurantInfoService restaurantInfoService;
+    private final GeocodingService geocodingService;
 
     @Value("${schedule.use}")
     private boolean useSchedule;
@@ -38,6 +40,27 @@ public class DataFetchSchedule {
                 restaurantInfoService.getRestaurantsInfo();
         } catch (Exception e) {
             log.warn("restaurantInfoService 스케줄링 중 오류 발생");
+        }
+    }
+
+    @Scheduled(cron = "${schedule.geocoding.hotel}")
+    public void addHotelCoordinateSchedule() {
+        try {
+            if (useSchedule)
+                geocodingService.updateHotelCoordinates();
+        } catch (Exception e) {
+            log.warn("geocodingService(호텔) 스케줄링 중 오류 발생");
+        }
+
+    }
+
+    @Scheduled(cron = "${schedule.geocoding.restaurant}")
+    public void addRestaurantCoordinateSchedule() {
+        try {
+            if (useSchedule)
+                geocodingService.updateHotelCoordinates();
+        } catch (Exception e) {
+            log.warn("geocodingService(식당) 스케줄링 중 오류 발생");
         }
     }
 }

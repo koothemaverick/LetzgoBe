@@ -30,6 +30,8 @@ public class LetzgoBeApplication {
 		System.setProperty("NAVER_CLIENT_SECRET", dotenv.get("NAVER_CLIENT_SECRET"));
 		System.setProperty("HOST_DB", dotenv.get("HOST_DB"));
 		System.setProperty("GOOGLE_API_KEY", dotenv.get("GOOGLE_API_KEY"));
+		System.setProperty("NAVER_CLOUDPLATFROM_ID", dotenv.get("NAVER_CLOUDPLATFROM_ID"));
+		System.setProperty("NAVER_CLOUDPLATFROM_SECRET", dotenv.get("NAVER_CLOUDPLATFROM_SECRET"));
 
 		SpringApplication.run(LetzgoBeApplication.class, args);
 	}
