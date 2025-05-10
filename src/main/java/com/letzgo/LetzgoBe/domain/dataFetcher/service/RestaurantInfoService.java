@@ -20,13 +20,13 @@ public class RestaurantInfoService {
 
     public void getRestaurantsInfo() {
 
-        String[] rigions = {"서울", "강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "세종", "울산"};
-        for (String rigion : rigions) {
-            getListPageInfo("https://www.diningcode.com/?region=" + rigion);
+        String[] regions = {"서울", "강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "세종", "울산"};
+        for (String region : regions) {
+            getListPageInfo("https://www.diningcode.com/?region=" + region, region);
         }
     }
 
-    private void getListPageInfo(String ListPageUrl) {
+    private void getListPageInfo(String ListPageUrl, String region) {
         try {
             driver.get(ListPageUrl);
 
@@ -48,14 +48,14 @@ public class RestaurantInfoService {
 
             //음식 테마별 "자세히 보기" 링크들
             List<WebElement> links = driver.findElements(By.xpath("//a[starts-with(@href, '/recom_detail')]"));
-            getDetailPageInfo(links);
+            getDetailPageInfo(links, region);
 
         } catch (Exception e) {
         }
 
     }
 
-    private void getDetailPageInfo(List<WebElement> links) {
+    private void getDetailPageInfo(List<WebElement> links, String region) {
         String originalWindow = driver.getWindowHandle();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
@@ -126,6 +126,7 @@ public class RestaurantInfoService {
 
                 Restaurant restaurant = Restaurant.builder()
                         .name(title)
+                        .region(region)
                         .location(roadAddress)
                         .rating(Float.parseFloat(rating))
                         .category(category)
