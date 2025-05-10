@@ -1,14 +1,20 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
+import com.letzgo.LetzgoBe.domain.community.post.entity.PostPage;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
 import com.letzgo.LetzgoBe.domain.map.dto.ReviewResponseDto;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
+import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
 import com.letzgo.LetzgoBe.domain.map.repository.ReviewRepository;
+import com.letzgo.LetzgoBe.global.exception.ReturnCode;
+import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -61,11 +67,20 @@ public class MapService {
         }
     }
 
-    public List<PlaceDto> getSearchedPlaces(String query, String lat, String lng, int radius, int num){
+    public Page<PlaceDto> getSearchedPlaces(String query, String lat, String lng, int radius, Pageable pageable){
+        checkPageSize(pageable.getPageSize());
         try {
-            return mapApiService.getNearPlaces(query, lat, lng, radius, num);
+            return mapApiService.getNearPlaces(query, lat, lng, radius, pageable);
         } catch (Exception e) {
             throw new RuntimeException("구글 api호출중 오류발생");
+        }
+    }
+
+    // 요청 페이지 수 제한
+    public void checkPageSize(int pageSize) {
+        int maxPageSize = PlacePage.getMaxPageSize();
+        if (pageSize > maxPageSize) {
+            throw new ServiceException(ReturnCode.PAGE_REQUEST_FAIL);
         }
     }
 }

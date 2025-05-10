@@ -6,10 +6,14 @@ import com.google.maps.model.*;
 import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -51,7 +55,7 @@ public class MapApiService {
 
     //주변의 장소를 검색
     //파라미터:검색키워드, 사용자위도경도, 검색주위반경(m단위), 받아올 갯수(최대20개)
-    public List<PlaceDto> getNearPlaces(String query, String lat, String lng, int radius, int num) throws IOException, InterruptedException, ApiException {
+    public Page<PlaceDto> getNearPlaces(String query, String lat, String lng, int radius, Pageable pageable) throws IOException, InterruptedException, ApiException {
 
         LatLng latLng = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
         TextSearchRequest textSearchRequest = PlacesApi.textSearchQuery(context, query, latLng);
@@ -63,10 +67,8 @@ public class MapApiService {
 
         List<PlaceDto> placeDtos = new ArrayList<>();
 
-        int resultCount = Math.min(apiResponse.results.length, Math.min(num, 20));
-
+        int resultCount = Math.min(apiResponse.results.length, 20);
         for (int i = 0; i < resultCount; i++) {
-
             PlacesSearchResult result = apiResponse.results[i];
 
             String photoRef = null;
@@ -84,8 +86,19 @@ public class MapApiService {
                     .build();
             placeDtos.add(nearPlace);
         }
-        
-        return placeDtos;
+
+        // 수동 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), placeDtos.size());
+        List<PlaceDto> pagedList;
+
+        if (start >= placeDtos.size()) {
+            pagedList = Collections.emptyList();
+        } else {
+            pagedList = placeDtos.subList(start, end);
+        }
+
+        return new PageImpl<>(pagedList, pageable, placeDtos.size());
     }
 }
 
