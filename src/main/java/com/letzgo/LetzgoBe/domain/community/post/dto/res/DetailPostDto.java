@@ -19,5 +19,7 @@ public class DetailPostDto {
     private Double mapY;
     private String content;
     private List<String> imageUrls;
+    private Boolean liked;
+    private Boolean saved;
     private LocalDateTime createdAt;
 }

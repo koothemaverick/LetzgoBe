@@ -133,9 +133,9 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long commentId, LoginUserDto loginUser) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
 
-        // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
+        // 댓글/게시글 작성자만 삭제 가능
         Long currentUserId = loginUser.getId();
-        if (!comment.getMember().getId().equals(currentUserId)) {
+        if (!comment.getMember().getId().equals(currentUserId) && !comment.getPost().getMember().getId().equals(currentUserId)) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
         deleteChildComments(commentId);

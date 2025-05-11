@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.dto;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 @Builder
@@ -7,12 +8,13 @@ import lombok.*;
 @Setter
 @ToString
 @AllArgsConstructor
-public class HotelDto {
-    String region;
+public class RestaurantResponseDto {
     String name;
+    String region;
     String location;
-    Integer sukbakPrice;
-    Integer daesilPrice;
     float rating;
+    String category;
     String imagePath;
+    double lat;
+    double lng;
 }

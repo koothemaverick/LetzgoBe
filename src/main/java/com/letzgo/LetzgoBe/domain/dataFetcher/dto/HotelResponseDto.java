@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @ToString
 @AllArgsConstructor
-public class HotelDto {
+public class HotelResponseDto {
     String region;
     String name;
     String location;
@@ -15,4 +15,7 @@ public class HotelDto {
     Integer daesilPrice;
     float rating;
     String imagePath;
+    Double lat;
+    Double lng;
+
 }
