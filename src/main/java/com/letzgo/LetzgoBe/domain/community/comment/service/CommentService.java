@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
-    Page<CommentDto> findByPostId(Long postId, Pageable pageable);
+    Page<CommentDto> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser);
 
     // 댓글 좋아요
     void addCommentLike(Long commentId, LoginUserDto loginUser);

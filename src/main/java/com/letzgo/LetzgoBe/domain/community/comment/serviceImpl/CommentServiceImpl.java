@@ -8,6 +8,7 @@ import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentDto;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.Comment;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentLike;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
+import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentLikeQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
@@ -31,6 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
+    private final CommentLikeQueryRepository commentLikeQueryRepository;
     private final PostRepository postRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
@@ -38,10 +40,10 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<CommentDto> findByPostId(Long postId, Pageable pageable){
+    public Page<CommentDto> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
-        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtDesc(postId, pageable);
-        return comments.map(this::convertToCommentDto);
+        Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
+        return comments.map(comment -> convertToCommentDto(comment, loginUser));
     }
 
     // 댓글 좋아요
@@ -179,15 +181,18 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // Comment를 CommentDto로 변환
-    private CommentDto convertToCommentDto(Comment comment) {
+    private CommentDto convertToCommentDto(Comment comment, LoginUserDto loginUser) {
+        boolean liked = commentLikeQueryRepository.existsByMemberIdAndCommentId(loginUser.getId(), comment.getId());
+        Long likeCount = commentLikeQueryRepository.countByCommentId(comment.getId());
         return CommentDto.builder()
                 .id(comment.getId())
                 .memberId(comment.getMember().getId())
                 .nickname(comment.getMember().getNickname())
                 .profileImageUrl(comment.getMember().getProfileImageUrl())
-                .likeCount(comment.getLikedMembers().size())
+                .likeCount(likeCount)
                 .content(comment.getContent())
                 .superCommentId(comment.getSuperCommentId())
+                .liked(liked)
                 .createdAt(comment.getCreatedAt())
                 .build();
     }

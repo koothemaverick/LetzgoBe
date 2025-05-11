@@ -26,9 +26,11 @@ public class ApiV1CommentController {
 
     // 해당 게시글에 작성된 모든 댓글 조회
     @GetMapping("/{postId}")
-    public ApiResponse<CommentDto> findByPostId(@ModelAttribute CommentPage request, @PathVariable("postId") Long postId){
+    public ApiResponse<CommentDto> findByPostId(@ModelAttribute CommentPage request,
+                                                @PathVariable("postId") Long postId,
+                                                @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(LetzgoPage.of(commentService.findByPostId(postId, pageable)));
+        return ApiResponse.of(LetzgoPage.of(commentService.findByPostId(postId, pageable, loginUser)));
     }
 
     // 댓글 좋아요
