@@ -14,7 +14,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
-      host: redis_container
+      host: redis
       port: 6379
     mongodb:
       uri: mongodb://admin:${POSTGRES_PASSWORD}@${HOST_DB}:27017/meta_db?authSource=admin
