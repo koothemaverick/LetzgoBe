@@ -12,8 +12,9 @@ public class CommentDto {
     private Long memberId;
     private String nickname;
     private String profileImageUrl;
-    private int likeCount;
+    private Long likeCount;
     private String content;
     private Long superCommentId;
+    private Boolean liked;
     private LocalDateTime createdAt;
 }

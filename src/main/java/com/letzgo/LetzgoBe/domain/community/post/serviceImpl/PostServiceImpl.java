@@ -290,13 +290,14 @@ public class PostServiceImpl implements PostService {
     // Post를 DetailPostDto로 변환
     private DetailPostDto convertToDetailPostDto(Post post, LoginUserDto loginUser) {
         boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
+        Long likeCount = postLikeQueryRepository.countByPostId(post.getId());
         boolean saved = postSaveQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
         return DetailPostDto.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
                 .profileImageUrl(post.getMember().getProfileImageUrl())
                 .nickname(post.getMember().getNickname())
-                .likeCount((long) post.getLikedMembers().size())
+                .likeCount(likeCount)
                 .commentCount(commentRepository.countPostComment(post.getId()))
                 .mapX(post.getMapX())
                 .mapY(post.getMapY())
