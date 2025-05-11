@@ -48,6 +48,7 @@ public class SecurityConfig {
                                 "/rest-api/v1/oauth2/**",
                                 "/map-api/**",
                                 "/rest-api/v1/member",
+                                "/api/**",
                                 "/rest-api/v1/post/**").permitAll()
                         .anyRequest().authenticated()
                 )

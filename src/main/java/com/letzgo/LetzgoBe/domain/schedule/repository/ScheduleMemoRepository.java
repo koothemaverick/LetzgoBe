@@ -4,7 +4,8 @@ import com.letzgo.LetzgoBe.domain.schedule.entity.ScheduleMemo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ScheduleMemoRepository extends JpaRepository<ScheduleMemo, Long> {
-    List<ScheduleMemo> findBySchedule_SchedulePk(Long schedulePk);
+    Optional<ScheduleMemo> findBySchedulePlace_SchedulePlacePk(Long schedulePlacePk);
 }

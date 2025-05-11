@@ -7,6 +7,5 @@ import lombok.Setter;
 @Setter
 public class ScheduleMemoDto {
     private Long scheduleMemoPk;
-    private Long schedulePk;
     private String content;
 }

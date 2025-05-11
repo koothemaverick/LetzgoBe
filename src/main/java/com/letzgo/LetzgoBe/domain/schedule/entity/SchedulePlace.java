@@ -20,9 +20,12 @@ public class SchedulePlace {
     @JoinColumn(name = "schedule_pk")
     private Schedule schedule;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_pk")
-    private Place place;
+    private String name;
+    private String address;
+    private String placeId; // Google Maps place_id
+    private double latitude;
+    private double longitude;
 
     private int orderIndex;
+    private int sequence;
 }
