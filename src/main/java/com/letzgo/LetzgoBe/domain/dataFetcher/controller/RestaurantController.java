@@ -28,7 +28,7 @@ public class RestaurantController {
     //테스트용요청
     @GetMapping("/test")
     void test() {
-        restaurantInfoService.getRestaurantsInfo();
+        restaurantInfoService.getRestaurantsInfo(2);
     }
     @GetMapping("/testGeo")
     void testGeo() {
