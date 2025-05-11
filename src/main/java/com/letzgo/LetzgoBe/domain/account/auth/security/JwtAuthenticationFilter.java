@@ -37,7 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 인증이 필요 없는 URL 리스트
         return path.startsWith("/rest-api/v1/auth/login")
-                || path.startsWith("/rest-api/v1/oauth2");
+                || path.startsWith("/rest-api/v1/oauth2")
+                || path.startsWith("/api/**");
     }
 
     @Override
@@ -52,6 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         boolean decodingSuccess = false;
+
         String email = "";
         try {
             if (!jwtTokenProvider.validateToken(token)) {

@@ -15,9 +15,9 @@ public class ScheduleMemo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long scheduleMemoPk;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_pk")
-    private Schedule schedule;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_place_pk")
+    private SchedulePlace schedulePlace;
 
     @Column(length = 500)
     private String content;

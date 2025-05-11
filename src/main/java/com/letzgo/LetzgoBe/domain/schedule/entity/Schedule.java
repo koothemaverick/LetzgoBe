@@ -23,10 +23,7 @@ public class Schedule {
     @JoinColumn(name = "host_account_pk", nullable = false)
     private Member hostAccount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_pk", nullable = false)
-    private Region region;
-
+    private String region;
     private String title;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -34,9 +31,4 @@ public class Schedule {
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SchedulePlace> places = new ArrayList<>();
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduleMemo> memos = new ArrayList<>();
-
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ScheduleItem> items = new ArrayList<>();
 }

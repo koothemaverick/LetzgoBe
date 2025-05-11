@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class ScheduleDto {
     private Long schedulePk;
     private Long hostAccountPk;
-    private Long regionPk;
+    private String region;
     private String title;
     private LocalDate startDate;
     private LocalDate endDate;
