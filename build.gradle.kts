@@ -9,7 +9,7 @@ version = "0.0.1-SNAPSHOT"
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -94,6 +94,7 @@ val generated = "src/main/generated"
 
 // querydsl QClass 파일 생성 위치를 지정
 tasks.withType<JavaCompile> {
+	options.release.set(21)
 	options.generatedSourceOutputDirectory.set(file(generated))
 }
 
