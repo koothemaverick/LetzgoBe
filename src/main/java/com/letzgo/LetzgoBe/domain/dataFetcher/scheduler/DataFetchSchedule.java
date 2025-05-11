@@ -22,6 +22,9 @@ public class DataFetchSchedule {
     @Value("${schedule.hotel.use-page}")
     //지역당 가져올 페이지 수, 페이지당 숙소 20개
     private int page;
+    @Value("${schedule.restaurant.use-scroll}")
+    //지역페이지에서 스크롤할 횟수
+    private int scroll;
 
     @Scheduled(cron = "${schedule.hotel.cron}")
     public void fetchHotelDataSchedule() {
@@ -37,7 +40,7 @@ public class DataFetchSchedule {
     public void fetchRestaurantDataSchedule() {
         try {
             if (useSchedule)
-                restaurantInfoService.getRestaurantsInfo();
+                restaurantInfoService.getRestaurantsInfo(scroll);
         } catch (Exception e) {
             log.warn("restaurantInfoService 스케줄링 중 오류 발생");
         }

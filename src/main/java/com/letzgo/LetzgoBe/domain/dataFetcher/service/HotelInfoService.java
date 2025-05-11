@@ -27,7 +27,7 @@ public class HotelInfoService {
                 "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
         int progress = 0;
         for (String region : regions) {
-            log.info("호텔정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
+            log.info("숙소정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
             for (int i = 1; i <= page; i++) {
                 if (i == 1)
                     getListPageInfo("https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true", region);
@@ -36,7 +36,7 @@ public class HotelInfoService {
             }
             progress++;
         }
-        log.info("호텔 정보 탐색완료");
+        log.info("숙소 정보 탐색완료");
     }
 
     private void getListPageInfo(String ListPageUrl, String region) {

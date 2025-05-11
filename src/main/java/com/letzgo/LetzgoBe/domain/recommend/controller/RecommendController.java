@@ -15,10 +15,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value="/rest-api/v1/recommend")
+@RequestMapping(value = "/rest-api/v1/recommend")
 @RequiredArgsConstructor
 public class RecommendController {
     private final RecommendService recommendService;
+
     @GetMapping
     public ApiResponse<PlaceDto> getRecommendedPlaces(@LoginUser LoginUserDto loginUserDto, @ModelAttribute PlacePage request) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
