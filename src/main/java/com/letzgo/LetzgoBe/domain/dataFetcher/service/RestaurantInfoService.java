@@ -95,7 +95,7 @@ public class RestaurantInfoService {
     }
 
 
-    public void getDetailPageInfo(List<WebElement> links, String region) {
+    private void getDetailPageInfo(List<WebElement> links, String region) {
         List<String> urls = new ArrayList<>();
         for (WebElement link : links) {
             String url = link.getAttribute("href");
