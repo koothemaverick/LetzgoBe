@@ -12,7 +12,7 @@ import java.util.List;
 public class DetailMemberDto {
     private Long id;
     private String name;
-    private String nickName;
+    private String nickname;
     private String phone;
     private String email;
     private String password;
