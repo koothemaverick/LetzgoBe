@@ -8,7 +8,7 @@ import lombok.Data;
 public class MemberDto {
     private Long id;
     private String name;
-    private String nickName;
+    private String nickname;
     private String profileImageUrl;
     private Long followMemberCount;
     private Long followedMemberCount;

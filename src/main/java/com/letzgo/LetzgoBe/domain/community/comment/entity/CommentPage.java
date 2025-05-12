@@ -7,7 +7,7 @@ import lombok.Getter;
 public class CommentPage {
     // 기본 page, size
     private int page = 0;
-    private int size = 10;
+    private int size = 20;
     @Getter
-    private static final int maxPageSize = 10;
+    private static final int maxPageSize = 20;
 }
