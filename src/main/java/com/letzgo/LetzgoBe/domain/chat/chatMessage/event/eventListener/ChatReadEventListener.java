@@ -18,7 +18,7 @@ public class ChatReadEventListener {
     private final ObjectMapper objectMapper;
 
     @EventListener
-    public void handleChatReadAllEvent(ChatReadEvent event) {
+    public void handleChatReadEvent(ChatReadEvent event) {
         ChatWebSocketPayload payload = new ChatWebSocketPayload();
         payload.setMemberId(event.getMemberId());
         payload.setMessageId(event.getMessageId());
