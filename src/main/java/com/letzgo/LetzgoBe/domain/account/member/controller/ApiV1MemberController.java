@@ -50,8 +50,8 @@ public class ApiV1MemberController {
 
     // 다른 멤버의 상세회원정보 조회
     @GetMapping("/detail/{memberId}")
-    public ApiResponse<DetailMemberDto> getMemberDetailInfo(@PathVariable("memberId") Long memberId) {
-        return ApiResponse.of(memberService.getMemberDetailInfo(memberId));
+    public ApiResponse<DetailMemberDto> getDetailMemberInfo(@PathVariable("memberId") Long memberId) {
+        return ApiResponse.of(memberService.getDetailMemberInfo(memberId));
     }
 
     // 회원정보 수정

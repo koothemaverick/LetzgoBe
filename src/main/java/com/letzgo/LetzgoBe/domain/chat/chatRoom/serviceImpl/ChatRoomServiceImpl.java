@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatRoom.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -26,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -323,12 +325,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         List<Long> messageIds = chatMessageRepository.findLatestMessageIdsByChatRoomId(chatRoom.getId(), PageRequest.of(0, 1));
         Long latestMessageId = messageIds.stream().findFirst().orElse(null);
 
-        // 해당 메시지 ID로 MongoDB에서 메시지 내용 조회
+        // 메시지 내용과 생성 시간 조회
         String lastMessage = "";
+        LocalDateTime lastMessageCreatedAt = null;
         if (latestMessageId != null) {
-            lastMessage = messageContentRepository.findById(latestMessageId.toString())
-                    .map(MessageContent::getContent)
-                    .orElse("");  // 메시지가 없으면 빈 문자열 반환
+            Optional<MessageContent> optionalMessageContent = messageContentRepository.findById(latestMessageId.toString());
+            Optional<ChatMessage> optionalChatMessage = chatMessageRepository.findById(latestMessageId);
+
+            lastMessage = optionalMessageContent.map(MessageContent::getContent).orElse("");
+            lastMessageCreatedAt = optionalChatMessage.map(ChatMessage::getCreatedAt).orElse(null);
         }
 
         // 본인이 안 읽은 메시지 수 계산
@@ -341,6 +346,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .chatRoomMembers(chatRoomMembers.stream() // 여기서도 변경
                         .map(chatRoomMember -> SimpleMember.builder()
                                 .userId(chatRoomMember.getMember().getId())
+                                .userName(chatRoomMember.getMember().getName())
                                 .userNickname(chatRoomMember.getMember().getNickname()) // 이제 정상적으로 가져올 수 있음
                                 .profileImageUrl(chatRoomMember.getMember().getProfileImageUrl())
                                 .build()
@@ -348,6 +354,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                         .collect(Collectors.toList()))
                 .unreadCount(unreadCount)
                 .lastMessage(lastMessage)
+                .lastMessageCreatedAt(lastMessageCreatedAt)
                 .build();
     }
 

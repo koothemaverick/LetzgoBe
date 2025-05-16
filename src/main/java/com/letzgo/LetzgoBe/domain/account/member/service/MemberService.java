@@ -13,7 +13,7 @@ public interface MemberService {
     // 회원가입
     Member signup(MemberForm memberForm);
 
-    // 회원정보 조회
+    // 본인 회원정보 조회
     MemberDto getMyInfo(LoginUserDto loginUser);
 
     // 본인 상세회원정보 조회
@@ -23,7 +23,7 @@ public interface MemberService {
     MemberDto getMemberInfo(Long memberId);
 
     // 다른 멤버의 상세회원정보 조회
-    DetailMemberDto getMemberDetailInfo(Long memberId);
+    DetailMemberDto getDetailMemberInfo(Long memberId);
 
     // 회원정보 수정
     void updateMember(MemberForm memberForm, MultipartFile imageFile, LoginUserDto loginUser);

@@ -190,7 +190,7 @@ public class NotProdService {
                 .content("점심 먹었어?")
                 .build();
         chatMessageService.writeChatMessage(chatRoomId, chatMessageForm1, members.get(0).getId());
-        chatMessageService.readChatMessage(chatRoomId, members.get(1).getId()); // 유저2 읽음 처리
+        chatMessageService.readChatMessage(1L, members.get(1).getId()); // 유저2 읽음 처리
 
         // 유저2 -> 유저1 메시지
         ChatMessageForm chatMessageForm2 = ChatMessageForm.builder()
@@ -206,22 +206,22 @@ public class NotProdService {
                 .content("안녕하세요!")
                 .build();
         chatMessageService.writeChatMessage(chatRoomId, chatMessageForm3, members.get(0).getId());
-        chatMessageService.readChatMessage(chatRoomId, members.get(1).getId()); // 유저2 읽음 처리
-        chatMessageService.readChatMessage(chatRoomId, members.get(2).getId()); // 유저3 읽음 처리
+        chatMessageService.readChatMessage(3L, members.get(1).getId()); // 유저2 읽음 처리
+        chatMessageService.readChatMessage(3L, members.get(2).getId()); // 유저3 읽음 처리
 
         // 유저2 -> 유저1, 유저3 메시지
         ChatMessageForm chatMessageForm4 = ChatMessageForm.builder()
                 .content("안녕하세용")
                 .build();
         chatMessageService.writeChatMessage(chatRoomId, chatMessageForm4, members.get(1).getId());
-        chatMessageService.readChatMessage(chatRoomId, members.get(2).getId()); // 유저3 읽음 처리
+        chatMessageService.readChatMessage(4L, members.get(2).getId()); // 유저3 읽음 처리
 
         // 유저3 -> 유저1, 유저2 메시지
         ChatMessageForm chatMessageForm5 = ChatMessageForm.builder()
                 .content("반가워요!!")
                 .build();
         chatMessageService.writeChatMessage(chatRoomId, chatMessageForm5, members.get(2).getId());
-        chatMessageService.readChatMessage(chatRoomId, members.get(1).getId()); // 유저2 읽음 처리
+        chatMessageService.readChatMessage(5L, members.get(1).getId()); // 유저2 읽음 처리
     }
 
     // 장소 데이터 생성

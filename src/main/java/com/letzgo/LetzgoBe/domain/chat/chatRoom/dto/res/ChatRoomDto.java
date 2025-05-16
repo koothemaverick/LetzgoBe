@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,5 +20,6 @@ public class ChatRoomDto {
     private List<SimpleMember> chatRoomMembers;
     private Long unreadCount;
     private String lastMessage;
+    private LocalDateTime lastMessageCreatedAt;
     private int memberCount;
 }
