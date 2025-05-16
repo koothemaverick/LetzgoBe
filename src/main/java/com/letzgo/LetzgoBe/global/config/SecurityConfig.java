@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/map-api/**",
                                 "/rest-api/v1/member",
                                 "/api/**",
-                                "/rest-api/v1/post/**").permitAll()
+                                "/rest-api/v1/post/**",
+                                "/find-password/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

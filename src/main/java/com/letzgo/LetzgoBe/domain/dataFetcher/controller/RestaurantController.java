@@ -19,7 +19,8 @@ public class RestaurantController {
     private final GeocodingService geocodingService;
 
     //해당하는 지역의 식당정보들을 반환
-    //region: "서울", "강원", "경기", "경남", "경북", "광주", "대구", "대전", "부산", "세종", "울산"
+    //region: "경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
+    //"울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"
     @GetMapping("/info")
     ApiResponse getRestaurantsInfo(@RequestParam("region") String region) {
         return ApiResponse.of(infoProvideService.getRestaurantInfo(region));

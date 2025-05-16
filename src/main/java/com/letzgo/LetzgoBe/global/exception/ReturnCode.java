@@ -39,6 +39,8 @@ public enum ReturnCode {
     DISCONNECT_FAIL(500, "USER_011", "소셜 계정 연동 해제에 실패했습니다."),
     INVALID_SOCIAL_CONNECTION(400, "USER_012", "기존 정보를 찾지 못하여 소셜 연동이 실패했습니다."),
     PASSWORD_VERIFICATION_REQUIRED(400, "USER_013", "비밀번호 확인이 필요합니다."),
+    INVALID_VERIFICATION_CODE(400, "USER_014", "인증코드가 올바르지 않습니다."),
+    INVALID_RESET_TOKEN(400, "USER_014", "비밀번호 재설정 토큰이 올바르지 않습니다."),
 
     // Report 관련 에러
     REPORT_NOT_FOUND(404, "REPORT_001", "해당 신고를 찾을 수 없습니다."),
