@@ -5,8 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ChatReadAllEvent {
-    private Long chatRoomId;
+public class ChatReadEvent {
     private Long memberId;
-    private Long lastReadMessageId;
+    private Long messageId;
+    private Long chatRoomId;
 }

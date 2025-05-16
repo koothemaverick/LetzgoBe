@@ -4,8 +4,15 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import lombok.Data;
 
 @Data
-public class ChatMessagePayload {
+public class ChatWebSocketPayload {
+    private String messageType; // "MESSAGE", "READ"
     private Long chatRoomId;
-    private String messageType = "MESSAGE";
+
+    // message일 때만 존재
     private ChatMessageDto chatMessageDto;
+
+    // read일 때만 존재
+    private Long memberId;
+    private Long messageId;
 }
+
