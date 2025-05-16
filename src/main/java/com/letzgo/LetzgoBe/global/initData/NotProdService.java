@@ -104,6 +104,23 @@ public class NotProdService {
                     .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
             members.add(member);
         }
+
+        //이메일인증 테스트용 유저6
+        MemberForm memberForm = MemberForm.builder()
+                .name("test6")
+                .nickname("test6")
+                .phone("010-1234-4321")
+                .email("uichan0610@gmail.com")
+                .password("1234")
+                .gender(Member.Gender.MALE)
+                .birthday(LocalDate.of(2001,01,01))
+                .build();
+        memberService.signup(memberForm);
+
+        Member member = memberRepository.findByEmail(memberForm.getEmail())
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        members.add(member);
+
         return members;
     }
 

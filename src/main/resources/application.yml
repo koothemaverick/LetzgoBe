@@ -47,3 +47,20 @@ api-keys:
 
 selenium:
   remote-url: ${SELENIUM_REMOTE_URL:http://localhost:4444/wd/hub}
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: capstone2025letzgo@gmail.com
+  properties:
+    mail:
+      smtp:
+        auth: true
+        starttls:
+          enable: true
+          required: true
+        connection-timeout: 5000
+        timeout: 5000
+        write-timeout: 5000
+  code-expiration-millis: 600000  #코드 만료기간: 10분
+
