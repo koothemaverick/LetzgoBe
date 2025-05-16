@@ -3,7 +3,6 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatReadEvent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
@@ -68,9 +67,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     .build();
             chatMessageReadRepository.save(readRecord);
         }
-        // 읽음 상태 이벤트 발행
-        ChatReadEvent event = new ChatReadEvent(messageId, memberId, chatMessage.getChatRoom().getId());
-        eventPublisher.publishEvent(event);
     }
 
     // 해당 채팅방의 이전 메시지 가져오기
