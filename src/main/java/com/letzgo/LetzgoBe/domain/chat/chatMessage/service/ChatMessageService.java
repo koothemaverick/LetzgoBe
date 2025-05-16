@@ -1,9 +1,7 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.service;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
-import jakarta.validation.Valid;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +19,7 @@ public interface ChatMessageService {
     Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 생성
-    void writeChatMessage(Long chatRoomId, ChatMessageForm chatMessageForm, Long memberId);
+    void writeChatMessage(Long chatRoomId, String content, Long memberId);
 
     // 해당 채팅방에서 이미지 메시지 생성
     void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);

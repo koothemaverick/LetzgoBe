@@ -5,13 +5,11 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
-import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
@@ -25,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -203,41 +200,26 @@ public class NotProdService {
     // 유저 1, 2의 1:1 채팅
     private void createPrivateChatMessages(List<Member> members, Long chatRoomId) {
         // 유저1 -> 유저2 메시지
-        ChatMessageForm chatMessageForm1 = ChatMessageForm.builder()
-                .content("점심 먹었어?")
-                .build();
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm1, members.get(0).getId());
+        chatMessageService.writeChatMessage(chatRoomId, "점심 먹었어?", members.get(0).getId());
         chatMessageService.readChatMessage(1L, members.get(1).getId()); // 유저2 읽음 처리
 
         // 유저2 -> 유저1 메시지
-        ChatMessageForm chatMessageForm2 = ChatMessageForm.builder()
-                .content("아직 안먹었는데 돈까스 ㄱㄱ?")
-                .build();
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm2, members.get(1).getId());
+        chatMessageService.writeChatMessage(chatRoomId, "아직 안먹었는데 돈까스 ㄱㄱ?", members.get(1).getId());
     }
 
     // 유저 1, 2, 3의 단체 채팅
     private void createGroupChatMessages(List<Member> members, Long chatRoomId) {
         // 유저1 -> 유저2, 유저3 메시지
-        ChatMessageForm chatMessageForm3 = ChatMessageForm.builder()
-                .content("안녕하세요!")
-                .build();
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm3, members.get(0).getId());
+        chatMessageService.writeChatMessage(chatRoomId, "안녕하세요!", members.get(0).getId());
         chatMessageService.readChatMessage(3L, members.get(1).getId()); // 유저2 읽음 처리
         chatMessageService.readChatMessage(3L, members.get(2).getId()); // 유저3 읽음 처리
 
         // 유저2 -> 유저1, 유저3 메시지
-        ChatMessageForm chatMessageForm4 = ChatMessageForm.builder()
-                .content("안녕하세용")
-                .build();
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm4, members.get(1).getId());
+        chatMessageService.writeChatMessage(chatRoomId, "안녕하세용", members.get(1).getId());
         chatMessageService.readChatMessage(4L, members.get(2).getId()); // 유저3 읽음 처리
 
         // 유저3 -> 유저1, 유저2 메시지
-        ChatMessageForm chatMessageForm5 = ChatMessageForm.builder()
-                .content("반가워요!!")
-                .build();
-        chatMessageService.writeChatMessage(chatRoomId, chatMessageForm5, members.get(2).getId());
+        chatMessageService.writeChatMessage(chatRoomId, "반가워요!!", members.get(2).getId());
         chatMessageService.readChatMessage(5L, members.get(1).getId()); // 유저2 읽음 처리
     }
 

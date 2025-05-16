@@ -2,19 +2,15 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
