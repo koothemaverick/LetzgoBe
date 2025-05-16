@@ -22,17 +22,23 @@ public class FindPasswordServiceImpl {
     private SecureRandom secureRandom = new SecureRandom();
 
     // 이메일 인증코드 전송(비밀번호 찾기)
-    public void sendEmailVerificationCode(String email) {
-        //1.인증코드 생성 및 캐싱
+    public boolean sendEmailVerificationCode(String email) {
+        //1.존재하는 유저인지 확인
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isEmpty())
+            return false;
+
+        //2.인증코드 생성 및 캐싱
         int code = 100000 + secureRandom.nextInt(900000);
         redisVerificationCodeService.saveCodeByEmail(email, code);
 
-        //2.메일 발송
+        //3.메일 발송
         SimpleMailMessage verificationCodeMail = new SimpleMailMessage();
         verificationCodeMail.setTo(email);
         verificationCodeMail.setSubject("[Letzgo] 비밀번호 재설정을 위한 인증코드입니다.");
         verificationCodeMail.setText("비밀번호 재설정을 위한 인증코드는 " + code + " 입니다.\n만료기간(10분) 전에 입력해주세요.");
         javaMailSender.send(verificationCodeMail);
+        return true;
     }
 
     // 이메일 인증코드 인증 (비밀번호 찾기)
