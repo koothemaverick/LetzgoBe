@@ -77,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
         return member;
     }
 
-    // 회원정보 조회
+    // 본인 회원정보 조회
     @Override
     @Transactional
     public MemberDto getMyInfo(LoginUserDto loginUser) {
@@ -103,7 +103,7 @@ public class MemberServiceImpl implements MemberService {
     // 다른 멤버의 상세회원정보 조회
     @Override
     @Transactional
-    public DetailMemberDto getMemberDetailInfo(Long memberId){
+    public DetailMemberDto getDetailMemberInfo(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberConvertToDetailMemberInfo(member);
@@ -351,6 +351,7 @@ public class MemberServiceImpl implements MemberService {
                 .followList(loginUser.getFollowList().stream()
                         .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollowed().getId())
+                                .userName(MemberFollow.getFollowed().getName())
                                 .userNickname(MemberFollow.getFollowed().getNickname())
                                 .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
                                 .build()
@@ -361,6 +362,7 @@ public class MemberServiceImpl implements MemberService {
                 .followedList(loginUser.getFollowedList().stream()
                         .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollow().getId())
+                                .userName(MemberFollow.getFollow().getName())
                                 .userNickname(MemberFollow.getFollow().getNickname())
                                 .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
                                 .build()
@@ -371,6 +373,7 @@ public class MemberServiceImpl implements MemberService {
                 .followReqList(loginUser.getFollowReqList().stream()
                         .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowRec().getId())
+                                .userName(MemberFollowReq.getFollowRec().getName())
                                 .userNickname(MemberFollowReq.getFollowRec().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
                                 .build()
@@ -381,6 +384,7 @@ public class MemberServiceImpl implements MemberService {
                 .followRecList(loginUser.getFollowRecList().stream()
                         .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowReq().getId())
+                                .userName(MemberFollowReq.getFollowReq().getName())
                                 .userNickname(MemberFollowReq.getFollowReq().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
                                 .build()
@@ -407,6 +411,7 @@ public class MemberServiceImpl implements MemberService {
                 .followList(member.getFollowList().stream()
                         .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollowed().getId())
+                                .userName(MemberFollow.getFollowed().getName())
                                 .userNickname(MemberFollow.getFollowed().getNickname())
                                 .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
                                 .build()
@@ -417,6 +422,7 @@ public class MemberServiceImpl implements MemberService {
                 .followedList(member.getFollowedList().stream()
                         .map(MemberFollow -> SimpleMember.builder()
                                 .userId(MemberFollow.getFollow().getId())
+                                .userName(MemberFollow.getFollow().getName())
                                 .userNickname(MemberFollow.getFollow().getNickname())
                                 .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
                                 .build()
@@ -427,6 +433,7 @@ public class MemberServiceImpl implements MemberService {
                 .followReqList(member.getFollowReqList().stream()
                         .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowRec().getId())
+                                .userName(MemberFollowReq.getFollowRec().getName())
                                 .userNickname(MemberFollowReq.getFollowRec().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
                                 .build()
@@ -437,6 +444,7 @@ public class MemberServiceImpl implements MemberService {
                 .followRecList(member.getFollowRecList().stream()
                         .map(MemberFollowReq -> SimpleMember.builder()
                                 .userId(MemberFollowReq.getFollowReq().getId())
+                                .userName(MemberFollowReq.getFollowReq().getName())
                                 .userNickname(MemberFollowReq.getFollowReq().getNickname())
                                 .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
                                 .build()

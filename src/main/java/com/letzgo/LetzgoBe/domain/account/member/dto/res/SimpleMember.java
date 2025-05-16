@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class SimpleMember {
     private Long userId;
+    private String userName;
     private String userNickname;
     private String profileImageUrl;
 }

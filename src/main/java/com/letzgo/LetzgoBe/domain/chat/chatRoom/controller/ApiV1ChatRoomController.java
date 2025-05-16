@@ -68,7 +68,7 @@ public class ApiV1ChatRoomController {
 
     // 채팅방 나가기(DM/그룹) [참여자 권한]
     @DeleteMapping("/{chatRoomId}")
-    public ApiResponse<String> leaveChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser){
+    public ApiResponse<String> leaveChatRoom(@PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser){
         chatRoomService.leaveChatRoomMember(chatRoomId, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
