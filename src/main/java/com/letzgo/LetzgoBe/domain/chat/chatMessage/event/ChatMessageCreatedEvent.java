@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.event;
 
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

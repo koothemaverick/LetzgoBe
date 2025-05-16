@@ -4,8 +4,7 @@ import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatReadAllEvent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.req.ChatMessageForm;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
@@ -22,7 +21,6 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -157,7 +155,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 생성
     @Override
     @Transactional
-    public void writeChatMessage(Long chatRoomId, @Valid ChatMessageForm chatMessageForm, Long memberId) {
+    public void writeChatMessage(Long chatRoomId, String content, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
@@ -178,7 +176,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageRepository.save(chatMessage);
 
         // MongoDB에 메시지 본문 저장
-        String content = (chatMessageForm != null) ? chatMessageForm.getContent() : "";
         MessageContent messageContent = MessageContent.builder()
                 .id(String.valueOf(chatMessage.getId()))
                 .content(content)

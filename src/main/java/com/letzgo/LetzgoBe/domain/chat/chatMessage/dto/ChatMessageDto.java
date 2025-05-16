@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.res;
+package com.letzgo.LetzgoBe.domain.chat.chatMessage.dto;
 
 import lombok.Builder;
 import lombok.Data;
