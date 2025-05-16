@@ -9,6 +9,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageCreatedEvent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageReadAllEvent;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -328,6 +329,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .orElse(null);
         chatRoomMember.setLastReadMessageId(lastReadMessageId);
         chatRoomMemberRepository.save(chatRoomMember);
+
+        // 해당 채팅방 내의 모든 메시지 읽음 이벤트 발행
+        eventPublisher.publishEvent(new ChatMessageReadAllEvent(memberId, chatRoomId, lastReadMessageId));
     }
 
     // 요청 페이지 수 제한

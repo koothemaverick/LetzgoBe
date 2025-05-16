@@ -13,15 +13,20 @@ public class ChatWebSocketPayload {
     private MessageType messageType;
     public enum MessageType {
         MESSAGE,
-        READ
+        READ,
+        READALL
     }
+
+    private Long memberId;
 
     private Long chatRoomId;
 
-    // message일 때만 존재
+    // MESSAGE일 때만 존재
     private ChatMessageDto chatMessageDto;
 
-    // read일 때만 존재
-    private Long memberId;
+    // READ일 때만 존재
     private Long messageId;
+
+    // READALL일 때만 존재
+    private Long lastReadMessageId;
 }
