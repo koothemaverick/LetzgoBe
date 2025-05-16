@@ -16,8 +16,10 @@ public class FindPasswordController {
     // 이메일 인증코드 전송
     @GetMapping("/send-code/email")
     public ApiResponse<String> sendCodeToEmail(@RequestParam("email") String email) {
-        findPasswordService.sendEmailVerificationCode(email);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        boolean result = findPasswordService.sendEmailVerificationCode(email);
+        if (result) //해당 이메일의 유저 존재하지 않을경우
+            return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.of(ReturnCode.USER_NOT_FOUND);
     }
 
     // 이메일 인증코드 인증
@@ -35,7 +37,7 @@ public class FindPasswordController {
                                              @RequestParam("token") String token,
                                              @RequestParam("password") String newPassword) {
         boolean result = findPasswordService.resetPassword(email, token, newPassword);
-        if (result)
+        if (result) //재설정 토큰 불일치 할경우
             return ApiResponse.of(ReturnCode.SUCCESS);
         return ApiResponse.of(ReturnCode.INVALID_RESET_TOKEN);
     }
