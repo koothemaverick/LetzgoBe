@@ -32,6 +32,7 @@ public class LetzgoBeApplication {
 		System.setProperty("GOOGLE_API_KEY", dotenv.get("GOOGLE_API_KEY"));
 		System.setProperty("NAVER_CLOUDPLATFROM_ID", dotenv.get("NAVER_CLOUDPLATFROM_ID"));
 		System.setProperty("NAVER_CLOUDPLATFROM_SECRET", dotenv.get("NAVER_CLOUDPLATFROM_SECRET"));
+		System.setProperty("MAIL_APP_PASSWORD", dotenv.get("MAIL_APP_PASSWORD"));
 
 		SpringApplication.run(LetzgoBeApplication.class, args);
 	}
