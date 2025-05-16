@@ -59,9 +59,9 @@ public class EmailConfig {
         properties.put("mail.smtp.auth", auth);
         properties.put("mail.smtp.starttls.enable", starttlsEnable);
         properties.put("mail.smtp.starttls.required", starttlsRequired);
-        properties.put("mail.smtp.connectiontimeout", connectionTimeout);
+        properties.put("mail.smtp.connection-timeout", connectionTimeout);
         properties.put("mail.smtp.timeout", timeout);
-        properties.put("mail.smtp.writetimeout", writeTimeout);
+        properties.put("mail.smtp.write-timeout", writeTimeout);
 
         return properties;
     }
