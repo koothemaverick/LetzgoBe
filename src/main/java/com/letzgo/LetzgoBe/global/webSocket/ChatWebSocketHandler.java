@@ -1,6 +1,7 @@
 package com.letzgo.LetzgoBe.global.webSocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
@@ -46,12 +47,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         ChatWebSocketPayload payload = objectMapper.readValue(message.getPayload(), ChatWebSocketPayload.class);
-        if ("MESSAGE".equalsIgnoreCase(payload.getMessageType())) {
+        if (payload.getMessageType() == ChatWebSocketPayload.MessageType.MESSAGE) {
             // 채팅 메시지 생성
-            chatMessageService.writeChatMessage(payload.getChatRoomId(), payload.getChatMessageDto().getContent(), payload.getChatMessageDto().getMemberId());
+            ChatMessageDto savedChatMessageDto = chatMessageService.writeChatMessage(payload.getChatRoomId(), payload.getChatMessageDto().getContent(), payload.getChatMessageDto().getMemberId());
+            payload.setChatMessageDto(savedChatMessageDto);
             // 모두에게 메시지 브로드캐스트
-            broadcastToRoom(payload.getChatRoomId(), message.getPayload());
-        } else if ("READ".equalsIgnoreCase(payload.getMessageType())) {
+            String updatedPayload = objectMapper.writeValueAsString(payload);
+            broadcastToRoom(payload.getChatRoomId(), updatedPayload);
+        } else if (payload.getMessageType() == ChatWebSocketPayload.MessageType.READ) {
             // 메시지 읽음 처리
             chatMessageService.readChatMessage(payload.getMessageId(), payload.getMemberId());
             // 읽음 상태 브로드캐스트

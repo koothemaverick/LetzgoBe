@@ -19,7 +19,7 @@ public interface ChatMessageService {
     Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 생성
-    void writeChatMessage(Long chatRoomId, String content, Long memberId);
+    ChatMessageDto writeChatMessage(Long chatRoomId, String content, Long memberId);
 
     // 해당 채팅방에서 이미지 메시지 생성
     void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);

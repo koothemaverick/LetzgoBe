@@ -154,7 +154,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 생성
     @Override
     @Transactional
-    public void writeChatMessage(Long chatRoomId, String content, Long memberId) {
+    public ChatMessageDto writeChatMessage(Long chatRoomId, String content, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
@@ -188,6 +188,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .readAt(LocalDateTime.now())
                 .build();
         chatMessageReadRepository.save(readRecord);
+        return(convertToChatMessageDto(chatMessage, content));
     }
 
     // 해당 채팅방에서 이미지 메시지 생성
