@@ -44,7 +44,7 @@ app:
         userInfoUri: "https://kapi.kakao.com/v2/user/me"
 
 frontend:
-  oauth-redirect: https://www.letzgo.site
+  oauth-redirect: https://www.letzgo.site/login
 
 fcm:
   service-account-file: /app/env/fcm-service-account.json
