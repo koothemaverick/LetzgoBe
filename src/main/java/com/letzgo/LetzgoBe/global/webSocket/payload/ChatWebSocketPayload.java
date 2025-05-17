@@ -16,7 +16,8 @@ public class ChatWebSocketPayload {
     public enum MessageType {
         MESSAGE,
         READ,
-        READALL
+        READALL,
+        PING
     }
 
     private Long memberId;
