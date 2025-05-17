@@ -89,7 +89,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         Pageable sortedPageable = PageRequest.of(
                 pageable.getPageNumber(),
                 pageable.getPageSize(),
-                Sort.by(Sort.Direction.ASC, "createdAt")  // createdAt 기준 오름차순 정렬
+                Sort.by(Sort.Direction.DESC, "createdAt")  // createdAt 기준 오름차순 정렬
         );
         Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, sortedPageable);
 
