@@ -33,8 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -50,17 +50,25 @@ public class PostServiceImpl implements PostService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    // 본인 & 팔로우한 유저의 게시글 조회
+    // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
     @Transactional(readOnly = true)
     public Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Long loginUserId = loginUser.getId();
         List<Long> followingMemberIds = memberFollowRepository.findFollowedMemberIdsByFollowerId(loginUserId);
-
-        // 본인 ID + 팔로우한 사람들 ID 포함한 리스트 생성
-        List<Long> targetMemberIds = new ArrayList<>(followingMemberIds);
-        targetMemberIds.add(loginUserId);
+        // 기본 유저 ID: 1, 2, 3, 4, 5 (단, 본인 ID는 제외)
+        List<Long> defaultMemberIds = Arrays.asList(1L, 2L, 3L, 4L, 5L)
+                .stream()
+                .filter(id -> !id.equals(loginUserId))
+                .collect(Collectors.toList());
+        // 본인 ID + 팔로우한 사람들 ID + 기본 유저 ID 포함한 리스트 생성 (중복 제거)
+        Set<Long> targetMemberIdSet = new HashSet<>();
+        targetMemberIdSet.addAll(followingMemberIds);
+        targetMemberIdSet.addAll(defaultMemberIds);
+        targetMemberIdSet.add(loginUserId);
+        // Set<Long> -> List<Long> 변환
+        List<Long> targetMemberIds = new ArrayList<>(targetMemberIdSet);
         Page<Post> posts = postRepository.findByMemberIdInOrderByCreatedAtDesc(targetMemberIds, pageable);
         return posts.map(post -> convertToDetailPostDto(post, loginUser));
     }
