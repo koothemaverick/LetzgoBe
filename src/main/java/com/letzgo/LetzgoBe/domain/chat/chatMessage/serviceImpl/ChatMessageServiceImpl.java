@@ -331,7 +331,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatRoomMemberRepository.save(chatRoomMember);
 
         // 해당 채팅방 내의 모든 메시지 읽음 이벤트 발행
-        eventPublisher.publishEvent(new ChatMessageReadAllEvent(memberId, chatRoomId, lastReadMessageId));
+        eventPublisher.publishEvent(new ChatMessageReadAllEvent(chatRoomId, unreadMessageIds));
     }
 
     // 요청 페이지 수 제한
