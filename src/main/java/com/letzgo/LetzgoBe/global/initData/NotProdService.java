@@ -159,7 +159,7 @@ public class NotProdService {
         postService.addPost(postForm, imageFiles, ConvertToLoginUserDto(member));
     }
 
-    // 유저 3, 4, 5가 모든 게시글에 대해 좋아요 누름
+    // 유저 3, 4, 5, 6이 모든 게시글에 대해 좋아요 누름
     @Transactional
     public void createPostLikes(List<Member> members) {
         List<Member> likingMembers = members.subList(2, members.size()); // 유저 3, 4, 5 (인덱스 2부터 시작)
