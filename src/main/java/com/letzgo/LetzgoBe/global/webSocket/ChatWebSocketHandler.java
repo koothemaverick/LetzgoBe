@@ -46,21 +46,33 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        ChatWebSocketPayload payload = objectMapper.readValue(message.getPayload(), ChatWebSocketPayload.class);
-        if (payload.getMessageType() == ChatWebSocketPayload.MessageType.MESSAGE) {
-            // 채팅 메시지 생성
-            ChatMessageDto savedChatMessageDto = chatMessageService.writeChatMessage(payload.getChatRoomId(), payload.getChatMessageDto().getContent(), payload.getChatMessageDto().getMemberId());
-            payload.setChatMessageDto(savedChatMessageDto);
-            // 모두에게 메시지 브로드캐스트
-            String updatedPayload = objectMapper.writeValueAsString(payload);
-            broadcastToRoom(payload.getChatRoomId(), updatedPayload);
-        } else if (payload.getMessageType() == ChatWebSocketPayload.MessageType.READ) {
-            // 메시지 읽음 처리
-            chatMessageService.readChatMessage(payload.getMessageId(), payload.getMemberId());
-            // 읽음 상태 브로드캐스트
-            broadcastToRoom(payload.getChatRoomId(), message.getPayload());
-        } else {
-            log.warn("Unknown messageType: " + payload.getMessageType());
+        try {
+            ChatWebSocketPayload payload = objectMapper.readValue(message.getPayload(), ChatWebSocketPayload.class);
+            switch (payload.getMessageType()) {
+                case MESSAGE:
+                    ChatMessageDto savedChatMessageDto = chatMessageService.writeChatMessage(
+                            payload.getChatRoomId(),
+                            payload.getChatMessageDto().getContent(),
+                            payload.getChatMessageDto().getMemberId()
+                    );
+                    payload.setChatMessageDto(savedChatMessageDto);
+                    String updatedPayload = objectMapper.writeValueAsString(payload);
+                    broadcastToRoom(payload.getChatRoomId(), updatedPayload);
+                    break;
+                case READ:
+                    chatMessageService.readChatMessage(payload.getMessageId(), payload.getMemberId());
+                    broadcastToRoom(payload.getChatRoomId(), message.getPayload());
+                    break;
+                case PING:
+                    // 클라이언트의 PING 메시지 응답 (옵션: PONG으로 응답하거나 무시)
+                    log.debug("Received PING from session: {}", session.getId());
+                    break;
+                default:
+                    log.warn("Unknown messageType: {}", payload.getMessageType());
+                    break;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to handle message from session {}: {}", session.getId(), e.getMessage());
         }
     }
 
