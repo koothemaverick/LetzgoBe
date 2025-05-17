@@ -6,6 +6,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ChatWebSocketPayload {
     @Enumerated(EnumType.STRING)
@@ -28,5 +30,5 @@ public class ChatWebSocketPayload {
     private Long messageId;
 
     // READALL일 때만 존재
-    private Long lastReadMessageId;
+    private List<Long> readMessageIdList;
 }

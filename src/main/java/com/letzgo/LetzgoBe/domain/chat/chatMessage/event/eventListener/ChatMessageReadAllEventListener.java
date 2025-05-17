@@ -23,9 +23,8 @@ public class ChatMessageReadAllEventListener {
             // ChatWebSocketPayload 객체 생성 및 필요한 필드만 설정
             ChatWebSocketPayload payload = new ChatWebSocketPayload();
             payload.setMessageType(ChatWebSocketPayload.MessageType.READALL);
-            payload.setMemberId(event.getMemberId());
             payload.setChatRoomId(event.getChatRoomId());
-            payload.setLastReadMessageId(event.getLastReadMessageId());
+            payload.setReadMessageIdList(event.getReadMessageIdList());
 
             String serializedPayload = objectMapper.writeValueAsString(payload);
             chatWebSocketHandler.broadcastToRoom(event.getChatRoomId(), serializedPayload);
