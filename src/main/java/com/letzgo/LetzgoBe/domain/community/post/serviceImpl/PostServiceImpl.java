@@ -166,7 +166,7 @@ public class PostServiceImpl implements PostService {
                 .senderNickname(loginUser.getNickname())
                 .senderProfileUrl(loginUser.getProfileImageUrl())
                 .objectId(postId)
-                .content("님이 게시글에 좋아요를 눌렀습니다")
+                .content("님이 게시글에 좋아요를 눌렀습니다.")
                 .targetObject(Notification.TargetObject.Post)
                 .build();
         try {
