@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class ChatRoomWebSocketHandler extends TextWebSocketHandler {
     private final Map<Long, List<WebSocketSession>> memberSessions = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper = new ObjectMapper(); // Jackson 사용
     private final ChatRoomRepository chatRoomRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
