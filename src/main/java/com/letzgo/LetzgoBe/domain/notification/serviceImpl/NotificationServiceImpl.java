@@ -68,6 +68,7 @@ public class NotificationServiceImpl implements NotificationService {
         return new NotificationDto(
                 notification.getId(),
                 notification.getSenderId(),
+                notification.getReceiverId(),
                 notification.getObjectId(),
                 notification.getContent(),
                 notification.getIsRead(),
