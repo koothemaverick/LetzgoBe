@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationDto {
+    private Long id;
     private Long objectId;
     private String content;
     private Boolean isRead;
