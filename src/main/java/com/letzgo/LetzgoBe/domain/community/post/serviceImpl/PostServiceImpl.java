@@ -162,7 +162,7 @@ public class PostServiceImpl implements PostService {
         post.getLikedMembers().add(postLike);
         // 게시글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
-                .receiverId(post.getMember().getId())
+                .senderId(loginUser.getId())
                 .objectId(postId)
                 .content(loginUser.getName() + "님이 게시글에 좋아요를 눌렀습니다")
                 .targetObject(Notification.TargetObject.Post)

@@ -211,7 +211,7 @@ public class MemberServiceImpl implements MemberService {
         memberFollowReqRepository.save(memberFollowReq);
         // 팔로우 요청 이벤트 생성
         Notification notification = Notification.builder()
-                .receiverId(followRec.getId())
+                .senderId(followReq.getId())
                 .objectId(memberFollowReq.getId())
                 .content(loginUser.getName() + "님이 팔로우를 요청하였습니다")
                 .targetObject(Notification.TargetObject.Follow)
@@ -253,7 +253,7 @@ public class MemberServiceImpl implements MemberService {
         memberFollowRepository.save(memberFollow);
         // 팔로우 수락 이벤트 생성
         Notification notification = Notification.builder()
-                .receiverId(memberId)
+                .senderId(loginUser.getId())
                 .objectId(memberFollow.getId())
                 .content(loginUser.getName() + "님이 팔로우 요청을 수락하였습니다")
                 .targetObject(Notification.TargetObject.Follow)
