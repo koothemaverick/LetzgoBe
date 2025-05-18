@@ -61,7 +61,7 @@ public class CommentServiceImpl implements CommentService {
         comment.getLikedMembers().add(commentLike);
         // 댓글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
-                .receiverId(comment.getMember().getId())
+                .senderId(loginUser.getId())
                 .objectId(commentId)
                 .content(loginUser.getName() + "님이 댓글에 좋아요를 눌렀습니다")
                 .targetObject(Notification.TargetObject.Comment)
@@ -102,7 +102,7 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
         // 댓글 작성 이벤트 생성
         Notification notification = Notification.builder()
-                .receiverId(post.getMember().getId())
+                .senderId(loginUser.getId())
                 .objectId(postId)
                 .content(loginUser.getName() + "님이 댓글을 작성하였습니다")
                 .targetObject(Notification.TargetObject.Post)
