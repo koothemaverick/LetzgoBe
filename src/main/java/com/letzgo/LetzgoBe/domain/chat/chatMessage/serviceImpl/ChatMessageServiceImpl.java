@@ -202,6 +202,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .memberId(memberId)
                 .chatRoomId(chatRoomId)
                 .content(content)
+                .lastMessageCreatedAt(LocalDateTime.now())
                 .build();
         chatEventPublisher.publishLastMessageEvent(payload);
         return(convertToChatMessageDto(chatMessage, content));
@@ -269,6 +270,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .memberId(loginUser.getId())
                 .chatRoomId(chatRoomId)
                 .content(null)
+                .lastMessageCreatedAt(LocalDateTime.now())
                 .build();
         chatEventPublisher.publishLastMessageEvent(payload);
     }

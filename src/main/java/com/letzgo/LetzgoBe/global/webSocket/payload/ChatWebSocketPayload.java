@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -32,6 +33,7 @@ public class ChatWebSocketPayload {
     // MESSAGE일 때만 존재
     private ChatMessageDto chatMessageDto;
     private String content;
+    private LocalDateTime lastMessageCreatedAt;
 
     // READ일 때만 존재
     private Long messageId;
