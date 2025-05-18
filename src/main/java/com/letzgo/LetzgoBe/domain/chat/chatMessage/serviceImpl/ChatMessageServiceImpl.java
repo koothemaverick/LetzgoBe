@@ -8,8 +8,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageCreatedEvent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageReadAllEvent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatEventPublisher;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -21,6 +20,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
+import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload.MessageType.MESSAGE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
     private final ApplicationEventPublisher eventPublisher;
+    private final ChatEventPublisher chatEventPublisher;
 
     // 메시지 읽음 처리
     @Override
@@ -192,6 +195,15 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .readAt(LocalDateTime.now())
                 .build();
         chatMessageReadRepository.save(readRecord);
+
+        // 해당 채팅방의 마지막 메시지 갱신 이벤트 발행
+        ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .memberId(memberId)
+                .chatRoomId(chatRoomId)
+                .content(content)
+                .build();
+        chatEventPublisher.publishLastMessageEvent(payload);
         return(convertToChatMessageDto(chatMessage, content));
     }
 
@@ -244,7 +256,21 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 메시지 생성 이벤트 발행
         ChatMessageDto chatMessageDto = convertToChatMessageDto(chatMessage, null);
-        eventPublisher.publishEvent(new ChatMessageCreatedEvent(chatRoomId, chatMessageDto));
+        ChatWebSocketPayload imagePayload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .chatRoomId(chatRoomId)
+                .chatMessageDto(chatMessageDto)
+                .build();
+        chatEventPublisher.publishImageMessageEvent(imagePayload);
+
+        // 해당 채팅방의 마지막 메시지 갱신 이벤트 발행
+        ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .memberId(loginUser.getId())
+                .chatRoomId(chatRoomId)
+                .content(null)
+                .build();
+        chatEventPublisher.publishLastMessageEvent(payload);
     }
 
     // 해당 메시지 삭제
@@ -321,7 +347,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             // 상태 업데이트
             chatRoomMember.setLastReadMessageId(Collections.max(messageIds));
             chatRoomMemberRepository.save(chatRoomMember);
-            eventPublisher.publishEvent(new ChatMessageReadAllEvent(chatRoomId, unreadMessageIds));
+
+            // 채팅방 접속 시 안읽은 메시지들 읽음 이벤트 발행
+            ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                    .messageType(ChatWebSocketPayload.MessageType.READALL)
+                    .chatRoomId(chatRoomId)
+                    .readMessageIdList(unreadMessageIds)
+                    .build();
+            chatEventPublisher.publishReadAllMessageEvent(payload);
         }
     }
 
