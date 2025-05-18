@@ -65,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
                 .senderNickname(loginUser.getNickname())
                 .senderProfileUrl(loginUser.getProfileImageUrl())
                 .objectId(commentId)
-                .content("님이 댓글에 좋아요를 눌렀습니다")
+                .content("님이 댓글에 좋아요를 눌렀습니다.")
                 .targetObject(Notification.TargetObject.Comment)
                 .build();
         try {
@@ -108,7 +108,7 @@ public class CommentServiceImpl implements CommentService {
                 .senderNickname(loginUser.getNickname())
                 .senderProfileUrl(loginUser.getProfileImageUrl())
                 .objectId(postId)
-                .content("님이 댓글을 작성하였습니다")
+                .content("님이 댓글을 작성하였습니다.")
                 .targetObject(Notification.TargetObject.Post)
                 .build();
         try {

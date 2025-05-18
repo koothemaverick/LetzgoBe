@@ -216,7 +216,7 @@ public class MemberServiceImpl implements MemberService {
                 .senderProfileUrl(followReq.getProfileImageUrl())
                 .receiverId(followRec.getId())
                 .objectId(memberFollowReq.getId())
-                .content("님이 팔로우를 요청하였습니다")
+                .content("님이 팔로우를 요청하였습니다.")
                 .targetObject(Notification.TargetObject.Follow)
                 .build();
         try {
@@ -261,7 +261,7 @@ public class MemberServiceImpl implements MemberService {
                 .senderProfileUrl(loginUser.getProfileImageUrl())
                 .receiverId(memberId)
                 .objectId(memberFollow.getId())
-                .content("님이 팔로우 요청을 수락하였습니다")
+                .content("님이 팔로우 요청을 수락하였습니다.")
                 .targetObject(Notification.TargetObject.Follow)
                 .build();
         try {
