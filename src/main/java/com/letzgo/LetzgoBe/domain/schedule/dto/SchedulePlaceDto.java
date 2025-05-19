@@ -13,6 +13,7 @@ public class SchedulePlaceDto {
     private double latitude;
     private double longitude;
     private int orderIndex;
+    private int sequence;
     private Long memoPk;         // 메모 PK
     private String memoContent;  // 메모 내용
 }

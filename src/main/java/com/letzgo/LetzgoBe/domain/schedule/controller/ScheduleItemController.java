@@ -1,7 +1,5 @@
 package com.letzgo.LetzgoBe.domain.schedule.controller;
 
-
-
 import com.letzgo.LetzgoBe.domain.schedule.dto.ScheduleMemoDto;
 import com.letzgo.LetzgoBe.domain.schedule.dto.SchedulePlaceDto;
 import com.letzgo.LetzgoBe.domain.schedule.service.ScheduleItemService;
@@ -62,4 +60,37 @@ public class ScheduleItemController {
                 .collect(Collectors.toMap(SchedulePlaceDto::getSchedulePlacePk, dto -> dto));
         return ResponseEntity.ok(map);
     }
+
+    /** Day 기준 그룹 조회 */
+    @GetMapping("/places/grouped")
+    public ResponseEntity<Map<Integer, List<SchedulePlaceDto>>> getPlacesGrouped(@PathVariable("schedulePk") Long schedulePk) {
+        List<SchedulePlaceDto> placeDtos = scheduleService.getPlaces(schedulePk);
+        Map<Integer, List<SchedulePlaceDto>> grouped = placeDtos.stream()
+                .collect(Collectors.groupingBy(SchedulePlaceDto::getOrderIndex));
+        return ResponseEntity.ok(grouped);
+    }
+
+    // 최적 경로 안내 (TSP 순서 반환)
+    @GetMapping("/optimal-route")
+    public ResponseEntity<List<SchedulePlaceDto>> getOptimalRoute(
+            @PathVariable("schedulePk") Long schedulePk,
+            @RequestParam("day") int orderIndex
+    ) {
+        List<SchedulePlaceDto> optimalRoute = scheduleService.getOptimalRoute(schedulePk, orderIndex);
+        return ResponseEntity.ok(optimalRoute);
+    }
+
+    // 최적 경로 반영 (순서 재정렬)
+    @PostMapping("/reorder")
+    public ResponseEntity<Void> reorderPlaces(
+            @PathVariable("schedulePk") Long schedulePk,
+            @RequestParam("day") int orderIndex,
+            @RequestBody List<Long> reorderedPlacePks
+    ) {
+        scheduleService.reorderPlaces(schedulePk, orderIndex, reorderedPlacePks);
+        return ResponseEntity.ok().build();
+    }
+
+
+
 }
