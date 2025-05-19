@@ -27,8 +27,8 @@ schedule:
     use-page: 10
     cron: 0 0 0 * * *
   restaurant:
-    use-scroll: 200
-    cron: 0 0 6 * * *
+    use-scroll: 100
+    cron: 0 0 9 * * *
   geocoding:
     hotel: 0 0 12 * * *
     restaurant: 0 0 14 * * *
