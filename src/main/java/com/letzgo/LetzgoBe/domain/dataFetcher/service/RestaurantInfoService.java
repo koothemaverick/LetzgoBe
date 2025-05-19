@@ -21,18 +21,24 @@ public class RestaurantInfoService {
     private final RestaurantRepository restaurantRepository;
 
     public void getRestaurantsInfo(int scroll) {
-        //String[] regions = {"경기도", "제주특별자치도"};
         String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
-               "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
+                "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
         int progress = 0;
 
         for (String region : regions) {
-            log.info("식당정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
+            log.info("식당정보 현재탐색중: {}, 진행율: {}", region, progress + "/" + regions.length);
             getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
             progress++;
         }
 
-        log.info("식당 정보 탐색완료");
+        log.info("getRestaurantsInfo 식당 정보 탐색완료");
+    }
+
+
+    public void getRegionRestaurantsInfo(int scroll, String region) {
+        log.info("식당정보 현재탐색중: {}", region);
+        getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
+        log.info("getRegionRestaurantsInfo 식당 정보 탐색완료");
     }
 
     private void getListPageInfo(String ListPageUrl, String region, int scroll) {

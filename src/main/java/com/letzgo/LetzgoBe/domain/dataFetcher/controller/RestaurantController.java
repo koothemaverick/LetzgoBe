@@ -5,10 +5,7 @@ import com.letzgo.LetzgoBe.domain.dataFetcher.service.InfoProvideService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.RestaurantInfoService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,10 +23,14 @@ public class RestaurantController {
         return ApiResponse.of(infoProvideService.getRestaurantInfo(region));
     }
 
-    //테스트용요청
-    @GetMapping("/test")
-    void test() {
-        restaurantInfoService.getRestaurantsInfo(2);
+    //수동실행
+    @GetMapping("/test/{scroll}")
+    void test(@PathVariable int scroll) {
+        restaurantInfoService.getRestaurantsInfo(scroll);
+    }
+    @GetMapping("/testRegion/{region}")
+    void testRegion(@PathVariable("region") String region) {
+        restaurantInfoService.getRegionRestaurantsInfo(100, region);
     }
     @GetMapping("/testGeo")
     void testGeo() {
