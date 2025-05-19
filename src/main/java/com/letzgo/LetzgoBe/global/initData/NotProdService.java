@@ -83,8 +83,8 @@ public class NotProdService {
         // 리뷰 데이터 생성
         createReviewData(members, places);
 
-        // 스케줄러 수동 실행
-        runDataFetchScheduler();
+        // 스케줄러 수동 실행 (테스트 및 서버 배포용)
+//        runDataFetchScheduler();
     }
 
     // 유저 1, 2, 3, 4, 5 생성
