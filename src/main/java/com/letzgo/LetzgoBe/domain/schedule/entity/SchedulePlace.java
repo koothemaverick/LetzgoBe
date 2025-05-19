@@ -23,8 +23,8 @@ public class SchedulePlace {
     private String name;
     private String address;
     private String placeId; // Google Maps place_id
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
 
     private int orderIndex;
     private int sequence;

@@ -19,9 +19,15 @@ public class ScheduleController {
 
     private final ScheduleService scheduleService;
 
-    /** 일정 생성 API */
     @PostMapping
     public ResponseEntity<Long> create(@RequestBody ScheduleDto dto) {
+        System.out.println(" [컨트롤러] 받은 ScheduleDto: " +
+                "hostAccountPk=" + dto.getHostAccountPk() +
+                ", region=" + dto.getRegion() +
+                ", title=" + dto.getTitle() +
+                ", startDate=" + dto.getStartDate() +
+                ", endDate=" + dto.getEndDate());
+
         Schedule schedule = scheduleService.createSchedule(dto);
         return ResponseEntity.ok(schedule.getSchedulePk());
     }
@@ -35,8 +41,8 @@ public class ScheduleController {
 
     /** 일정 전체 조회 API */
     @GetMapping
-    public ResponseEntity<List<ScheduleDto>> getAll() {
-        List<Schedule> schedules = scheduleService.getAllSchedules();
+    public ResponseEntity<List<ScheduleDto>> getAll(@RequestParam("memberId") Long memberId) {
+        List<Schedule> schedules = scheduleService.getAllSchedules(memberId);
         List<ScheduleDto> result = schedules.stream().map(schedule -> {
             ScheduleDto dto = new ScheduleDto();
             dto.setSchedulePk(schedule.getSchedulePk());
