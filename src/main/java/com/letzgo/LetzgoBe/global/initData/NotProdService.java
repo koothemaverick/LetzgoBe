@@ -11,6 +11,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
+import com.letzgo.LetzgoBe.domain.dataFetcher.scheduler.DataFetchSchedule;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
@@ -19,6 +20,7 @@ import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.initData.utils.CommentUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,7 @@ import java.util.List;
 import static com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto.ConvertToLoginUserDto;
 import static com.letzgo.LetzgoBe.global.initData.utils.MultipartFileUtils.getMultipartFileFromResource;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotProdService {
@@ -42,6 +45,7 @@ public class NotProdService {
     private final ReviewRepository reviewRepository;
     private final PostService postService;
     private final CommentUtils commentUtils;
+    private final DataFetchSchedule dataFetchSchedule;
 
     @Transactional
     public void initDummyData() {
@@ -78,6 +82,9 @@ public class NotProdService {
 
         // 리뷰 데이터 생성
         createReviewData(members, places);
+
+        // 스케줄러 수동 실행
+        runDataFetchScheduler();
     }
 
     // 유저 1, 2, 3, 4, 5 생성
@@ -261,5 +268,44 @@ public class NotProdService {
                 reviewRepository.save(review);
             }
         }
+    }
+
+    // 스케줄러 수동 실행
+    public void runDataFetchScheduler() {
+        long startTotal = System.currentTimeMillis();
+
+        long start = System.currentTimeMillis();
+        dataFetchSchedule.fetchHotelDataSchedule();
+        long fetchHotelTime = System.currentTimeMillis() - start;
+
+        start = System.currentTimeMillis();
+        dataFetchSchedule.fetchRestaurantDataSchedule();
+        long fetchRestaurantTime = System.currentTimeMillis() - start;
+
+        start = System.currentTimeMillis();
+        dataFetchSchedule.addHotelCoordinateSchedule();
+        long addHotelCoordinateTime = System.currentTimeMillis() - start;
+
+        start = System.currentTimeMillis();
+        dataFetchSchedule.addRestaurantCoordinateSchedule();
+        long addRestaurantCoordinateTime = System.currentTimeMillis() - start;
+
+        long endTotal = System.currentTimeMillis();
+        long totalTime = endTotal - startTotal;
+
+        System.out.println("fetchHotelDataSchedule 실행 시간: " + formatDuration(fetchHotelTime));
+        System.out.println("fetchRestaurantDataSchedule 실행 시간: " + formatDuration(fetchRestaurantTime));
+        System.out.println("addHotelCoordinateSchedule 실행 시간: " + formatDuration(addHotelCoordinateTime));
+        System.out.println("addRestaurantCoordinateSchedule 실행 시간: " + formatDuration(addRestaurantCoordinateTime));
+        System.out.println("전체 스케줄러 실행 시간: " + formatDuration(totalTime));
+    }
+
+    // 진행시간 표시 형식
+    private String formatDuration(long millis) {
+        long hours = millis / 3600000;
+        long minutes = (millis % 3600000) / 60000;
+        long seconds = (millis % 60000) / 1000;
+        long milliseconds = millis % 1000;
+        return String.format("%02d시간 %02d분 %02d초 %03d밀리초", hours, minutes, seconds, milliseconds);
     }
 }

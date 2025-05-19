@@ -26,7 +26,7 @@ public class RestaurantInfoService {
         int progress = 0;
 
         for (String region : regions) {
-            log.info("식당정보 현재탐색중: {}, 진행율: {}", region, progress + "/" + regions.length);
+            log.info("음식점 정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
             getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
             progress++;
         }
@@ -36,7 +36,7 @@ public class RestaurantInfoService {
 
 
     public void getRegionRestaurantsInfo(int scroll, String region) {
-        log.info("식당정보 현재탐색중: {}", region);
+        log.info("음식점 정보 현재탐색중: {}", region);
         getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
         log.info("getRegionRestaurantsInfo 식당 정보 탐색완료");
     }
@@ -44,6 +44,7 @@ public class RestaurantInfoService {
     private void getListPageInfo(String ListPageUrl, String region, int scroll) {
         try {
             driver.get(ListPageUrl);
+            log.info("음식점 페이지 접속 완료: {}", ListPageUrl);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -97,6 +98,7 @@ public class RestaurantInfoService {
             getDetailPageInfo(links, region);
 
         } catch (Exception e) {
+            log.error("음식점 페이지 오류. scroll={}, url={}", scroll, ListPageUrl, e);
         }
     }
 

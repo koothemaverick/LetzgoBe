@@ -26,7 +26,7 @@ public class DataFetchSchedule {
     //지역페이지에서 스크롤할 횟수
     private int scroll;
 
-    @Scheduled(cron = "${schedule.hotel.cron}")
+//    @Scheduled(cron = "${schedule.hotel.cron}")
     public void fetchHotelDataSchedule() {
         try {
             if (useSchedule)
@@ -36,7 +36,7 @@ public class DataFetchSchedule {
         }
     }
 
-    @Scheduled(cron = "${schedule.restaurant.cron}")
+//    @Scheduled(cron = "${schedule.restaurant.cron}")
     public void fetchRestaurantDataSchedule() {
         try {
             if (useSchedule)
@@ -46,7 +46,7 @@ public class DataFetchSchedule {
         }
     }
 
-    @Scheduled(cron = "${schedule.geocoding.hotel}")
+//    @Scheduled(cron = "${schedule.geocoding.hotel}")
     public void addHotelCoordinateSchedule() {
         try {
             if (useSchedule)
@@ -57,11 +57,11 @@ public class DataFetchSchedule {
 
     }
 
-    @Scheduled(cron = "${schedule.geocoding.restaurant}")
+//    @Scheduled(cron = "${schedule.geocoding.restaurant}")
     public void addRestaurantCoordinateSchedule() {
         try {
             if (useSchedule)
-                geocodingService.updateHotelCoordinates();
+                geocodingService.updateRestaurantCoordinates();
         } catch (Exception e) {
             log.warn("geocodingService(식당) 스케줄링 중 오류 발생");
         }
