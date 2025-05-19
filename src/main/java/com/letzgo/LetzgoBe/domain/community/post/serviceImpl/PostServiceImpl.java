@@ -162,6 +162,7 @@ public class PostServiceImpl implements PostService {
         post.getLikedMembers().add(postLike);
         // 게시글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
+                .receiverId(post.getMember().getId())
                 .senderId(loginUser.getId())
                 .senderNickname(loginUser.getNickname())
                 .senderProfileUrl(loginUser.getProfileImageUrl())
