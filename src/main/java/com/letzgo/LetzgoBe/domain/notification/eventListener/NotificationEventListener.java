@@ -56,7 +56,7 @@ public class NotificationEventListener {
                     FcmMessage fcmMessage = FcmMessage.builder()
                             .targetToken(fcmToken)
                             .title(title)
-                            .body(notification.getContent())
+                            .body(notification.getSenderNickname() + notification.getContent())
                             .build();
                     fcmService.sendMessageTo(fcmMessage);
                 } else {
