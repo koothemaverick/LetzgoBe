@@ -7,6 +7,8 @@ import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.ws.rs.Path;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -24,11 +26,17 @@ public class HotelController {
         return ApiResponse.of(infoProvideService.getHotelInfo(region));
     }
 
-    //테스트용 요청
-    @GetMapping("/test")
-    void test() {
-        hotelInfoService.getHotelsInfo(1);
+    //수동실행
+    @GetMapping("/test/{page}")
+    void test(@PathVariable("page") int page) {
+        hotelInfoService.getHotelsInfo(page);
+    }
+    @GetMapping("/testRegion/{region}")
+    void testRegion(@PathVariable("region") String region) {
+        hotelInfoService.getRegionHotelsInfo(10,region);
     }
     @GetMapping("/testGeo")
-    void testGeo() {geocodingService.updateHotelCoordinates();}
+    void testGeo() {
+        geocodingService.updateHotelCoordinates();
+    }
 }
