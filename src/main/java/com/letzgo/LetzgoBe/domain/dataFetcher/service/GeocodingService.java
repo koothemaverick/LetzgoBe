@@ -46,7 +46,7 @@ public class GeocodingService {
     public void updateRestaurantCoordinates() {
         List<Restaurant> restaurants = restaurantRepository.findAll();
 
-        log.info("식당 좌표정보 추가중입니다.");
+        log.info("음식점 좌표정보 추가중입니다.");
         for (Restaurant restaurant : restaurants) {
             Optional<double[]> coordinates = getCoordinatesFromNaver(restaurant.getLocation());
             if (coordinates.isPresent()) {
@@ -54,7 +54,7 @@ public class GeocodingService {
                 restaurant.setLng(coordinates.get()[1]);
             }
         }
-        log.info("식당 좌표정보 추가완료.");
+        log.info("음식점 좌표정보 추가완료.");
     }
 
     private Optional<double[]> getCoordinatesFromGoogle(String address) {

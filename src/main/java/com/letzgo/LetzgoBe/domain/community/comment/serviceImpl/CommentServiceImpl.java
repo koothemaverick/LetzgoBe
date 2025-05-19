@@ -62,8 +62,11 @@ public class CommentServiceImpl implements CommentService {
         // 댓글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
                 .receiverId(comment.getMember().getId())
+                .senderId(loginUser.getId())
+                .senderNickname(loginUser.getNickname())
+                .senderProfileUrl(loginUser.getProfileImageUrl())
                 .objectId(commentId)
-                .content(loginUser.getName() + "님이 댓글에 좋아요를 눌렀습니다")
+                .content("님이 댓글에 좋아요를 눌렀습니다.")
                 .targetObject(Notification.TargetObject.Comment)
                 .build();
         try {
@@ -103,8 +106,11 @@ public class CommentServiceImpl implements CommentService {
         // 댓글 작성 이벤트 생성
         Notification notification = Notification.builder()
                 .receiverId(post.getMember().getId())
+                .senderId(loginUser.getId())
+                .senderNickname(loginUser.getNickname())
+                .senderProfileUrl(loginUser.getProfileImageUrl())
                 .objectId(postId)
-                .content(loginUser.getName() + "님이 댓글을 작성하였습니다")
+                .content("님이 댓글을 작성하였습니다.")
                 .targetObject(Notification.TargetObject.Post)
                 .build();
         try {

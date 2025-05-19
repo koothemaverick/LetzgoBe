@@ -8,8 +8,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageCreatedEvent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatMessageReadAllEvent;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatEventPublisher;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -21,6 +20,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
+import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload.MessageType.MESSAGE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
     private final ApplicationEventPublisher eventPublisher;
+    private final ChatEventPublisher chatEventPublisher;
 
     // 메시지 읽음 처리
     @Override
@@ -74,40 +77,43 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     @Override
     @Transactional
     public Page<ChatMessageDto> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
-        checkPageSize(pageable.getPageSize());
-
-        // 채팅방 참여멤버만 메시지 조회 가능
-        boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
-        if (!memberExists) {
-            throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
+        try {
+            checkPageSize(pageable.getPageSize());
+            ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
+            if (chatRoomMember == null) {
+                log.warn("chatRoomMember not found - chatRoomId: {}, loginUserId: {}", chatRoomId, loginUser.getId());
+                throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
+            }
+            readAllChatMessages(loginUser.getId(), chatRoomId, chatRoomMember);
+            Pageable sortedPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    Sort.by(Sort.Direction.DESC, "createdAt")
+            );
+            Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, sortedPageable);
+            List<String> stringMessageIds = chatMessages.stream()
+                    .map(chatMessage -> String.valueOf(chatMessage.getId()))
+                    .collect(Collectors.toList());
+            List<MessageContent> contents = Optional.ofNullable(messageContentRepository.findByIdIn(stringMessageIds))
+                    .orElse(Collections.emptyList());
+            Map<Long, String> messageContentMap = new HashMap<>();
+            for (MessageContent message : contents) {
+                try {
+                    messageContentMap.put(Long.parseLong(message.getId()), message.getContent());
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid messageContent ID format: {}", message.getId());
+                }
+            }
+            return chatMessages.map(chatMessage -> {
+                String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
+                return convertToChatMessageDto(chatMessage, content);
+            });
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error in findByChatRoomId - chatRoomId: {}, loginUserId: {}, error: {}", chatRoomId, loginUser.getId(), e.getMessage(), e);
+            throw new ServiceException(ReturnCode.INTERNAL_SERVER_ERROR);
         }
-
-        // 해당 채팅방 내의 모든 메시지 읽음 처리 & 해당 채팅방 메시지 가져오기
-        readAllChatMessages(loginUser.getId(), chatRoomId);
-        Pageable sortedPageable = PageRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                Sort.by(Sort.Direction.DESC, "createdAt")  // createdAt 기준 오름차순 정렬
-        );
-        Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, sortedPageable);
-
-        // MongoDB에서 메시지 내용 불러오기
-        List<String> stringMessageIds = chatMessages.stream()
-                .map(chatMessage -> String.valueOf(chatMessage.getId()))
-                .collect(Collectors.toList());
-        Map<Long, String> messageContentMap = messageContentRepository.findByIdIn(stringMessageIds)
-                .stream()
-                .filter(Objects::nonNull) // null 값 필터링
-                .collect(Collectors.toMap(
-                        message -> Long.parseLong(message.getId()),
-                        message -> Objects.requireNonNullElse(message.getContent(), "") // null이면 빈 문자열 처리
-                ));
-        return chatMessages.map(chatMessage -> {
-            String content = messageContentMap.getOrDefault(chatMessage.getId(), ""); // 없으면 빈 문자열
-            return convertToChatMessageDto(chatMessage, content);
-        });
     }
 
     // 해당 채팅방에서 메시지 검색(내용)
@@ -189,6 +195,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .readAt(LocalDateTime.now())
                 .build();
         chatMessageReadRepository.save(readRecord);
+
+        // 해당 채팅방의 마지막 메시지 갱신 이벤트 발행
+        ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .memberId(memberId)
+                .chatRoomId(chatRoomId)
+                .content(content)
+                .lastMessageCreatedAt(LocalDateTime.now())
+                .build();
+        chatEventPublisher.publishLastMessageEvent(payload);
         return(convertToChatMessageDto(chatMessage, content));
     }
 
@@ -241,7 +257,22 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 메시지 생성 이벤트 발행
         ChatMessageDto chatMessageDto = convertToChatMessageDto(chatMessage, null);
-        eventPublisher.publishEvent(new ChatMessageCreatedEvent(chatRoomId, chatMessageDto));
+        ChatWebSocketPayload imagePayload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .chatRoomId(chatRoomId)
+                .chatMessageDto(chatMessageDto)
+                .build();
+        chatEventPublisher.publishImageMessageEvent(imagePayload);
+
+        // 해당 채팅방의 마지막 메시지 갱신 이벤트 발행
+        ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                .messageType(MESSAGE)
+                .memberId(loginUser.getId())
+                .chatRoomId(chatRoomId)
+                .content(null)
+                .lastMessageCreatedAt(LocalDateTime.now())
+                .build();
+        chatEventPublisher.publishLastMessageEvent(payload);
     }
 
     // 해당 메시지 삭제
@@ -294,44 +325,39 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     // 해당 채팅방 내의 모든 메시지 읽음 처리
     @Transactional
-    public void readAllChatMessages(Long memberId, Long chatRoomId) {
+    public void readAllChatMessages(Long memberId, Long chatRoomId, ChatRoomMember chatRoomMember) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
 
-        // 채팅방의 모든 메시지 ID 조회 (ID만 가져와서 가볍게 처리)
         List<Long> messageIds = chatMessageRepository.findAllMessageIdsByChatRoomId(chatRoomId);
-        if (messageIds.isEmpty()) {
-            return; // 메시지가 없으면 처리할 게 없음
-        }
-
-        // 이미 읽은 메시지 ID들 조회
-        List<Long> alreadyReadMessageIds = chatMessageReadRepository.findMessageIdsByMemberIdAndChatRoomId(memberId, chatRoomId);
-
-        // 아직 읽지 않은 메시지 ID 추출
+        if (messageIds.isEmpty()) return;
+        Set<Long> alreadyReadSet = new HashSet<>(chatMessageReadRepository.findMessageIdsByMemberIdAndChatRoomId(memberId, chatRoomId));
         List<Long> unreadMessageIds = messageIds.stream()
-                .filter(id -> !alreadyReadMessageIds.contains(id))
-                .toList();
+                .filter(id -> !alreadyReadSet.contains(id))
+                .collect(Collectors.toList());
+        if (!unreadMessageIds.isEmpty()) {
+            LocalDateTime now = LocalDateTime.now();
+            List<ChatMessageRead> readRecords = unreadMessageIds.stream()
+                    .map(messageId -> ChatMessageRead.builder()
+                            .chatMessage(ChatMessage.builder().id(messageId).build())
+                            .member(member)
+                            .readAt(now)
+                            .build())
+                    .collect(Collectors.toList());
+            chatMessageReadRepository.saveAll(readRecords);
 
-        // 읽음 기록 저장
-        List<ChatMessageRead> readRecords = (List<ChatMessageRead>) unreadMessageIds.stream()
-                .map(messageId -> ChatMessageRead.builder()
-                        .chatMessage(ChatMessage.builder().id(messageId).build())
-                        .member(member)
-                        .readAt(LocalDateTime.now())
-                        .build())
-                .toList();
-        chatMessageReadRepository.saveAll(readRecords);
+            // 상태 업데이트
+            chatRoomMember.setLastReadMessageId(Collections.max(messageIds));
+            chatRoomMemberRepository.save(chatRoomMember);
 
-        // chatRoomMember 상태 업데이트 (lastReadMessageId)
-        ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(chatRoomId, memberId);
-        Long lastReadMessageId = messageIds.stream()
-                .max(Long::compareTo)
-                .orElse(null);
-        chatRoomMember.setLastReadMessageId(lastReadMessageId);
-        chatRoomMemberRepository.save(chatRoomMember);
-
-        // 해당 채팅방 내의 모든 메시지 읽음 이벤트 발행
-        eventPublisher.publishEvent(new ChatMessageReadAllEvent(chatRoomId, unreadMessageIds));
+            // 채팅방 접속 시 안읽은 메시지들 읽음 이벤트 발행
+            ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
+                    .messageType(ChatWebSocketPayload.MessageType.READALL)
+                    .chatRoomId(chatRoomId)
+                    .readMessageIdList(unreadMessageIds)
+                    .build();
+            chatEventPublisher.publishReadAllMessageEvent(payload);
+        }
     }
 
     // 요청 페이지 수 제한

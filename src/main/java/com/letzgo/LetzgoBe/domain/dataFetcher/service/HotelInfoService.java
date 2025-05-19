@@ -22,12 +22,11 @@ public class HotelInfoService {
     private final HotelRepository hotelRepository;
 
     public void getHotelsInfo(int page) {
-        //String[] regions = {"경기도"};
         String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
                 "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
         int progress = 0;
         for (String region : regions) {
-            log.info("숙소정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
+            log.info("숙소 정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
             for (int i = 1; i <= page; i++) {
                 if (i == 1)
                     getListPageInfo("https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true", region);
@@ -36,13 +35,25 @@ public class HotelInfoService {
             }
             progress++;
         }
-        log.info("숙소 정보 탐색완료");
+        log.info("getHotelsInfo 숙소 정보 탐색완료");
+    }
+
+    public void getRegionHotelsInfo(int page, String region) { // 지역 한곳만 탐색
+        log.info("숙소정보 현재탐색중: {}", region);
+        for (int i = 1; i <= page; i++) {
+            if (i == 1)
+                getListPageInfo("https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true", region);
+            else
+                getListPageInfo("https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true" + "&page=" + i, region);
+        }
+        log.info("getRegionHotelsInfo 숙소 정보 탐색완료");
     }
 
     private void getListPageInfo(String ListPageUrl, String region) {
         for (int i = 3; i <= 22; i++) {
             try {
                 driver.get(ListPageUrl);
+                log.info("숙소 페이지 접속 완료: {}", ListPageUrl);
 
                 String cssSelector = "#__next > div > main > section > div.css-1qumol3 > a:nth-child(" + i + ")";
                 WebElement link = driver.findElement(By.cssSelector(cssSelector));
@@ -69,6 +80,7 @@ public class HotelInfoService {
                 getDetailPageInfo(href, hotelDto);
             }
             catch (Exception e) { //한페이지에 숙소가 20개보다 적을경우
+                log.error("숙소 마지막 페이지. i={}, url={}", i, ListPageUrl, e);
             }
         }
     }
