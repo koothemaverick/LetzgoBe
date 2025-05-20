@@ -25,7 +25,7 @@ public class RestaurantController {
 
     //수동실행
     @GetMapping("/test/{scroll}")
-    void test(@PathVariable int scroll) {
+    void test(@PathVariable("scroll") int scroll) {
         restaurantInfoService.getRestaurantsInfo(scroll);
     }
     @GetMapping("/testRegion/{region}")
