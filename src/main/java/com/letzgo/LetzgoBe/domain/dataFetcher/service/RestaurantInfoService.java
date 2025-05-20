@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.service;
 
+import com.letzgo.LetzgoBe.domain.dataFetcher.config.DriverFactory;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Restaurant;
 import com.letzgo.LetzgoBe.domain.dataFetcher.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,34 +18,64 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class RestaurantInfoService {
-    private final WebDriver driver;
+    private final DriverFactory driverFactory;
     private final RestaurantRepository restaurantRepository;
 
     public void getRestaurantsInfo(int scroll) {
-        String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
-                "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
+        String[] regions = {
+                "경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시",
+                "경상남도", "부산광역시", "전북특별자치도", "울산광역시", "광주광역시", "강원특별자치도",
+                "경상북도", "전라남도", "충청북도", "세종특별자치시"
+        };
         int progress = 0;
 
         for (String region : regions) {
-            log.info("음식점 정보 현재탐색중: {}, 진행율: {}",region, progress+"/"+regions.length);
-            getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
-            progress++;
+            WebDriver driver = null;
+            try {
+                driver = driverFactory.createDriver();
+                log.info("음식점 정보 현재탐색중: {}, 진행율: {}", region, progress + "/" + regions.length);
+                getListPageInfo(driver, "https://www.diningcode.com/list.dc?query=" + region, region, scroll);
+                progress++;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (driver != null) {
+                    try {
+                        driver.quit();
+                    } catch (Exception e) {
+                        log.warn("driver 종료 중 예외", e);
+                    }
+                }
+            }
         }
 
         log.info("getRestaurantsInfo 식당 정보 탐색완료");
     }
 
-
     public void getRegionRestaurantsInfo(int scroll, String region) {
-        log.info("음식점 정보 현재탐색중: {}", region);
-        getListPageInfo("https://www.diningcode.com/list.dc?query=" + region, region, scroll);
-        log.info("getRegionRestaurantsInfo 식당 정보 탐색완료");
+        WebDriver driver = null;
+        try {
+            driver = driverFactory.createDriver();
+            log.info("음식점 정보 현재탐색중: {}", region);
+            getListPageInfo(driver, "https://www.diningcode.com/list.dc?query=" + region, region, scroll);
+            log.info("getRegionRestaurantsInfo 식당 정보 탐색완료");
+        } catch (Exception e) {
+            log.error("지역 음식점 크롤링 중 오류 발생", e);
+        } finally {
+            if (driver != null) {
+                try {
+                    driver.quit();
+                } catch (Exception e) {
+                    log.warn("driver 종료 중 예외", e);
+                }
+            }
+        }
     }
 
-    private void getListPageInfo(String ListPageUrl, String region, int scroll) {
+    private void getListPageInfo(WebDriver driver, String listPageUrl, String region, int scroll) {
         try {
-            driver.get(ListPageUrl);
-            log.info("음식점 페이지 접속 완료: {}", ListPageUrl);
+            driver.get(listPageUrl);
+            log.info("음식점 페이지 접속 완료: {}", listPageUrl);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -64,13 +95,12 @@ public class RestaurantInfoService {
                 List<WebElement> poiList = driver.findElements(By.cssSelector("a.PoiBlock"));
                 int currentCount = poiList.size();
 
-                // 스크롤
                 js.executeScript("arguments[0].scrollTop += arguments[1];", scrollContainer, scrollAmount);
                 Thread.sleep(1500);
 
                 if (currentCount == previousCount) {
                     unchangedCount++;
-                    // 2번 이상 연속 변화 없을 경우, search more 버튼 클릭 시도
+
                     if (unchangedCount >= 2) {
                         List<WebElement> searchMoreButtons = driver.findElements(
                                 By.cssSelector("div[class*='SearchMore']")
@@ -80,10 +110,11 @@ public class RestaurantInfoService {
                                 WebElement button = searchMoreButtons.get(0);
                                 js.executeScript("arguments[0].click();", button);
                                 Thread.sleep(1500);
-                            } catch (Exception clickErr) {
+                            } catch (Exception e) {
                             }
                         }
                     }
+
                     if (unchangedCount >= 4) {
                         break;
                     }
@@ -93,17 +124,15 @@ public class RestaurantInfoService {
                 previousCount = currentCount;
             }
 
-            // 음식점 링크 수집
             List<WebElement> links = scrollContainer.findElements(By.cssSelector("a.PoiBlock"));
-            getDetailPageInfo(links, region);
+            getDetailPageInfo(driver, links, region);
 
         } catch (Exception e) {
-            log.error("음식점 페이지 오류. scroll={}, url={}", scroll, ListPageUrl, e);
+            log.error("음식점 페이지 오류. scroll={}, url={}", scroll, listPageUrl, e);
         }
     }
 
-
-    private void getDetailPageInfo(List<WebElement> links, String region) {
+    private void getDetailPageInfo(WebDriver driver, List<WebElement> links, String region) {
         List<String> urls = new ArrayList<>();
         for (WebElement link : links) {
             String url = link.getAttribute("href");
@@ -112,12 +141,9 @@ public class RestaurantInfoService {
             }
         }
 
-        //System.out.println("총 음식점 수: " + urls.size());
-
         String originalWindow = driver.getWindowHandle();
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // 새 탭 하나 열기
         ((JavascriptExecutor) driver).executeScript("window.open()");
         try {
             Thread.sleep(500);
@@ -125,7 +151,6 @@ public class RestaurantInfoService {
             throw new RuntimeException(e);
         }
 
-        // 새 탭으로 전환
         String newTab = null;
         for (String tab : driver.getWindowHandles()) {
             if (!tab.equals(originalWindow)) {
@@ -155,9 +180,7 @@ public class RestaurantInfoService {
 
                 StringBuilder _category = new StringBuilder();
                 WebElement categoryContainer = driver.findElement(By.className("btxt"));
-
                 List<WebElement> categoryElements = categoryContainer.findElements(By.cssSelector("a[class*='category-']"));
-
                 for (WebElement categoryElement : categoryElements) {
                     _category.append(categoryElement.getText()).append(" ");
                 }
@@ -167,12 +190,12 @@ public class RestaurantInfoService {
                 List<WebElement> imageElements = driver.findElements(By.cssSelector(".s-list.pic-grade img"));
                 for (WebElement imageElement : imageElements) {
                     String imagePath = imageElement.getAttribute("src");
-                    if (!imagePath.contains("common"))
-                        _imagePath.append(imageElement.getAttribute("src")).append(" ");
+                    if (!imagePath.contains("common")) {
+                        _imagePath.append(imagePath).append(" ");
+                    }
                 }
 
                 String imagePath = _imagePath.toString().trim();
-
 
                 Restaurant restaurant = Restaurant.builder()
                         .name(title)
@@ -188,11 +211,8 @@ public class RestaurantInfoService {
             } catch (Exception e) {
             }
         }
-        //원래 창으로 복귀
+
         driver.close();
         driver.switchTo().window(originalWindow);
     }
 }
-
-
-
