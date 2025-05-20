@@ -26,10 +26,10 @@ public class Hotel extends BaseEntity {
     String location; // 세부 주소
 
     @Column(name = "sukbak_price")
-    int sukbakPrice;
+    Integer sukbakPrice;
 
     @Column(name = "daesil_price")
-    int daesilPrice;
+    Integer daesilPrice;
 
     @Column
     float rating;
