@@ -90,17 +90,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         addedMemberIds.add(loginUser.getId()); // 본인 ID 추가
         for (ChatRoomMember chatRoomMember : chatRoomForm.getChatRoomMembers()) {
             Long memberId = chatRoomMember.getMember().getId();
-            if (!addedMemberIds.contains(memberId)) { // 중복 방지
-                ChatRoomMember memberInChatRoom = ChatRoomMember.builder()
-                        .member(chatRoomMember.getMember())
-                        .chatRoom(chatRoom)
-                        .build();
-                chatRoomMembers.add(memberInChatRoom);
-                //중복 체크용
-                addedMemberIds.add(memberId);
-            } else {
-                throw new ServiceException(ReturnCode.CHATROOM_ALREADY_EXISTS);
-            }
+            if (!addedMemberIds.add(memberId)) continue; // 중복 제거만 하고, 예외는 던지지 않음
+            ChatRoomMember memberInChatRoom = ChatRoomMember.builder()
+                    .member(chatRoomMember.getMember())
+                    .chatRoom(chatRoom)
+                    .build();
+            chatRoomMembers.add(memberInChatRoom);
         }
         chatRoom.setChatRoomMembers(chatRoomMembers);
         chatRoomRepository.save(chatRoom);
