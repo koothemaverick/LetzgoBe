@@ -27,15 +27,15 @@ public class HotelController {
     }
 
     //수동실행
-    @GetMapping("/test/{page}")
+    @GetMapping("/run/{page}")
     void test(@PathVariable("page") int page) {
         hotelInfoService.getHotelsInfo(page);
     }
-    @GetMapping("/testRegion/{region}")
+    @GetMapping("/runRegion/{region}")
     void testRegion(@PathVariable("region") String region) {
         hotelInfoService.getRegionHotelsInfo(10,region);
     }
-    @GetMapping("/testGeo")
+    @GetMapping("/runGeo")
     void testGeo() {
         geocodingService.updateHotelCoordinates();
     }

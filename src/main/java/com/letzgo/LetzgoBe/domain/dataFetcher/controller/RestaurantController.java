@@ -24,15 +24,15 @@ public class RestaurantController {
     }
 
     //수동실행
-    @GetMapping("/test/{scroll}")
+    @GetMapping("/run/{scroll}")
     void test(@PathVariable("scroll") int scroll) {
         restaurantInfoService.getRestaurantsInfo(scroll);
     }
-    @GetMapping("/testRegion/{region}")
+    @GetMapping("/runRegion/{region}")
     void testRegion(@PathVariable("region") String region) {
         restaurantInfoService.getRegionRestaurantsInfo(100, region);
     }
-    @GetMapping("/testGeo")
+    @GetMapping("/runGeo")
     void testGeo() {
         geocodingService.updateRestaurantCoordinates();
     }

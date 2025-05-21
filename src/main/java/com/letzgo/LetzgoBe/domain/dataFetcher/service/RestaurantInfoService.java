@@ -32,7 +32,7 @@ public class RestaurantInfoService {
         for (String region : regions) {
             WebDriver driver = null;
             try {
-                driver = driverFactory.createDriver();
+                driver = driverFactory.createDriverWithRetry(5);
                 log.info("음식점 정보 현재탐색중: {}, 진행율: {}", region, progress + "/" + regions.length);
                 getListPageInfo(driver, "https://www.diningcode.com/list.dc?query=" + region, region, scroll);
                 progress++;
@@ -55,7 +55,7 @@ public class RestaurantInfoService {
     public void getRegionRestaurantsInfo(int scroll, String region) {
         WebDriver driver = null;
         try {
-            driver = driverFactory.createDriver();
+            driver = driverFactory.createDriverWithRetry(5);
             log.info("음식점 정보 현재탐색중: {}", region);
             getListPageInfo(driver, "https://www.diningcode.com/list.dc?query=" + region, region, scroll);
             log.info("getRegionRestaurantsInfo 식당 정보 탐색완료");
@@ -76,6 +76,7 @@ public class RestaurantInfoService {
         try {
             driver.get(listPageUrl);
             log.info("음식점 페이지 접속 완료: {}", listPageUrl);
+
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             JavascriptExecutor js = (JavascriptExecutor) driver;
