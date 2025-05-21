@@ -36,7 +36,7 @@ public class HotelInfoService {
             for (int i = 1; i <= page; i++) {
                 WebDriver driver = null;
                 try {
-                    driver = driverFactory.createDriver();
+                    driver = driverFactory.createDriverWithRetry(5);
                     String url = "https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true";
                     if (i > 1) url += "&page=" + i;
 
@@ -66,7 +66,7 @@ public class HotelInfoService {
         for (int i = 1; i <= page; i++) {
             WebDriver driver = null;
             try {
-                driver = driverFactory.createDriver();
+                driver = driverFactory.createDriverWithRetry(5);
                 String url = "https://www.yeogi.com/domestic-accommodations?keyword=" + region + "&category=0&freeForm=true";
                 if (i > 1) url += "&page=" + i;
 
