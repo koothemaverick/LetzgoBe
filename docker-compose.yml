@@ -49,6 +49,9 @@ services:
     ports:
       - "4444:4444"
     shm_size: 2g
+    environment:
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
 
   redpanda-0:
     image: docker.redpanda.com/redpandadata/redpanda:v23.3.6
