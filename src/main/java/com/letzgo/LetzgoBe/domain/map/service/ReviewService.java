@@ -1,4 +1,5 @@
 package com.letzgo.LetzgoBe.domain.map.service;
+
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final PhotoRepository photoRepository;
     private final S3Service s3Service;
 
+    @Transactional
     public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequest ReviewRequest, MultipartFile image) {
 
         Place place = placeRepository.findByPlaceId(placeId);
@@ -96,7 +98,7 @@ public class ReviewService {
 
     }
 
-
+    @Transactional
     public void deleteReview(LoginUserDto loginUserDto, Long reviewId) {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         Review review = optionalReview.orElseThrow(()->new NoSuchElementException());

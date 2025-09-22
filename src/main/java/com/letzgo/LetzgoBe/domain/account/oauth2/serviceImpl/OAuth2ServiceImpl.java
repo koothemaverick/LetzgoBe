@@ -71,6 +71,8 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         return getUserInfoFromProvider(provider, providerProps.getUserInfoUri(), accessToken);
     }
 
+    // ----------------- 헬퍼 메서드 -----------------
+
     private String getAccessToken(String provider, OAuth2WebPropertiesDto.ProviderProperties providerProps, String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

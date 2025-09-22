@@ -17,6 +17,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoom;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomMemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
@@ -73,8 +74,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     // 해당 채팅방의 이전 메시지 가져오기
     @Override
-    @Transactional
-    public Page<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
+    @Transactional(readOnly = true)
+    public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
         try {
             checkPageSize(pageable.getPageSize());
             ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
@@ -102,10 +103,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     log.warn("Invalid messageContent ID format: {}", message.getId());
                 }
             }
-            return chatMessages.map(chatMessage -> {
+            return PageResponse.of(chatMessages.map(chatMessage -> {
                 String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
                 return convertToChatMessageDto(chatMessage, content);
-            });
+            }));
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
@@ -116,8 +117,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
     // 해당 채팅방에서 메시지 검색(내용)
     @Override
-    @Transactional
-    public Page<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
+    @Transactional(readOnly = true)
+    public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         checkPageSize(pageable.getPageSize());
 
@@ -153,7 +154,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     return convertToChatMessageDto(chatMessage, content);
                 })
                 .collect(Collectors.toList());
-        return new PageImpl<>(chatMessageResponses, pageable, chatMessageResponses.size());
+        return PageResponse.of(new PageImpl<>(chatMessageResponses, pageable, chatMessageResponses.size()));
     }
 
     // 해당 채팅방에서 메시지 생성
@@ -357,6 +358,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             chatEventPublisher.publishReadAllMessageEvent(payload);
         }
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {

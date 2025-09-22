@@ -20,19 +20,19 @@ public class ApiV1AuthController {
     // 로그인
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        return ApiResponse.of(authService.login(loginRequest, false));
+        return ApiResponse.success(authService.login(loginRequest, false));
     }
 
     // 로그아웃
     @PostMapping("/logout")
-    public ApiResponse<String> logout(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> logout(@LoginUser LoginUserDto loginUser) {
         authService.logout(loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 
     // accessToken 재발급
     @GetMapping("/refresh-token")
     public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @LoginUser LoginUserDto loginUser) {
-        return ApiResponse.of(authService.refreshToken(refreshToken, loginUser));
+        return ApiResponse.success(authService.refreshToken(refreshToken, loginUser));
     }
 }

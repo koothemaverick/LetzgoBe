@@ -18,15 +18,15 @@ public class ApiV1FcmController {
 
     // FCM Token 저장
     @PostMapping
-    public ApiResponse<String> saveFcmToken(@RequestBody @Valid FcmTokenRequest fcmTokenRequest, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> saveFcmToken(@RequestBody @Valid FcmTokenRequest fcmTokenRequest, @LoginUser LoginUserDto loginUser) {
         fcmTokenService.saveFcmToken(loginUser.getId(), fcmTokenRequest.getFcmToken());
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 
     // FCM Token 삭제
     @DeleteMapping
-    public ApiResponse<String> deleteFcmToken(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> deleteFcmToken(@LoginUser LoginUserDto loginUser) {
         fcmTokenService.deleteFcmToken(loginUser.getId());
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 }

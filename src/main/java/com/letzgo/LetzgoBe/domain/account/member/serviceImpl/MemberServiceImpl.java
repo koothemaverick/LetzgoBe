@@ -22,6 +22,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
@@ -81,21 +82,21 @@ public class MemberServiceImpl implements MemberService {
 
     // 본인 회원정보 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberResponse getMyInfo(LoginUserDto loginUser) {
         return memberMapper.toMemberResponse(loginUser);
     }
 
     // 본인 상세회원정보 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public DetailMemberResponse getMyDetailInfo(LoginUserDto loginUser){
         return memberMapper.toDetailMemberResponse(loginUser);
     }
 
     // 다른 멤버의 회원정보 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public MemberResponse getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
@@ -104,7 +105,7 @@ public class MemberServiceImpl implements MemberService {
 
     // 다른 멤버의 상세회원정보 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public DetailMemberResponse getDetailMemberInfo(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
@@ -165,11 +166,11 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원 검색하기
     @Override
-    @Transactional
-    public Page<MemberResponse> searchMemberInfo(Pageable pageable, String keyword){
+    @Transactional(readOnly = true)
+    public PageResponse<MemberResponse> searchMemberInfo(Pageable pageable, String keyword){
         checkPageSize(pageable.getPageSize());
         Page<Member> members = memberRepository.findByKeyword(pageable, keyword);
-        return members.map(memberMapper::toMemberResponse);
+        return PageResponse.of(members.map(memberMapper::toMemberResponse));
     }
 
     // 팔로우 요청하기
