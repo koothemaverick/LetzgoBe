@@ -35,7 +35,7 @@ public class ApiV1ChatRoomController {
     }
 
     // 채팅방 이름 수정(그룹) [참여자 권한]
-    @PutMapping("/title/{chatRoomId}")
+    @PatchMapping("/title/{chatRoomId}")
     public ApiResponse<String> updateChatRoomTitle(@PathVariable("chatRoomId") Long chatRoomId,
                                                    @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
         chatRoomService.updateChatRoomTitle(chatRoomId, chatRoomRequest, loginUser);
@@ -43,7 +43,7 @@ public class ApiV1ChatRoomController {
     }
 
     // 채팅방에 초대(그룹) [참여자 권한]
-    @PutMapping("/group/{chatRoomId}")
+    @PatchMapping("/group/{chatRoomId}")
     public ApiResponse<String> inviteChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,
                                                     @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
         chatRoomService.inviteChatRoomMember(chatRoomId, chatRoomRequest, loginUser);

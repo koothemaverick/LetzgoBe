@@ -120,20 +120,6 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
-    // 해당 댓글 수정
-    @Override
-    @Transactional
-    public void updateComment(Long commentId, CommentRequest commentRequest, LoginUserDto loginUser){
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
-
-        // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
-        if (!comment.getMember().getId().equals(loginUser.getId())) {
-            throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
-        }
-        comment.setContent(commentRequest.getContent());
-        commentRepository.save(comment);
-    }
-
     // 해당 댓글 삭제
     @Override
     @Transactional

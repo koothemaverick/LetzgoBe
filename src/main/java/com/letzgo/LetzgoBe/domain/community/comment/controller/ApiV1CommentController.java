@@ -52,14 +52,6 @@ public class ApiV1CommentController {
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
-    // 댓글 수정
-    @PutMapping("/{commentId}")
-    public ApiResponse<String> updateComment(@PathVariable("commentId") Long commentId,
-                                             @RequestBody @Valid CommentRequest commentRequest, @LoginUser LoginUserDto loginUser){
-        commentService.updateComment(commentId, commentRequest, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
-    }
-
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
     public ApiResponse<String> deleteComment(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
