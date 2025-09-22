@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.service;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,13 +13,13 @@ public interface ChatMessageService {
     void readChatMessage(Long messageId, Long memberId);
 
     // 해당 채팅방의 이전 메시지 가져오기
-    Page<ChatMessageDto> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser);
+    Page<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 검색(내용)
-    Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
+    Page<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 채팅방에서 메시지 생성
-    ChatMessageDto writeChatMessage(Long chatRoomId, String content, Long memberId);
+    ChatMessageResponse writeChatMessage(Long chatRoomId, String content, Long memberId);
 
     // 해당 채팅방에서 이미지 메시지 생성
     void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser);

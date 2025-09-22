@@ -1,10 +1,9 @@
 package com.letzgo.LetzgoBe.domain.notification.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
-import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationForm;
-import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationDto;
+import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationRequest;
+import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.domain.notification.repository.NotificationRepository;
 import com.letzgo.LetzgoBe.domain.notification.service.NotificationService;
@@ -35,7 +34,7 @@ public class NotificationServiceImpl implements NotificationService {
     // 알림 목록 조회
     @Override
     @Transactional
-    public Page<NotificationDto> getNotifications(Pageable pageable, LoginUserDto loginUser) {
+    public Page<NotificationResponse> getNotifications(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<Notification> notificationPage = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(loginUser.getId(), pageable);
         return notificationPage.map(this::convertToNotificationDto);
@@ -44,9 +43,9 @@ public class NotificationServiceImpl implements NotificationService {
     // 알림 읽음 처리
     @Override
     @Transactional
-    public void markAsRead(NotificationForm notificationForm, LoginUserDto loginUser) {
+    public void markAsRead(NotificationRequest notificationRequest, LoginUserDto loginUser) {
         // 본인 알림인지 확인
-        List<Long> ids = notificationForm.getNotificationIdList();
+        List<Long> ids = notificationRequest.getNotificationIdList();
         List<Notification> notifications = notificationRepository.findAllByIdInAndReceiverId(ids, loginUser.getId());
         if (notifications.size() != ids.size()) {
             throw new ServiceException(ReturnCode.NOTIFICATION_NOT_FOUND);
@@ -65,8 +64,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     // Notification을 NotificationDto로 변환
     @Override
-    public NotificationDto convertToNotificationDto(Notification notification){
-        return NotificationDto.builder()
+    public NotificationResponse convertToNotificationDto(Notification notification){
+        return NotificationResponse.builder()
                 .id(notification.getId())
                 .senderId(notification.getSenderId())
                 .senderNickname(notification.getSenderNickname())

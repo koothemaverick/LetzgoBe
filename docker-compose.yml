@@ -34,24 +34,24 @@ services:
     volumes:
       - mongo_data:/data/db
 
-## Mac M2칩
-#  selenium:
-#    image: seleniarm/standalone-chromium:latest
-#    container_name: selenium
-#    ports:
-#      - "4444:4444"
-#    shm_size: 2g
-
-# Window x86_64
+# Mac M2칩
   selenium:
-    image: selenium/standalone-chrome:latest
+    image: seleniarm/standalone-chromium:latest
     container_name: selenium
     ports:
       - "4444:4444"
     shm_size: 2g
-    environment:
-      - SE_NODE_MAX_SESSIONS=3
-      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+
+## Window x86_64
+#  selenium:
+#    image: selenium/standalone-chrome:latest
+#    container_name: selenium
+#    ports:
+#      - "4444:4444"
+#    shm_size: 2g
+#    environment:
+#      - SE_NODE_MAX_SESSIONS=3
+#      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
 
   redpanda-0:
     image: docker.redpanda.com/redpandadata/redpanda:v23.3.6

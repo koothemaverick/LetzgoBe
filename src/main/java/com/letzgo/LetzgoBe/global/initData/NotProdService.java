@@ -1,15 +1,15 @@
 package com.letzgo.LetzgoBe.global.initData;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
+import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomRequest;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
-import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
+import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostRequest;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.scheduler.DataFetchSchedule;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
@@ -93,7 +93,7 @@ public class NotProdService {
         List<String> nicknames = List.of("seoul_gangnam", "incheon_songdo", "gangneung_beach", "busan_haeundae", "jeju_seaside");
         List<Member> members = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
-            MemberForm memberForm = MemberForm.builder()
+            MemberRequest memberRequest = MemberRequest.builder()
                     .name(names.get(i))
                     .nickname(nicknames.get(i))
                     .phone("010-" + (i + 1) + (i + 1) + (i + 1) + (i + 1) + "-" + (i + 1) + (i + 1) + (i + 1) + (i + 1))
@@ -102,15 +102,15 @@ public class NotProdService {
                     .gender(i % 2 == 0 ? Member.Gender.MALE : Member.Gender.FEMALE)
                     .birthday(LocalDate.of(2001, i + 1, 1))
                     .build();
-            memberService.signup(memberForm);
+            memberService.signup(memberRequest);
 
-            Member member = memberRepository.findByEmail(memberForm.getEmail())
+            Member member = memberRepository.findByEmail(memberRequest.getEmail())
                     .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
             members.add(member);
         }
 
         //이메일인증 테스트용 유저6
-        MemberForm memberForm = MemberForm.builder()
+        MemberRequest memberRequest = MemberRequest.builder()
                 .name("test6")
                 .nickname("test6")
                 .phone("010-1234-4321")
@@ -119,9 +119,9 @@ public class NotProdService {
                 .gender(Member.Gender.MALE)
                 .birthday(LocalDate.of(2001,01,01))
                 .build();
-        memberService.signup(memberForm);
+        memberService.signup(memberRequest);
 
-        Member member = memberRepository.findByEmail(memberForm.getEmail())
+        Member member = memberRepository.findByEmail(memberRequest.getEmail())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         members.add(member);
 
@@ -154,7 +154,7 @@ public class NotProdService {
 
     // 게시글 생성
     private void createPost(Member member, String content, String imageFilePath1, String imageFilePath2, double mapX, double mapY) {
-        PostForm postForm = PostForm.builder()
+        PostRequest postRequest = PostRequest.builder()
                 .mapX(mapX)
                 .mapY(mapY)
                 .content(content)
@@ -163,7 +163,7 @@ public class NotProdService {
                 getMultipartFileFromResource(imageFilePath1, imageFilePath1.substring(imageFilePath1.lastIndexOf("/") + 1)),
                 getMultipartFileFromResource(imageFilePath2, imageFilePath2.substring(imageFilePath2.lastIndexOf("/") + 1))
         );
-        postService.addPost(postForm, imageFiles, ConvertToLoginUserDto(member));
+        postService.addPost(postRequest, imageFiles, ConvertToLoginUserDto(member));
     }
 
     // 유저 3, 4, 5, 6이 모든 게시글에 대해 좋아요 누름
@@ -184,24 +184,24 @@ public class NotProdService {
 
     // 유저 1이 1:1 채팅방 생성 (대상: 유저 2)
     private void createDmChatRoom(List<Member> members) {
-        ChatRoomForm dmChatRoomForm = ChatRoomForm.builder()
+        ChatRoomRequest dmChatRoomRequest = ChatRoomRequest.builder()
                 .chatRoomMembers(List.of(
                         ChatRoomMember.builder().member(members.get(1)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(dmChatRoomForm, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(dmChatRoomRequest, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
     }
 
     // 유저 1이 단체 채팅방 생성 (대상: 유저 2, 3)
     private void createGroupChatRoom(List<Member> members) {
-        ChatRoomForm groupChatRoomForm = ChatRoomForm.builder()
+        ChatRoomRequest groupChatRoomRequest = ChatRoomRequest.builder()
                 .title("테스트 채팅방")
                 .chatRoomMembers(List.of(
                         ChatRoomMember.builder().member(members.get(1)).build(),
                         ChatRoomMember.builder().member(members.get(2)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(groupChatRoomForm, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(groupChatRoomRequest, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
     }
 
     // 유저 1, 2의 1:1 채팅

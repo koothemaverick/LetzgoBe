@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.global.webSocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
@@ -50,12 +50,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             ChatWebSocketPayload payload = objectMapper.readValue(message.getPayload(), ChatWebSocketPayload.class);
             switch (payload.getMessageType()) {
                 case MESSAGE:
-                    ChatMessageDto savedChatMessageDto = chatMessageService.writeChatMessage(
+                    ChatMessageResponse savedChatMessageResponse = chatMessageService.writeChatMessage(
                             payload.getChatRoomId(),
-                            payload.getChatMessageDto().getContent(),
-                            payload.getChatMessageDto().getMemberId()
+                            payload.getChatMessageResponse().getContent(),
+                            payload.getChatMessageResponse().getMemberId()
                     );
-                    payload.setChatMessageDto(savedChatMessageDto);
+                    payload.setChatMessageResponse(savedChatMessageResponse);
                     String updatedPayload = objectMapper.writeValueAsString(payload);
                     broadcastToRoom(payload.getChatRoomId(), updatedPayload);
                     break;

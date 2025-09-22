@@ -2,9 +2,9 @@ package com.letzgo.LetzgoBe.domain.map.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewRequestDto;
+import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
+import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceInfoResponse;
+import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import com.letzgo.LetzgoBe.domain.map.service.ReviewService;
@@ -26,7 +26,7 @@ public class MapController {
 
     //장소에 대한 정보출력
     @GetMapping("/place/{placeId}")
-    public ApiResponse<PlaceInfoResponseDto> getPlaceInfo(@PathVariable("placeId") String placeId) {
+    public ApiResponse<PlaceInfoResponse> getPlaceInfo(@PathVariable("placeId") String placeId) {
         return ApiResponse.of(mapService.findPlaceInfo(placeId));
     }
 
@@ -34,9 +34,9 @@ public class MapController {
     @PostMapping("/review/{placeId}")
     public ApiResponse<String> postReview(@LoginUser LoginUserDto loginUserDto,
                                   @PathVariable("placeId") String placeId,
-                                  @ModelAttribute ReviewRequestDto reviewRequestDto,
+                                  @ModelAttribute ReviewRequest reviewRequest,
                                   @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.createReview(loginUserDto, placeId, reviewRequestDto, image);
+        reviewService.createReview(loginUserDto, placeId, reviewRequest, image);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
@@ -44,9 +44,9 @@ public class MapController {
     @PatchMapping("/review/{reviewId}")
     public ApiResponse<String> patchReview(@LoginUser LoginUserDto loginUserDto,
                                    @PathVariable("reviewId") Long reviewId,
-                                   @ModelAttribute ReviewRequestDto reviewRequestDto,
+                                   @ModelAttribute ReviewRequest reviewRequest,
                                    @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.updateReview(loginUserDto, reviewId, reviewRequestDto, image);
+        reviewService.updateReview(loginUserDto, reviewId, reviewRequest, image);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
@@ -60,11 +60,11 @@ public class MapController {
     //검색으로 장소 목록 불러옴
     //파라미터:검색키워드, 사용자위도경도, 검색주위반경(m단위), 받아올 갯수(최대20개)
     @GetMapping("/places")
-    public ApiResponse<PlaceDto> getSearchedPlaces(@RequestParam("query") String query,
-                                                   @RequestParam("lat") String lat,
-                                                   @RequestParam("lng") String lng,
-                                                   @RequestParam("radius") int radius,
-                                                   @ModelAttribute PlacePage request) {
+    public ApiResponse<PlaceResponse> getSearchedPlaces(@RequestParam("query") String query,
+                                                        @RequestParam("lat") String lat,
+                                                        @RequestParam("lng") String lng,
+                                                        @RequestParam("radius") int radius,
+                                                        @ModelAttribute PlacePage request) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(mapService.getSearchedPlaces(query, lat, lng, radius, pageable)));
     }

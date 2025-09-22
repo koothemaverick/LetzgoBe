@@ -1,10 +1,10 @@
 package com.letzgo.LetzgoBe.domain.notification.eventListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.fcm.dto.FcmMessage;
+import com.letzgo.LetzgoBe.domain.fcm.dto.res.FcmMessageResponse;
 import com.letzgo.LetzgoBe.domain.fcm.service.FcmService;
 import com.letzgo.LetzgoBe.domain.fcm.service.FcmTokenService;
-import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationDto;
+import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.domain.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -54,15 +54,15 @@ public class NotificationEventListener {
                 notificationService.createNotification(notification);
                 String fcmToken = fcmTokenService.getFcmToken(notification.getReceiverId());
                 if (fcmToken != null) {
-                    NotificationDto notificationDto = notificationService.convertToNotificationDto(notification);
-                    String bodyJson = objectMapper.writeValueAsString(notificationDto); // JSON 직렬화
+                    NotificationResponse notificationResponse = notificationService.convertToNotificationDto(notification);
+                    String bodyJson = objectMapper.writeValueAsString(notificationResponse); // JSON 직렬화
 
-                    FcmMessage fcmMessage = FcmMessage.builder()
+                    FcmMessageResponse fcmMessageResponse = FcmMessageResponse.builder()
                             .targetToken(fcmToken)
                             .title(title)
                             .body(bodyJson) // JSON 문자열로 설정
                             .build();
-                    fcmService.sendMessageTo(fcmMessage);
+                    fcmService.sendMessageTo(fcmMessageResponse);
                 } else {
                     log.warn("FCM token not found for receiverId: {}", notification.getReceiverId());
                 }
@@ -74,6 +74,5 @@ public class NotificationEventListener {
         }
         kafkaTemplate.send(dltTopic, message);
     }
-
     private record NotificationMeta(String title, String dltTopic) {}
 }

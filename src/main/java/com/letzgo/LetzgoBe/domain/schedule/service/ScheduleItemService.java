@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.schedule.service;
 
-import com.letzgo.LetzgoBe.domain.schedule.dto.ScheduleMemoDto;
+import com.letzgo.LetzgoBe.domain.schedule.dto.req.ScheduleMemoRequest;
 import com.letzgo.LetzgoBe.domain.schedule.dto.SchedulePlaceDto;
 import com.letzgo.LetzgoBe.domain.schedule.entity.Schedule;
 import com.letzgo.LetzgoBe.domain.schedule.entity.ScheduleMemo;
@@ -48,7 +48,7 @@ public class ScheduleItemService {
     }
 
     @Transactional
-    public Long addMemo(Long schedulePlacePk, ScheduleMemoDto dto) {
+    public Long addMemo(Long schedulePlacePk, ScheduleMemoRequest dto) {
         SchedulePlace place = schedulePlaceRepository.findById(schedulePlacePk).orElseThrow();
 
         ScheduleMemo memo = new ScheduleMemo();

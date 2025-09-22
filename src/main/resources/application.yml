@@ -19,7 +19,7 @@ spring:
       secret-key: ${AWS_SECRET_ACCESS_KEY}
       region: ap-northeast-2  # AWS 서울 리전
       s3:
-        bucket: letzgo-bucket-v1 # S3 버킷명
+        bucket: letzgo-bucket-v2 # S3 버킷명
 
 schedule:
   use: true
@@ -63,4 +63,3 @@ mail:
         timeout: 5000
         write-timeout: 5000
   code-expiration-millis: 600000  #코드 만료기간: 10분
-

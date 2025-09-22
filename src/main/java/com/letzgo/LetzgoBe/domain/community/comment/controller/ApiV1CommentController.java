@@ -2,8 +2,8 @@ package com.letzgo.LetzgoBe.domain.community.comment.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentForm;
-import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentDto;
+import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
+import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -11,12 +11,9 @@ import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value="/rest-api/v1/post/comment")
@@ -26,9 +23,9 @@ public class ApiV1CommentController {
 
     // 해당 게시글에 작성된 모든 댓글 조회
     @GetMapping("/{postId}")
-    public ApiResponse<CommentDto> findByPostId(@ModelAttribute CommentPage request,
-                                                @PathVariable("postId") Long postId,
-                                                @LoginUser LoginUserDto loginUser){
+    public ApiResponse<CommentResponse> findByPostId(@ModelAttribute CommentPage request,
+                                                     @PathVariable("postId") Long postId,
+                                                     @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(commentService.findByPostId(postId, pageable, loginUser)));
     }
@@ -50,16 +47,16 @@ public class ApiV1CommentController {
     // 해당 게시글에 댓글 생성
     @PostMapping("/{postId}")
     public ApiResponse<String> addComment(@PathVariable("postId") Long postId,
-                                          @RequestBody @Valid CommentForm commentForm, @LoginUser LoginUserDto loginUser){
-        commentService.addComment(postId, commentForm, loginUser);
+                                          @RequestBody @Valid CommentRequest commentRequest, @LoginUser LoginUserDto loginUser){
+        commentService.addComment(postId, commentRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 댓글 수정
     @PutMapping("/{commentId}")
     public ApiResponse<String> updateComment(@PathVariable("commentId") Long commentId,
-                                             @RequestBody @Valid CommentForm commentForm, @LoginUser LoginUserDto loginUser){
-        commentService.updateComment(commentId, commentForm, loginUser);
+                                             @RequestBody @Valid CommentRequest commentRequest, @LoginUser LoginUserDto loginUser){
+        commentService.updateComment(commentId, commentRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
