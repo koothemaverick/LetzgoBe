@@ -4,19 +4,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
-import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberDto;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMember;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberDto;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
@@ -54,24 +55,25 @@ public class MemberServiceImpl implements MemberService {
     private final S3Service s3Service;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final MemberMapper memberMapper;
 
     // 회원가입
     @Override
     @Transactional
-    public Member signup(MemberForm memberForm) {
-        if (memberRepository.existsByEmail((memberForm.getEmail()))) {
+    public Member signup(MemberRequest memberRequest) {
+        if (memberRepository.existsByEmail((memberRequest.getEmail()))) {
             throw new RuntimeException("이미 존재하는 이메일입니다.");
         }
         // 비밀번호가 없으면 null로 처리하거나 다른 처리를 할 수 있습니다.
-        String encodedPassword = memberForm.getPassword() != null ? passwordEncoder.encode(memberForm.getPassword()) : null;
+        String encodedPassword = memberRequest.getPassword() != null ? passwordEncoder.encode(memberRequest.getPassword()) : null;
         Member member = Member.builder()
-                .name(memberForm.getName())
-                .nickname(memberForm.getNickname())
-                .phone(memberForm.getPhone())
-                .email(memberForm.getEmail())
+                .name(memberRequest.getName())
+                .nickname(memberRequest.getNickname())
+                .phone(memberRequest.getPhone())
+                .email(memberRequest.getEmail())
                 .password(encodedPassword)  // 인코딩된 비밀번호 저장
-                .gender(memberForm.getGender())
-                .birthday(memberForm.getBirthday())
+                .gender(memberRequest.getGender())
+                .birthday(memberRequest.getBirthday())
                 .build();
         memberRepository.save(member);
         return member;
@@ -80,46 +82,44 @@ public class MemberServiceImpl implements MemberService {
     // 본인 회원정보 조회
     @Override
     @Transactional
-    public MemberDto getMyInfo(LoginUserDto loginUser) {
-        return loginUserConvertToMemberInfo(loginUser);
+    public MemberResponse getMyInfo(LoginUserDto loginUser) {
+        return memberMapper.toMemberResponse(loginUser);
     }
 
     // 본인 상세회원정보 조회
     @Override
     @Transactional
-    public DetailMemberDto getMyDetailInfo(LoginUserDto loginUser){
-        return loginUserConvertToDetailMemberInfo(loginUser);
+    public DetailMemberResponse getMyDetailInfo(LoginUserDto loginUser){
+        return memberMapper.toDetailMemberResponse(loginUser);
     }
 
     // 다른 멤버의 회원정보 조회
     @Override
     @Transactional
-    public MemberDto getMemberInfo(Long memberId) {
+    public MemberResponse getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberConvertToMemberInfo(member);
+        return memberMapper.toMemberResponse(member);
     }
 
     // 다른 멤버의 상세회원정보 조회
     @Override
     @Transactional
-    public DetailMemberDto getDetailMemberInfo(Long memberId){
+    public DetailMemberResponse getDetailMemberInfo(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberConvertToDetailMemberInfo(member);
+        return memberMapper.toDetailMemberResponse(member);
     }
 
     // 회원정보 수정
     @Override
     @Transactional
-    public void updateMember(MemberForm memberForm, MultipartFile imageFile, LoginUserDto loginUser) {
+    public void updateMember(MemberRequest memberRequest, MultipartFile imageFile, LoginUserDto loginUser) {
         /// 기존 이미지 삭제 후 입력 받은 이미지 S3에 저장
         String imageUrl = loginUser.getProfileImageUrl(); // 기본적으로 기존 이미지 URL을 사용
         if (imageFile != null && !imageFile.isEmpty()) {
             // 기존 이미지 없으면 바로 새로운 이미지 저장
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                s3Service.deleteFile(imageUrl);
-            }
+            if (imageUrl != null && !imageUrl.isEmpty()) s3Service.deleteFile(imageUrl);
             try {
                 imageUrl = s3Service.uploadFile(imageFile, "profile-image");
             } catch (IOException e) {
@@ -127,32 +127,18 @@ public class MemberServiceImpl implements MemberService {
             }
         } else {
             // imageFile이 없으면 기존 이미지가 있다면 삭제한다
-            if (imageUrl != null && !imageUrl.isEmpty()) {
-                s3Service.deleteFile(imageUrl); // 기존 이미지 삭제
-            }
+            if (imageUrl != null && !imageUrl.isEmpty()) s3Service.deleteFile(imageUrl); // 기존 이미지 삭제
             imageUrl = null;
         }
-        if (memberForm.getName() != null) {
-            loginUser.setName(memberForm.getName());
+        if (memberRequest.getName() != null) loginUser.setName(memberRequest.getName());
+        if (memberRequest.getNickname() != null) loginUser.setNickname(memberRequest.getNickname());
+        if (memberRequest.getPhone() != null) loginUser.setPhone(memberRequest.getPhone());
+        if (memberRequest.getEmail() != null) loginUser.setEmail(memberRequest.getEmail());
+        if (memberRequest.getPassword() != null) {
+            loginUser.setPassword(BCrypt.hashpw(memberRequest.getPassword(), BCrypt.gensalt()));
         }
-        if (memberForm.getNickname() != null) {
-            loginUser.setNickname(memberForm.getNickname());
-        }
-        if (memberForm.getPhone() != null) {
-            loginUser.setPhone(memberForm.getPhone());
-        }
-        if (memberForm.getEmail() != null) {
-            loginUser.setEmail(memberForm.getEmail());
-        }
-        if (memberForm.getPassword() != null) {
-            loginUser.setPassword(BCrypt.hashpw(memberForm.getPassword(), BCrypt.gensalt()));
-        }
-        if (memberForm.getGender() != null) {
-            loginUser.setGender(memberForm.getGender());
-        }
-        if (memberForm.getBirthday() != null) {
-            loginUser.setBirthday(memberForm.getBirthday());
-        }
+        if (memberRequest.getGender() != null) loginUser.setGender(memberRequest.getGender());
+        if (memberRequest.getBirthday() != null) loginUser.setBirthday(memberRequest.getBirthday());
         loginUser.setProfileImageUrl(imageUrl);
         // LoginUserDto를 Member 엔티티로 변환
         Member memberEntity = loginUser.ConvertToMember();
@@ -168,7 +154,6 @@ public class MemberServiceImpl implements MemberService {
         // DB에서 회원 조회
         Member memberEntity = memberRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-
         // 연관된 데이터 삭제
         commentService.deleteMembersAllComments(loginUser.getId());
         postService.deleteMembersAllPosts(loginUser.getId());
@@ -181,10 +166,10 @@ public class MemberServiceImpl implements MemberService {
     // 회원 검색하기
     @Override
     @Transactional
-    public Page<MemberDto> searchMemberInfo(Pageable pageable, String keyword){
+    public Page<MemberResponse> searchMemberInfo(Pageable pageable, String keyword){
         checkPageSize(pageable.getPageSize());
         Page<Member> members = memberRepository.findByKeyword(pageable, keyword);
-        return members.map(this::memberConvertToMemberInfo);
+        return members.map(memberMapper::toMemberResponse);
     }
 
     // 팔로우 요청하기
@@ -308,155 +293,13 @@ public class MemberServiceImpl implements MemberService {
         memberFollowRepository.delete(memberFollow);
     }
 
+    // ----------------- 헬퍼 메서드 -----------------
+
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {
         int maxPageSize = MemberPage.getMaxPageSize();
         if (pageSize > maxPageSize) {
             throw new ServiceException(ReturnCode.PAGE_REQUEST_FAIL);
         }
-    }
-
-    // LoginUser를 MemberInfo로 변환
-    private MemberDto loginUserConvertToMemberInfo(LoginUserDto loginUser) {
-        return MemberDto.builder()
-                .id(loginUser.getId())
-                .name(loginUser.getName())
-                .nickname(loginUser.getNickname())
-                .profileImageUrl(loginUser.getProfileImageUrl())
-                .followMemberCount(loginUser.getFollowList().stream().count())
-                .followedMemberCount(loginUser.getFollowedList().stream().count())
-                .build();
-    }
-
-    // Member를 MemberInfo로 변환
-    private MemberDto memberConvertToMemberInfo(Member member) {
-        return MemberDto.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .profileImageUrl(member.getProfileImageUrl())
-                .followMemberCount(member.getFollowList().stream().count())
-                .followedMemberCount(member.getFollowedList().stream().count())
-                .build();
-    }
-
-    // LoginUser를 DetailMemberInfo로 변환
-    private DetailMemberDto loginUserConvertToDetailMemberInfo(LoginUserDto loginUser) {
-        return DetailMemberDto.builder()
-                .id(loginUser.getId())
-                .name(loginUser.getName())
-                .nickname(loginUser.getNickname())
-                .phone(loginUser.getPhone())
-                .email(loginUser.getEmail())
-                .gender(loginUser.getGender())
-                .birthday(loginUser.getBirthday())
-                .profileImageUrl(loginUser.getProfileImageUrl())
-                .followMemberCount(loginUser.getFollowList().stream().count())
-                .followedMemberCount(loginUser.getFollowedList().stream().count())
-                // 팔로우 목록 변환
-                .followList(loginUser.getFollowList().stream()
-                        .map(MemberFollow -> SimpleMember.builder()
-                                .userId(MemberFollow.getFollowed().getId())
-                                .userName(MemberFollow.getFollowed().getName())
-                                .userNickname(MemberFollow.getFollowed().getNickname())
-                                .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로워 목록 변환
-                .followedList(loginUser.getFollowedList().stream()
-                        .map(MemberFollow -> SimpleMember.builder()
-                                .userId(MemberFollow.getFollow().getId())
-                                .userName(MemberFollow.getFollow().getName())
-                                .userNickname(MemberFollow.getFollow().getNickname())
-                                .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
-                .followReqList(loginUser.getFollowReqList().stream()
-                        .map(MemberFollowReq -> SimpleMember.builder()
-                                .userId(MemberFollowReq.getFollowRec().getId())
-                                .userName(MemberFollowReq.getFollowRec().getName())
-                                .userNickname(MemberFollowReq.getFollowRec().getNickname())
-                                .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
-                .followRecList(loginUser.getFollowRecList().stream()
-                        .map(MemberFollowReq -> SimpleMember.builder()
-                                .userId(MemberFollowReq.getFollowReq().getId())
-                                .userName(MemberFollowReq.getFollowReq().getName())
-                                .userNickname(MemberFollowReq.getFollowReq().getNickname())
-                                .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                .build();
-    }
-
-    // Member를 DetailMemberInfo로 변환
-    private DetailMemberDto memberConvertToDetailMemberInfo(Member member) {
-        return DetailMemberDto.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .phone(member.getPhone())
-                .email(member.getEmail())
-                .gender(member.getGender())
-                .birthday(member.getBirthday())
-                .profileImageUrl(member.getProfileImageUrl())
-                .followMemberCount(member.getFollowList().stream().count())
-                .followedMemberCount(member.getFollowedList().stream().count())
-                // 팔로우 목록 변환
-                .followList(member.getFollowList().stream()
-                        .map(MemberFollow -> SimpleMember.builder()
-                                .userId(MemberFollow.getFollowed().getId())
-                                .userName(MemberFollow.getFollowed().getName())
-                                .userNickname(MemberFollow.getFollowed().getNickname())
-                                .profileImageUrl(MemberFollow.getFollowed().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로워 목록 변환
-                .followedList(member.getFollowedList().stream()
-                        .map(MemberFollow -> SimpleMember.builder()
-                                .userId(MemberFollow.getFollow().getId())
-                                .userName(MemberFollow.getFollow().getName())
-                                .userNickname(MemberFollow.getFollow().getNickname())
-                                .profileImageUrl(MemberFollow.getFollow().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로우 요청 목록 변환 (현재 사용자가 요청한 팔로우)
-                .followReqList(member.getFollowReqList().stream()
-                        .map(MemberFollowReq -> SimpleMember.builder()
-                                .userId(MemberFollowReq.getFollowRec().getId())
-                                .userName(MemberFollowReq.getFollowRec().getName())
-                                .userNickname(MemberFollowReq.getFollowRec().getNickname())
-                                .profileImageUrl(MemberFollowReq.getFollowRec().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                // 팔로우 받은 목록 변환 (다른 사용자가 요청한 팔로우)
-                .followRecList(member.getFollowRecList().stream()
-                        .map(MemberFollowReq -> SimpleMember.builder()
-                                .userId(MemberFollowReq.getFollowReq().getId())
-                                .userName(MemberFollowReq.getFollowReq().getName())
-                                .userNickname(MemberFollowReq.getFollowReq().getNickname())
-                                .profileImageUrl(MemberFollowReq.getFollowReq().getProfileImageUrl())
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                .build();
     }
 }

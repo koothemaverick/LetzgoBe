@@ -3,7 +3,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
@@ -23,7 +23,6 @@ import com.letzgo.LetzgoBe.global.s3.S3Service;
 import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +46,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
-    private final ApplicationEventPublisher eventPublisher;
     private final ChatEventPublisher chatEventPublisher;
 
     // 메시지 읽음 처리
@@ -76,7 +74,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방의 이전 메시지 가져오기
     @Override
     @Transactional
-    public Page<ChatMessageDto> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
+    public Page<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
         try {
             checkPageSize(pageable.getPageSize());
             ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
@@ -119,7 +117,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional
-    public Page<ChatMessageDto> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
+    public Page<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         checkPageSize(pageable.getPageSize());
 
@@ -149,19 +147,19 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .collect(Collectors.toList());
 
         // 필터링된 메시지를 DTO로 변환
-        List<ChatMessageDto> chatMessageDtos = filteredMessages.stream()
+        List<ChatMessageResponse> chatMessageResponses = filteredMessages.stream()
                 .map(chatMessage -> {
                     String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
                     return convertToChatMessageDto(chatMessage, content);
                 })
                 .collect(Collectors.toList());
-        return new PageImpl<>(chatMessageDtos, pageable, chatMessageDtos.size());
+        return new PageImpl<>(chatMessageResponses, pageable, chatMessageResponses.size());
     }
 
     // 해당 채팅방에서 메시지 생성
     @Override
     @Transactional
-    public ChatMessageDto writeChatMessage(Long chatRoomId, String content, Long memberId) {
+    public ChatMessageResponse writeChatMessage(Long chatRoomId, String content, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         Member member = memberRepository.findById(memberId)
@@ -256,11 +254,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageReadRepository.save(readRecord);
 
         // 메시지 생성 이벤트 발행
-        ChatMessageDto chatMessageDto = convertToChatMessageDto(chatMessage, null);
+        ChatMessageResponse chatMessageResponse = convertToChatMessageDto(chatMessage, null);
         ChatWebSocketPayload imagePayload = ChatWebSocketPayload.builder()
                 .messageType(MESSAGE)
                 .chatRoomId(chatRoomId)
-                .chatMessageDto(chatMessageDto)
+                .chatMessageResponse(chatMessageResponse)
                 .build();
         chatEventPublisher.publishImageMessageEvent(imagePayload);
 
@@ -369,11 +367,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     // ChatMessage를 ChatMessageDto로 변환
-    private ChatMessageDto convertToChatMessageDto(ChatMessage chatMessage, String content) {
+    private ChatMessageResponse convertToChatMessageDto(ChatMessage chatMessage, String content) {
         Long readMemberCount = chatMessageReadRepository.countByChatMessageId(chatMessage.getId());
         int totalMemberCount = chatMessage.getChatRoom().getChatRoomMembers().size();
         Long unreadCount = (long) totalMemberCount - readMemberCount;
-        return ChatMessageDto.builder()
+        return ChatMessageResponse.builder()
                 .id(chatMessage.getId())
                 .memberId(chatMessage.getMember().getId())
                 .nickname(chatMessage.getMember().getNickname())

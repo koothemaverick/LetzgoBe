@@ -6,16 +6,15 @@ import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
-import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
-import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYForm;
-import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostDto;
-import com.letzgo.LetzgoBe.domain.community.post.dto.res.PostDto;
+import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostRequest;
+import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYRequest;
+import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostResponse;
+import com.letzgo.LetzgoBe.domain.community.post.dto.res.PostResponse;
 import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostLike;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostPage;
 import com.letzgo.LetzgoBe.domain.community.post.entity.PostSave;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeQueryRepository;
-import com.letzgo.LetzgoBe.domain.community.post.repository.PostLikeRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostSaveQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
@@ -53,7 +52,7 @@ public class PostServiceImpl implements PostService {
     // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable){
+    public Page<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Long loginUserId = loginUser.getId();
         List<Long> followingMemberIds = memberFollowRepository.findFollowedMemberIdsByFollowerId(loginUserId);
@@ -76,10 +75,10 @@ public class PostServiceImpl implements PostService {
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable, LoginUserDto loginUser){
+    public Page<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findPostsWithinRadius(
-                xyForm.getMapX(), xyForm.getMapY(), xyForm.getRadius(), pageable
+                xyRequest.getMapX(), xyRequest.getMapY(), xyRequest.getRadius(), pageable
         );
         return posts.map(post -> convertToDetailPostDto(post, loginUser));
     }
@@ -87,7 +86,7 @@ public class PostServiceImpl implements PostService {
     // 해당 사용자가 작성한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser){
+    public Page<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findByMemberId(memberId, pageable);
         return posts.map(post -> convertToDetailPostDto(post, loginUser));
@@ -96,7 +95,7 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 상세 조회
     @Override
     @Transactional(readOnly = true)
-    public DetailPostDto findById(Long postId, LoginUserDto loginUser){
+    public DetailPostResponse findById(Long postId, LoginUserDto loginUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         return convertToDetailPostDto(post, loginUser);
     }
@@ -104,7 +103,7 @@ public class PostServiceImpl implements PostService {
     // 해당 사용자가 저장한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<PostDto> getSavedPostByMember(Long memberId, Pageable pageable) {
+    public Page<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable) {
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findSavedPostByMemberId(memberId, pageable);
         return posts.map(this::convertToPostDto);
@@ -113,7 +112,7 @@ public class PostServiceImpl implements PostService {
     // 사용자 닉네임 & 게시글 내용 검색
     @Override
     @Transactional(readOnly = true)
-    public Page<PostDto> searchByKeyword(String keyword, Pageable pageable){
+    public Page<PostResponse> searchByKeyword(String keyword, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.searchByKeyword(keyword, pageable);
         return posts.map(this::convertToPostDto);
@@ -194,7 +193,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 생성
     @Override
     @Transactional
-    public void addPost(PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void addPost(PostRequest postRequest, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
         // 입력 받은 이미지들 S3에 저장
         List<String> imageUrls = new ArrayList<>();
         if (imageFiles.size() > 5 || imageFiles.isEmpty() || imageFiles == null) {
@@ -211,9 +210,9 @@ public class PostServiceImpl implements PostService {
         }
         Post post = Post.builder()
                 .member(loginUser.ConvertToMember())
-                .content(postForm.getContent())
-                .mapX(postForm.getMapX())
-                .mapY(postForm.getMapY())
+                .content(postRequest.getContent())
+                .mapX(postRequest.getMapX())
+                .mapY(postRequest.getMapY())
                 .imageUrls(imageUrls)
                 .build();
         postRepository.save(post);
@@ -222,7 +221,7 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 수정
     @Override
     @Transactional
-    public void updatePost(Long postId, PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void updatePost(Long postId, PostRequest postRequest, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
         if (!post.getMember().getId().equals(loginUser.getId())) {
@@ -244,9 +243,9 @@ public class PostServiceImpl implements PostService {
                 }
             }
         }
-        post.setMapX(postForm.getMapX());
-        post.setMapY(postForm.getMapY());
-        post.setContent(postForm.getContent());
+        post.setMapX(postRequest.getMapX());
+        post.setMapY(postRequest.getMapY());
+        post.setContent(postRequest.getContent());
         post.setImageUrls(imageUrls);
         postRepository.save(post);
     }
@@ -286,8 +285,8 @@ public class PostServiceImpl implements PostService {
     }
 
     // Post를 PostDto로 변환
-    private PostDto convertToPostDto(Post post) {
-        return PostDto.builder()
+    private PostResponse convertToPostDto(Post post) {
+        return PostResponse.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
                 .nickname(post.getMember().getNickname())
@@ -299,11 +298,11 @@ public class PostServiceImpl implements PostService {
     }
 
     // Post를 DetailPostDto로 변환
-    private DetailPostDto convertToDetailPostDto(Post post, LoginUserDto loginUser) {
+    private DetailPostResponse convertToDetailPostDto(Post post, LoginUserDto loginUser) {
         boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
         Long likeCount = postLikeQueryRepository.countByPostId(post.getId());
         boolean saved = postSaveQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
-        return DetailPostDto.builder()
+        return DetailPostResponse.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
                 .profileImageUrl(post.getMember().getProfileImageUrl())

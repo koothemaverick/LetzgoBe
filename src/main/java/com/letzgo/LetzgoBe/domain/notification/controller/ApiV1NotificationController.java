@@ -2,8 +2,8 @@ package com.letzgo.LetzgoBe.domain.notification.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationForm;
-import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationDto;
+import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationRequest;
+import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.NotificationPage;
 import com.letzgo.LetzgoBe.domain.notification.service.NotificationService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -23,16 +23,16 @@ public class ApiV1NotificationController {
 
     // 알림 목록 조회
     @GetMapping
-    public ApiResponse<NotificationDto> getNotifications(@ModelAttribute NotificationPage request, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<NotificationResponse> getNotifications(@ModelAttribute NotificationPage request, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(notificationService.getNotifications(pageable, loginUser)));
     }
 
     // 알림 읽음 처리
     @PutMapping
-    public ApiResponse<String> markAsRead(@RequestBody @Valid NotificationForm notificationForm,
+    public ApiResponse<String> markAsRead(@RequestBody @Valid NotificationRequest notificationRequest,
                                           @LoginUser LoginUserDto loginUser) {
-        notificationService.markAsRead(notificationForm, loginUser);
+        notificationService.markAsRead(notificationRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 }

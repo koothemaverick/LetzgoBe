@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.global.webSocket.payload;
 
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,7 +30,7 @@ public class ChatWebSocketPayload {
     private Long chatRoomId;
 
     // MESSAGE일 때만 존재
-    private ChatMessageDto chatMessageDto;
+    private ChatMessageResponse chatMessageResponse;
     private String content;
     private LocalDateTime lastMessageCreatedAt;
 

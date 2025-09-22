@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewRequestDto;
+import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
@@ -27,7 +27,7 @@ public class ReviewService {
     private final PhotoRepository photoRepository;
     private final S3Service s3Service;
 
-    public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequestDto ReviewRequestDto, MultipartFile image) {
+    public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequest ReviewRequest, MultipartFile image) {
 
         Place place = placeRepository.findByPlaceId(placeId);
         Photo uploadedPhoto = null;
@@ -50,9 +50,9 @@ public class ReviewService {
         Review review = Review.builder()
                 .member(loginUserDto.ConvertToMember())
                 .place(place)
-                .content(ReviewRequestDto.getContent())
-                .rating(ReviewRequestDto.getRating())
-                .title(ReviewRequestDto.getTitle())
+                .content(ReviewRequest.getContent())
+                .rating(ReviewRequest.getRating())
+                .title(ReviewRequest.getTitle())
                 .photo(uploadedPhoto)
                 .build();
 
@@ -60,7 +60,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public void updateReview(LoginUserDto loginUserDto, Long reviewId, ReviewRequestDto reviewRequestDto, MultipartFile image) {
+    public void updateReview(LoginUserDto loginUserDto, Long reviewId, ReviewRequest reviewRequest, MultipartFile image) {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(()->new NoSuchElementException());
 
@@ -81,18 +81,18 @@ public class ReviewService {
 
                     review.update(
                             uploadedPhoto,
-                            reviewRequestDto.getTitle(),
-                            reviewRequestDto.getContent(),
-                            reviewRequestDto.getRating());
+                            reviewRequest.getTitle(),
+                            reviewRequest.getContent(),
+                            reviewRequest.getRating());
 
                 } catch (IOException e) {
                     throw new ServiceException(ReturnCode.INTERNAL_ERROR);
                 }
             }
                 review.update(
-                        reviewRequestDto.getTitle(),
-                        reviewRequestDto.getContent(),
-                        reviewRequestDto.getRating());
+                        reviewRequest.getTitle(),
+                        reviewRequest.getContent(),
+                        reviewRequest.getRating());
 
     }
 

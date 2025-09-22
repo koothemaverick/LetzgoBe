@@ -1,9 +1,9 @@
 package com.letzgo.LetzgoBe.domain.account.oauth2.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginForm;
-import com.letzgo.LetzgoBe.domain.account.auth.dto.res.Auth;
+import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
+import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
-import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
+import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
@@ -50,11 +50,11 @@ public class ApiV1OAuth2Controller {
         String name = socialUser.get("name");
 
         // 로그인 또는 회원가입 처리
-        LoginForm socialLoginForm;
+        LoginRequest socialLoginRequest;
         if (memberRepository.existsByEmail(email)) {
-            socialLoginForm = LoginForm.builder().email(email).build();
+            socialLoginRequest = LoginRequest.builder().email(email).build();
         } else {
-            MemberForm memberForm = MemberForm.builder()
+            MemberRequest memberRequest = MemberRequest.builder()
                     .email(email)
                     .name(name)
                     .nickname(name)
@@ -63,12 +63,12 @@ public class ApiV1OAuth2Controller {
                     .birthday(null)
                     .password("")
                     .build();
-            Member newMember = memberService.signup(memberForm);
-            socialLoginForm = LoginForm.builder().email(newMember.getEmail()).build();
+            Member newMember = memberService.signup(memberRequest);
+            socialLoginRequest = LoginRequest.builder().email(newMember.getEmail()).build();
         }
-        Auth auth = authService.login(socialLoginForm, true);
-        String accessToken = auth.getAccessToken();
-        String refreshToken = auth.getRefreshToken();
+        LoginResponse loginResponse = authService.login(socialLoginRequest, true);
+        String accessToken = loginResponse.getAccessToken();
+        String refreshToken = loginResponse.getRefreshToken();
 
         // 프론트엔드 리디렉션 주소에 토큰을 쿼리로 포함
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendRedirect)

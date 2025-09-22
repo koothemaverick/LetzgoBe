@@ -3,7 +3,7 @@ package com.letzgo.LetzgoBe.domain.map.service;
 import com.google.maps.*;
 import com.google.maps.errors.ApiException;
 import com.google.maps.model.*;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
+import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,7 @@ public class MapApiService {
     private final GeoApiContext context;
 
     //장소이름, 주소, 사진요청용스트링 받아옴
-    public PlaceDto getPlaceDetails(String placeId) throws IOException, InterruptedException, ApiException {
+    public PlaceResponse getPlaceDetails(String placeId) throws IOException, InterruptedException, ApiException {
 
         PlaceDetails placeDetails = PlacesApi.placeDetails(context, placeId)
                 .fields(PlaceDetailsRequest.FieldMask.NAME,
@@ -43,7 +43,7 @@ public class MapApiService {
             photoRef = photos[0].photoReference;
         }
 
-        return PlaceDto.builder()
+        return PlaceResponse.builder()
                 .name(placeDetails.name)
                 .address(placeDetails.formattedAddress)
                 .placeId(placeId)
@@ -55,7 +55,7 @@ public class MapApiService {
 
     //주변의 장소를 검색
     //파라미터:검색키워드, 사용자위도경도, 검색주위반경(m단위), 받아올 갯수(최대20개)
-    public Page<PlaceDto> getNearPlaces(String query, String lat, String lng, int radius, Pageable pageable) throws IOException, InterruptedException, ApiException {
+    public Page<PlaceResponse> getNearPlaces(String query, String lat, String lng, int radius, Pageable pageable) throws IOException, InterruptedException, ApiException {
 
         LatLng latLng = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
         TextSearchRequest textSearchRequest = PlacesApi.textSearchQuery(context, query, latLng);
@@ -65,7 +65,7 @@ public class MapApiService {
                 .await(); //무료사용한도:5,000번/한달 그이상 호출시 과금됨
         log.info("구글API(PlaceAPI(기존)-텍스트 검색) 호출됨");
 
-        List<PlaceDto> placeDtos = new ArrayList<>();
+        List<PlaceResponse> placeResponses = new ArrayList<>();
 
         int resultCount = Math.min(apiResponse.results.length, 20);
         for (int i = 0; i < resultCount; i++) {
@@ -76,7 +76,7 @@ public class MapApiService {
                 photoRef = result.photos[0].photoReference;
             }
 
-            PlaceDto nearPlace = PlaceDto.builder()
+            PlaceResponse nearPlace = PlaceResponse.builder()
                     .name(apiResponse.results[i].name)
                     .address(apiResponse.results[i].formattedAddress)
                     .placeId(apiResponse.results[i].placeId)
@@ -84,21 +84,21 @@ public class MapApiService {
                     .lat(apiResponse.results[i].geometry.location.lat)
                     .lng(apiResponse.results[i].geometry.location.lng)
                     .build();
-            placeDtos.add(nearPlace);
+            placeResponses.add(nearPlace);
         }
 
         // 수동 페이징 처리
         int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), placeDtos.size());
-        List<PlaceDto> pagedList;
+        int end = Math.min(start + pageable.getPageSize(), placeResponses.size());
+        List<PlaceResponse> pagedList;
 
-        if (start >= placeDtos.size()) {
+        if (start >= placeResponses.size()) {
             pagedList = Collections.emptyList();
         } else {
-            pagedList = placeDtos.subList(start, end);
+            pagedList = placeResponses.subList(start, end);
         }
 
-        return new PageImpl<>(pagedList, pageable, placeDtos.size());
+        return new PageImpl<>(pagedList, pageable, placeResponses.size());
     }
 }
 

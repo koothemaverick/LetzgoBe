@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.account.oauth2.serviceImpl;
 
-import com.letzgo.LetzgoBe.domain.account.oauth2.dto.res.OAuth2Properties;
+import com.letzgo.LetzgoBe.domain.account.oauth2.dto.res.OAuth2WebPropertiesDto;
 import com.letzgo.LetzgoBe.domain.account.oauth2.service.OAuth2Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +19,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OAuth2ServiceImpl implements OAuth2Service {
     private final RestTemplate restTemplate = new RestTemplate();
-    private final OAuth2Properties oAuth2Properties;
+    private final OAuth2WebPropertiesDto oAuth2WebPropertiesDto;
 
     // 소셜 로그인 리디렉션 URL 생성
     public String getAuthUrl(String provider) {
-        OAuth2Properties.ProviderProperties providerProps = oAuth2Properties.getProviders().get(provider);
+        OAuth2WebPropertiesDto.ProviderProperties providerProps = oAuth2WebPropertiesDto.getProviders().get(provider);
         if (providerProps == null) {
             throw new IllegalArgumentException("지원되지 않는 OAuth2 제공자: " + provider);
         }
@@ -63,7 +63,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
 
     // 소셜 로그인
     public Map<String, String> getUserInfo(String provider, String code) {
-        OAuth2Properties.ProviderProperties providerProps = oAuth2Properties.getProviders().get(provider);
+        OAuth2WebPropertiesDto.ProviderProperties providerProps = oAuth2WebPropertiesDto.getProviders().get(provider);
         if (providerProps == null) {
             throw new IllegalArgumentException("지원되지 않는 OAuth2 제공자: " + provider);
         }
@@ -71,7 +71,7 @@ public class OAuth2ServiceImpl implements OAuth2Service {
         return getUserInfoFromProvider(provider, providerProps.getUserInfoUri(), accessToken);
     }
 
-    private String getAccessToken(String provider, OAuth2Properties.ProviderProperties providerProps, String code) {
+    private String getAccessToken(String provider, OAuth2WebPropertiesDto.ProviderProperties providerProps, String code) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 

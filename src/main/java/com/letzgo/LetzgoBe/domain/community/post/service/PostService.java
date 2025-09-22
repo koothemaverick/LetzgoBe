@@ -1,11 +1,10 @@
 package com.letzgo.LetzgoBe.domain.community.post.service;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostForm;
-import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYForm;
-import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostDto;
-import com.letzgo.LetzgoBe.domain.community.post.dto.res.PostDto;
-import jakarta.validation.Valid;
+import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostRequest;
+import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYRequest;
+import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostResponse;
+import com.letzgo.LetzgoBe.domain.community.post.dto.res.PostResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,22 +13,22 @@ import java.util.List;
 
 public interface PostService {
     // 본인 & 팔로우한 유저의 게시글 조회
-    Page<DetailPostDto> getMainPost(LoginUserDto loginUser, Pageable pageable);
+    Page<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable);
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
-    Page<DetailPostDto> findPostsWithinRadius(XYForm xyForm, Pageable pageable, LoginUserDto loginUser);
+    Page<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 사용자가 작성한 게시글 조회
-    Page<DetailPostDto> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser);
+    Page<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 게시글 상세 조회
-    DetailPostDto findById(Long postId, LoginUserDto loginUser);
+    DetailPostResponse findById(Long postId, LoginUserDto loginUser);
 
     // 해당 사용자가 저장한 게시글 조회
-    Page<PostDto> getSavedPostByMember(Long memberId, Pageable pageable);
+    Page<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable);
 
     // 사용자 닉네임 & 게시글 내용 검색
-    Page<PostDto> searchByKeyword(String keyword, Pageable pageable);
+    Page<PostResponse> searchByKeyword(String keyword, Pageable pageable);
 
     // 해당 게시글 저장
     void addCollectionPost(Long postId, LoginUserDto loginUser);
@@ -44,10 +43,10 @@ public interface PostService {
     void deletePostLike(Long postId, LoginUserDto loginUser);
 
     // 게시글 생성
-    void addPost(PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void addPost(PostRequest postRequest, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 게시글 수정
-    void updatePost(Long postId, PostForm postForm, List<MultipartFile> imageFiles, LoginUserDto loginUser);
+    void updatePost(Long postId, PostRequest postRequest, List<MultipartFile> imageFiles, LoginUserDto loginUser);
 
     // 해당 게시글 삭제
     void deletePost(Long postId, LoginUserDto loginUser);

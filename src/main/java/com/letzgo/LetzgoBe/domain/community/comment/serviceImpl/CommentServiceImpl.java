@@ -3,8 +3,8 @@ package com.letzgo.LetzgoBe.domain.community.comment.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentForm;
-import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentDto;
+import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
+import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.Comment;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentLike;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
@@ -16,7 +16,6 @@ import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<CommentDto> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
+    public Page<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
         return comments.map(comment -> convertToCommentDto(comment, loginUser));
@@ -93,14 +92,14 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 댓글 생성
     @Override
     @Transactional
-    public void addComment(Long postId, CommentForm commentForm, LoginUserDto loginUser){
+    public void addComment(Long postId, CommentRequest commentRequest, LoginUserDto loginUser){
         // 현재 로그인한 사용자의 member 객체를 가져오는 메서드
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         Comment comment = Comment.builder()
                 .member(loginUser.ConvertToMember())
                 .post(post)
-                .content(commentForm.getContent())
-                .superCommentId(commentForm.getSuperCommentId())
+                .content(commentRequest.getContent())
+                .superCommentId(commentRequest.getSuperCommentId())
                 .build();
         commentRepository.save(comment);
         // 댓글 작성 이벤트 생성
@@ -124,14 +123,14 @@ public class CommentServiceImpl implements CommentService {
     // 해당 댓글 수정
     @Override
     @Transactional
-    public void updateComment(Long commentId, CommentForm commentForm, LoginUserDto loginUser){
+    public void updateComment(Long commentId, CommentRequest commentRequest, LoginUserDto loginUser){
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
 
         // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
         if (!comment.getMember().getId().equals(loginUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
-        comment.setContent(commentForm.getContent());
+        comment.setContent(commentRequest.getContent());
         commentRepository.save(comment);
     }
 
@@ -187,10 +186,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // Comment를 CommentDto로 변환
-    private CommentDto convertToCommentDto(Comment comment, LoginUserDto loginUser) {
+    private CommentResponse convertToCommentDto(Comment comment, LoginUserDto loginUser) {
         boolean liked = commentLikeQueryRepository.existsByMemberIdAndCommentId(loginUser.getId(), comment.getId());
         Long likeCount = commentLikeQueryRepository.countByCommentId(comment.getId());
-        return CommentDto.builder()
+        return CommentResponse.builder()
                 .id(comment.getId())
                 .memberId(comment.getMember().getId())
                 .nickname(comment.getMember().getNickname())

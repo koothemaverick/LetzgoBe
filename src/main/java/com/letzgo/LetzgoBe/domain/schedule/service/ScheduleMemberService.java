@@ -1,9 +1,8 @@
 package com.letzgo.LetzgoBe.domain.schedule.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
-import com.letzgo.LetzgoBe.domain.schedule.dto.ScheduleMemberDto;
+import com.letzgo.LetzgoBe.domain.schedule.dto.res.ScheduleMemberResponse;
 import com.letzgo.LetzgoBe.domain.schedule.entity.Schedule;
 import com.letzgo.LetzgoBe.domain.schedule.entity.ScheduleMember;
 import com.letzgo.LetzgoBe.domain.schedule.repository.ScheduleMemberRepository;
@@ -41,10 +40,10 @@ public class ScheduleMemberService {
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleMemberDto> getInvitedMembers(Long schedulePk) {
+    public List<ScheduleMemberResponse> getInvitedMembers(Long schedulePk) {
         return scheduleMemberRepository.findBySchedule_SchedulePk(schedulePk).stream()
                 .map(sm -> {
-                    ScheduleMemberDto dto = new ScheduleMemberDto();
+                    ScheduleMemberResponse dto = new ScheduleMemberResponse();
                     dto.setMemberPk(sm.getMember().getId());
                     dto.setNickname(sm.getMember().getNickname());
                     dto.setProfileImageUrl(sm.getMember().getProfileImageUrl());
@@ -53,7 +52,7 @@ public class ScheduleMemberService {
                 .collect(Collectors.toList());
     }
 
-    public List<ScheduleMemberDto> getCandidateMembers(Long schedulePk, Long requesterPk) {
+    public List<ScheduleMemberResponse> getCandidateMembers(Long schedulePk, Long requesterPk) {
         Member loginMember = memberRepository.findById(requesterPk).orElseThrow();
 
         Set<Long> invitedIds = scheduleMemberRepository.findBySchedule_SchedulePk(schedulePk)
@@ -65,7 +64,7 @@ public class ScheduleMemberService {
                 .filter(m -> !m.getId().equals(loginMember.getId()))
                 .filter(m -> !invitedIds.contains(m.getId()))
                 .map(m -> {
-                    ScheduleMemberDto dto = new ScheduleMemberDto();
+                    ScheduleMemberResponse dto = new ScheduleMemberResponse();
                     dto.setMemberPk(m.getId());
                     dto.setNickname(m.getNickname());
                     dto.setProfileImageUrl(m.getProfileImageUrl());

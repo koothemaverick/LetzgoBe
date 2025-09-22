@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageDto;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -24,16 +24,16 @@ public class ApiV1ChatMessageController {
 
     // 해당 채팅방의 이전 메시지 가져오기 [참여자 권한]
     @GetMapping("/{chatRoomId}")
-    public ApiResponse<ChatMessageDto> findByChatRoomId(@ModelAttribute ChatMessagePage request,
-                                                        @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<ChatMessageResponse> findByChatRoomId(@ModelAttribute ChatMessagePage request,
+                                                             @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser)));
     }
 
     // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/search")
-    public ApiResponse<ChatMessageDto> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
-                                                         @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<ChatMessageResponse> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
+                                                              @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser)));
     }

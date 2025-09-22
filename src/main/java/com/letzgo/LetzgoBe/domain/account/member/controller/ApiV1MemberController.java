@@ -2,9 +2,9 @@ package com.letzgo.LetzgoBe.domain.account.member.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberForm;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberDto;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -25,41 +25,41 @@ public class ApiV1MemberController {
 
     // 회원가입
     @PostMapping
-    public ApiResponse<String> signup(@RequestBody @Valid MemberForm memberForm) {
-        memberService.signup(memberForm);
+    public ApiResponse<String> signup(@RequestBody @Valid MemberRequest memberRequest) {
+        memberService.signup(memberRequest);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 본인 회원정보 조회
     @GetMapping
-    public ApiResponse<MemberDto> getMyInfo(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<MemberResponse> getMyInfo(@LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(memberService.getMyInfo(loginUser));
     }
 
     // 본인 상세회원정보 조회
     @GetMapping("/detail")
-    public ApiResponse<DetailMemberDto> getMyDetailInfo(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<DetailMemberResponse> getMyDetailInfo(@LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(memberService.getMyDetailInfo(loginUser));
     }
 
     // 다른 멤버의 회원정보 조회
     @GetMapping("/{memberId}")
-    public ApiResponse<MemberDto> getMemberInfo(@PathVariable("memberId") Long memberId) {
+    public ApiResponse<MemberResponse> getMemberInfo(@PathVariable("memberId") Long memberId) {
         return ApiResponse.of(memberService.getMemberInfo(memberId));
     }
 
     // 다른 멤버의 상세회원정보 조회
     @GetMapping("/detail/{memberId}")
-    public ApiResponse<DetailMemberDto> getDetailMemberInfo(@PathVariable("memberId") Long memberId) {
+    public ApiResponse<DetailMemberResponse> getDetailMemberInfo(@PathVariable("memberId") Long memberId) {
         return ApiResponse.of(memberService.getDetailMemberInfo(memberId));
     }
 
     // 회원정보 수정
     @PutMapping
-    public ApiResponse<String> updateMemberInfo(@RequestPart(value = "memberForm") @Valid MemberForm memberForm,
+    public ApiResponse<String> updateMemberInfo(@RequestPart(value = "memberForm") @Valid MemberRequest memberRequest,
                                                 @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
                                                 @LoginUser LoginUserDto loginUser) {
-        memberService.updateMember(memberForm, imageFile, loginUser);
+        memberService.updateMember(memberRequest, imageFile, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
@@ -72,7 +72,7 @@ public class ApiV1MemberController {
 
     // 회원 검색하기
     @GetMapping("/search")
-    public ApiResponse<MemberDto> searchMemberInfo(@ModelAttribute MemberPage request, @RequestParam(value = "keyword") String keyword) {
+    public ApiResponse<MemberResponse> searchMemberInfo(@ModelAttribute MemberPage request, @RequestParam(value = "keyword") String keyword) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(memberService.searchMemberInfo(pageable, keyword)));
     }

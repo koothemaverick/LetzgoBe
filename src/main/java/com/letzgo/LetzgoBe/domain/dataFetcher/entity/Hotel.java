@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.entity;
 
-import com.letzgo.LetzgoBe.domain.dataFetcher.dto.HotelResponseDto;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.res.HotelResponse;
 import com.letzgo.LetzgoBe.global.jpa.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,8 +43,8 @@ public class Hotel extends BaseEntity {
     @Column
     double lng;
 
-    public HotelResponseDto toDto() {
-        HotelResponseDto dto = HotelResponseDto.builder()
+    public HotelResponse toDto() {
+        HotelResponse dto = HotelResponse.builder()
                 .name(this.name)
                 .region(this.region)
                 .location(this.location)

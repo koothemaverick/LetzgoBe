@@ -1,9 +1,8 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import com.letzgo.LetzgoBe.domain.community.post.entity.PostPage;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceDto;
-import com.letzgo.LetzgoBe.domain.map.dto.PlaceInfoResponseDto;
-import com.letzgo.LetzgoBe.domain.map.dto.ReviewResponseDto;
+import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
+import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceInfoResponse;
+import com.letzgo.LetzgoBe.domain.map.dto.res.ReviewResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.entity.Review;
@@ -29,13 +28,13 @@ public class MapService {
     private final MapApiService mapApiService;
 
     //placeId를 받아 해당 장소에 대한 정보, 리뷰로 이루어진 dto 반환
-    public PlaceInfoResponseDto findPlaceInfo(String placeId) {
+    public PlaceInfoResponse findPlaceInfo(String placeId) {
 
-        PlaceDto placeDto = null;
+        PlaceResponse placeResponse = null;
 
         //api호출해 정보 받아옴, placeId제외 캐싱x
         try {
-            placeDto = mapApiService.getPlaceDetails(placeId);
+            placeResponse = mapApiService.getPlaceDetails(placeId);
         }
         catch (Exception e) {
             throw new RuntimeException("구글 api호출중 오류발생");
@@ -45,13 +44,13 @@ public class MapService {
 
         if (place != null) { //한번이상 조회된적있는 장소일경우
             List<Review> reviews = reviewRepository.findByPlace(place);
-            List<ReviewResponseDto> reviewResponseDtos = reviews.stream()
-                    .map(review -> ReviewResponseDto.entitytoDto(review))
+            List<ReviewResponse> reviewResponses = reviews.stream()
+                    .map(review -> ReviewResponse.entitytoDto(review))
                     .collect(Collectors.toList());
 
-            return PlaceInfoResponseDto.builder()
-                    .placeinfo(placeDto)
-                    .reviews(reviewResponseDtos)
+            return PlaceInfoResponse.builder()
+                    .placeinfo(placeResponse)
+                    .reviews(reviewResponses)
                     .build();
         }
 
@@ -61,13 +60,13 @@ public class MapService {
                         .build();
                 placeRepository.save(newPlace);
 
-                return PlaceInfoResponseDto.builder()
-                        .placeinfo(placeDto)
+                return PlaceInfoResponse.builder()
+                        .placeinfo(placeResponse)
                         .build();
         }
     }
 
-    public Page<PlaceDto> getSearchedPlaces(String query, String lat, String lng, int radius, Pageable pageable){
+    public Page<PlaceResponse> getSearchedPlaces(String query, String lat, String lng, int radius, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         try {
             return mapApiService.getNearPlaces(query, lat, lng, radius, pageable);

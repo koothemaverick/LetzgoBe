@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.service;
 
 import com.letzgo.LetzgoBe.domain.dataFetcher.config.DriverFactory;
-import com.letzgo.LetzgoBe.domain.dataFetcher.dto.HotelDto;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.req.HotelRequest;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Hotel;
 import com.letzgo.LetzgoBe.domain.dataFetcher.repository.HotelRepository;
 import lombok.RequiredArgsConstructor;
@@ -113,21 +113,21 @@ public class HotelInfoService {
                     )).getText();
                 } catch (Exception e) {}
 
-                HotelDto hotelDto = HotelDto.builder()
+                HotelRequest hotelRequest = HotelRequest.builder()
                         .region(region)
                         .sukbakPrice(sukbak == null ? null : Integer.parseInt(sukbak.replace(",", "")))
                         .daesilPrice(daesil == null ? null : Integer.parseInt(daesil.replace(",", "")))
                         .build();
 
                 String href = link.getAttribute("href");
-                getDetailPageInfo(driver, href, hotelDto);
+                getDetailPageInfo(driver, href, hotelRequest);
             } catch (Exception e) {
                 log.error("숙소 마지막 페이지. i={}, url={}", i, listPageUrl, e);
             }
         }
     }
 
-    private void getDetailPageInfo(WebDriver driver, String detailPageUrl, HotelDto hotelDto) {
+    private void getDetailPageInfo(WebDriver driver, String detailPageUrl, HotelRequest hotelRequest) {
         try {
             driver.get(detailPageUrl);
 
@@ -142,19 +142,19 @@ public class HotelInfoService {
             WebElement element = driver.findElement(By.cssSelector("#overview > article > div.css-12lmpk7 > ul > li.css-9hh5jq > div > img"));
             String photo = element.getAttribute("srcset");
 
-            hotelDto.setName(_title);
-            hotelDto.setLocation(location);
-            hotelDto.setRating(Float.parseFloat(rating));
-            hotelDto.setImagePath(photo);
+            hotelRequest.setName(_title);
+            hotelRequest.setLocation(location);
+            hotelRequest.setRating(Float.parseFloat(rating));
+            hotelRequest.setImagePath(photo);
 
             Hotel hotel = Hotel.builder()
-                    .name(hotelDto.getName())
-                    .region(hotelDto.getRegion())
-                    .location(hotelDto.getLocation())
-                    .daesilPrice(hotelDto.getDaesilPrice())
-                    .sukbakPrice(hotelDto.getSukbakPrice())
-                    .rating(hotelDto.getRating())
-                    .imagePath(hotelDto.getImagePath())
+                    .name(hotelRequest.getName())
+                    .region(hotelRequest.getRegion())
+                    .location(hotelRequest.getLocation())
+                    .daesilPrice(hotelRequest.getDaesilPrice())
+                    .sukbakPrice(hotelRequest.getSukbakPrice())
+                    .rating(hotelRequest.getRating())
+                    .imagePath(hotelRequest.getImagePath())
                     .build();
 
             hotelRepository.save(hotel);

@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.dataFetcher.service;
 
-import com.letzgo.LetzgoBe.domain.dataFetcher.dto.HotelResponseDto;
-import com.letzgo.LetzgoBe.domain.dataFetcher.dto.RestaurantResponseDto;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.res.HotelResponse;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.res.RestaurantResponse;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Hotel;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Restaurant;
 import com.letzgo.LetzgoBe.domain.dataFetcher.repository.HotelRepository;
@@ -24,9 +24,9 @@ public class InfoProvideService {
     String[] regions = {"경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시", "경상남도", "부산광역시", "전북특별자치도",
             "울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"};
 
-    public List<HotelResponseDto> getHotelInfo(String region) {
+    public List<HotelResponse> getHotelInfo(String region) {
         if (Arrays.asList(regions).contains(region)) {
-            List<HotelResponseDto> hotelInfos = hotelRepository.findByRegion(region).stream()
+            List<HotelResponse> hotelInfos = hotelRepository.findByRegion(region).stream()
                     .map(Hotel::toDto).collect(Collectors.toList());
             return hotelInfos;
         } else {
@@ -35,9 +35,9 @@ public class InfoProvideService {
         }
     }
 
-    public List<RestaurantResponseDto> getRestaurantInfo(String region) {
+    public List<RestaurantResponse> getRestaurantInfo(String region) {
         if (Arrays.asList(regions).contains(region)) {
-            List<RestaurantResponseDto> restaurantInfos = restaurantRepository.findByRegion(region).stream()
+            List<RestaurantResponse> restaurantInfos = restaurantRepository.findByRegion(region).stream()
                     .map(Restaurant::toDto).collect(Collectors.toList());
             return restaurantInfos;
         } else {

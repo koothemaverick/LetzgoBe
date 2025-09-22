@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.fcm.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.fcm.dto.req.FcmToken;
+import com.letzgo.LetzgoBe.domain.fcm.dto.req.FcmTokenRequest;
 import com.letzgo.LetzgoBe.domain.fcm.service.FcmTokenService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
@@ -18,8 +18,8 @@ public class ApiV1FcmController {
 
     // FCM Token 저장
     @PostMapping
-    public ApiResponse<String> saveFcmToken(@RequestBody @Valid FcmToken fcmToken, @LoginUser LoginUserDto loginUser) {
-        fcmTokenService.saveFcmToken(loginUser.getId(), fcmToken.getFcmToken());
+    public ApiResponse<String> saveFcmToken(@RequestBody @Valid FcmTokenRequest fcmTokenRequest, @LoginUser LoginUserDto loginUser) {
+        fcmTokenService.saveFcmToken(loginUser.getId(), fcmTokenRequest.getFcmToken());
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 

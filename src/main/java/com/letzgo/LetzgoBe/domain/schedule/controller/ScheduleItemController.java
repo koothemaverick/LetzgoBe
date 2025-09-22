@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.schedule.controller;
 
-import com.letzgo.LetzgoBe.domain.schedule.dto.ScheduleMemoDto;
+import com.letzgo.LetzgoBe.domain.schedule.dto.req.ScheduleMemoRequest;
 import com.letzgo.LetzgoBe.domain.schedule.dto.SchedulePlaceDto;
 import com.letzgo.LetzgoBe.domain.schedule.service.ScheduleItemService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class ScheduleItemController {
 
     /** 메모 추가 */
     @PostMapping("/places/{schedulePlacePk}/memo")
-    public ResponseEntity<Long> addMemo(@PathVariable("schedulePlacePk") Long schedulePlacePk, @RequestBody ScheduleMemoDto dto) {
+    public ResponseEntity<Long> addMemo(@PathVariable("schedulePlacePk") Long schedulePlacePk, @RequestBody ScheduleMemoRequest dto) {
         Long savedPk = scheduleService.addMemo(schedulePlacePk, dto);
         return ResponseEntity.ok(savedPk);
     }

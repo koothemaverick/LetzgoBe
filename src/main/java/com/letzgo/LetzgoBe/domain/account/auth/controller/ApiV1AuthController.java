@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.account.auth.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginForm;
-import com.letzgo.LetzgoBe.domain.account.auth.dto.res.Auth;
+import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
+import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
@@ -19,8 +19,8 @@ public class ApiV1AuthController {
 
     // 로그인
     @PostMapping("/login")
-    public ApiResponse<Auth> login(@RequestBody @Valid LoginForm loginForm) {
-        return ApiResponse.of(authService.login(loginForm, false));
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
+        return ApiResponse.of(authService.login(loginRequest, false));
     }
 
     // 로그아웃
@@ -32,7 +32,7 @@ public class ApiV1AuthController {
 
     // accessToken 재발급
     @GetMapping("/refresh-token")
-    public ApiResponse<Auth> refreshToken(@RequestHeader("Authorization") String refreshToken, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @LoginUser LoginUserDto loginUser) {
         return ApiResponse.of(authService.refreshToken(refreshToken, loginUser));
     }
 }

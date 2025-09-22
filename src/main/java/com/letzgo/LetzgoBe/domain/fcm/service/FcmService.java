@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.fcm.service;
 
-import com.letzgo.LetzgoBe.domain.fcm.dto.FcmMessage;
+import com.letzgo.LetzgoBe.domain.fcm.dto.res.FcmMessageResponse;
 
 public interface FcmService {
-    void sendMessageTo(FcmMessage message);
+    void sendMessageTo(FcmMessageResponse message);
 }

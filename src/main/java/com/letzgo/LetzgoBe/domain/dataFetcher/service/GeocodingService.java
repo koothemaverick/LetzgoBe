@@ -3,7 +3,7 @@ package com.letzgo.LetzgoBe.domain.dataFetcher.service;
 import com.google.maps.GeoApiContext;
 import com.google.maps.GeocodingApi;
 import com.google.maps.model.GeocodingResult;
-import com.letzgo.LetzgoBe.domain.dataFetcher.dto.NcpGeocodeResponse;
+import com.letzgo.LetzgoBe.domain.dataFetcher.dto.res.NcpGeocodeResponse;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Hotel;
 import com.letzgo.LetzgoBe.domain.dataFetcher.entity.Restaurant;
 import com.letzgo.LetzgoBe.domain.dataFetcher.repository.HotelRepository;
@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;

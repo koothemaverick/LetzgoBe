@@ -2,8 +2,8 @@ package com.letzgo.LetzgoBe.domain.chat.chatRoom.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.ChatRoomDto;
-import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomForm;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.ChatRoomResponse;
+import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomRequest;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
@@ -23,46 +23,46 @@ public class ApiV1ChatRoomController {
 
     // 채팅방 목록 조회(DM/그룹) [참여자 권한]
     @GetMapping
-    public ApiResponse<ChatRoomDto> getChatRoom(@ModelAttribute ChatRoomPage request, @LoginUser LoginUserDto loginUser){
+    public ApiResponse<ChatRoomResponse> getChatRoom(@ModelAttribute ChatRoomPage request, @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.of(LetzgoPage.of(chatRoomService.getChatRoom(pageable, loginUser)));
     }
 
     // 채팅방 생성(DM/그룹)
     @PostMapping
-    public ApiResponse<ChatRoomDto> addChatRoom(@RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
-        return ApiResponse.of(chatRoomService.addChatRoom(chatRoomForm, loginUser));
+    public ApiResponse<ChatRoomResponse> addChatRoom(@RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
+        return ApiResponse.of(chatRoomService.addChatRoom(chatRoomRequest, loginUser));
     }
 
     // 채팅방 이름 수정(그룹) [참여자 권한]
     @PutMapping("/title/{chatRoomId}")
     public ApiResponse<String> updateChatRoomTitle(@PathVariable("chatRoomId") Long chatRoomId,
-                                                   @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
-        chatRoomService.updateChatRoomTitle(chatRoomId, chatRoomForm, loginUser);
+                                                   @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
+        chatRoomService.updateChatRoomTitle(chatRoomId, chatRoomRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 채팅방에 초대(그룹) [참여자 권한]
     @PutMapping("/group/{chatRoomId}")
     public ApiResponse<String> inviteChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,
-                                                    @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
-        chatRoomService.inviteChatRoomMember(chatRoomId, chatRoomForm, loginUser);
+                                                    @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
+        chatRoomService.inviteChatRoomMember(chatRoomId, chatRoomRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 방장 권한 위임(그룹) [방장 권한]
     @PostMapping("/group/{chatRoomId}")
     public ApiResponse<String> delegateChatRoomManager(@PathVariable("chatRoomId") Long chatRoomId,
-                                                       @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
-        chatRoomService.delegateChatRoomManager(chatRoomId, chatRoomForm, loginUser);
+                                                       @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
+        chatRoomService.delegateChatRoomManager(chatRoomId, chatRoomRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
     // 채팅방에서 강퇴(그룹) [방장 권한]
     @DeleteMapping("/group/{chatRoomId}")
     public ApiResponse<String> kickOutChatRoomMember(@PathVariable("chatRoomId") Long chatRoomId,
-                                                     @RequestBody @Valid ChatRoomForm chatRoomForm, @LoginUser LoginUserDto loginUser){
-        chatRoomService.kickOutChatRoomMember(chatRoomId, chatRoomForm, loginUser);
+                                                     @RequestBody @Valid ChatRoomRequest chatRoomRequest, @LoginUser LoginUserDto loginUser){
+        chatRoomService.kickOutChatRoomMember(chatRoomId, chatRoomRequest, loginUser);
         return ApiResponse.of(ReturnCode.SUCCESS);
     }
 
