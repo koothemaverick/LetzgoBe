@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.global.initData;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
@@ -30,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto.ConvertToLoginUserDto;
 import static com.letzgo.LetzgoBe.global.initData.utils.MultipartFileUtils.getMultipartFileFromResource;
 
 @Slf4j
@@ -46,6 +46,7 @@ public class NotProdService {
     private final PostService postService;
     private final CommentUtils commentUtils;
     private final DataFetchSchedule dataFetchSchedule;
+    private final MemberMapper memberMapper;
 
     @Transactional
     public void initDummyData() {
@@ -132,12 +133,12 @@ public class NotProdService {
     private void createFollowRelations(List<Member> members) {
         for (int i = 0; i < members.size(); i++) {
             Member fromMember = members.get(i);
-            LoginUserDto fromLoginUser = ConvertToLoginUserDto(fromMember);
+            LoginUserDto fromLoginUser = memberMapper.toLoginUserDto(fromMember);
             for (int j = 0; j < members.size(); j++) {
                 if (i == j) continue;
                 Member toMember = members.get(j);
                 memberService.followReq(toMember.getId(), fromLoginUser);
-                LoginUserDto toLoginUser = ConvertToLoginUserDto(toMember);
+                LoginUserDto toLoginUser = memberMapper.toLoginUserDto(toMember);
                 memberService.acceptFollowReq(fromMember.getId(), toLoginUser);
             }
         }
@@ -163,7 +164,7 @@ public class NotProdService {
                 getMultipartFileFromResource(imageFilePath1, imageFilePath1.substring(imageFilePath1.lastIndexOf("/") + 1)),
                 getMultipartFileFromResource(imageFilePath2, imageFilePath2.substring(imageFilePath2.lastIndexOf("/") + 1))
         );
-        postService.addPost(postRequest, imageFiles, ConvertToLoginUserDto(member));
+        postService.addPost(postRequest, imageFiles, memberMapper.toLoginUserDto(member));
     }
 
     // 유저 3, 4, 5, 6이 모든 게시글에 대해 좋아요 누름
@@ -172,7 +173,7 @@ public class NotProdService {
         List<Member> likingMembers = members.subList(2, members.size()); // 유저 3, 4, 5 (인덱스 2부터 시작)
         for (Member member : likingMembers) {
             for (long postId = 1L; postId <= 5L; postId++) {
-                postService.addPostLike(postId, ConvertToLoginUserDto(member)); // 게시글 좋아요 추가
+                postService.addPostLike(postId, memberMapper.toLoginUserDto(member)); // 게시글 좋아요 추가
             }
         }
     }
@@ -189,7 +190,7 @@ public class NotProdService {
                         ChatRoomMember.builder().member(members.get(1)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(dmChatRoomRequest, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(dmChatRoomRequest, memberMapper.toLoginUserDto(members.get(0)));
     }
 
     // 유저 1이 단체 채팅방 생성 (대상: 유저 2, 3)
@@ -201,7 +202,7 @@ public class NotProdService {
                         ChatRoomMember.builder().member(members.get(2)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(groupChatRoomRequest, LoginUserDto.ConvertToLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(groupChatRoomRequest, memberMapper.toLoginUserDto(members.get(0)));
     }
 
     // 유저 1, 2의 1:1 채팅

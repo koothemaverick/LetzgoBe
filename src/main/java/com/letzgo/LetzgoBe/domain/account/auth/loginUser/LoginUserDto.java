@@ -28,48 +28,4 @@ public class LoginUserDto {
     private List<MemberFollowReq> followRecList;
     private LocalDate birthday;
     private LocalDateTime createdAt;
-
-    // Member 객체를 LoginUserDto로 변환하는 정적 팩토리 메서드
-    public static LoginUserDto ConvertToLoginUserDto(Member member) {
-        return LoginUserDto.builder()
-                .id(member.getId())
-                .name(member.getName())
-                .nickname(member.getNickname())
-                .phone(member.getPhone())
-                .email(member.getEmail())
-                .password(member.getPassword())
-                .gender(member.getGender())
-                .state(member.getState())
-                .role(member.getRole())
-                .profileImageUrl(member.getProfileImageUrl())
-                .followList(member.getFollowList())
-                .followedList(member.getFollowedList())
-                .followReqList(member.getFollowReqList())
-                .followRecList(member.getFollowRecList())
-                .birthday(member.getBirthday())
-                .createdAt(member.getCreatedAt())
-                .build();
-    }
-
-    // LoginUserDto를 Member 엔티티로 변환하는 메서드
-    public Member ConvertToMember() {
-        return Member.builder()
-                .id(this.id)
-                .name(this.name)
-                .nickname(this.nickname)
-                .phone(this.phone)
-                .email(this.email)
-                .password(this.password)
-                .gender(this.gender)
-                .state(this.state)
-                .role(this.role)
-                .profileImageUrl(this.profileImageUrl)
-                .followList(this.followList)
-                .followedList(this.followedList)
-                .followReqList(this.followReqList)
-                .followRecList(this.followRecList)
-                .birthday(this.birthday)
-                .createdAt(this.createdAt)
-                .build();
-    }
 }

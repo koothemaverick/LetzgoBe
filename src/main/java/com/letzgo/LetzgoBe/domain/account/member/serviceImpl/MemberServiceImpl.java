@@ -142,7 +142,7 @@ public class MemberServiceImpl implements MemberService {
         if (memberRequest.getBirthday() != null) loginUser.setBirthday(memberRequest.getBirthday());
         loginUser.setProfileImageUrl(imageUrl);
         // LoginUserDto를 Member 엔티티로 변환
-        Member memberEntity = loginUser.ConvertToMember();
+        Member memberEntity = memberMapper.toMember(loginUser);
         memberRepository.save(memberEntity);
     }
 
@@ -177,7 +177,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void followReq(Long memberId, LoginUserDto loginUser){
-        Member followReq = loginUser.ConvertToMember();
+        Member followReq = memberMapper.toMember(loginUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         // 기존 팔로우 여부 확인
@@ -217,7 +217,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void cancelFollowReq(Long memberId, LoginUserDto loginUser){
-        Member followReq = loginUser.ConvertToMember();
+        Member followReq = memberMapper.toMember(loginUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
@@ -231,7 +231,7 @@ public class MemberServiceImpl implements MemberService {
     public void acceptFollowReq(Long memberId, LoginUserDto loginUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = loginUser.ConvertToMember();
+        Member receiver = memberMapper.toMember(loginUser);
         MemberFollowReq followReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(followReq);
@@ -264,7 +264,7 @@ public class MemberServiceImpl implements MemberService {
     public void refuseFollowReq(Long memberId, LoginUserDto loginUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = loginUser.ConvertToMember();
+        Member receiver = memberMapper.toMember(loginUser);
         MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(memberFollowReq);
@@ -274,7 +274,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void cancelFollow(Long memberId, LoginUserDto loginUser){
-        Member follow = loginUser.ConvertToMember();
+        Member follow = memberMapper.toMember(loginUser);
         Member followed = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
@@ -288,7 +288,7 @@ public class MemberServiceImpl implements MemberService {
     public void removeFollowed(Long memberId, LoginUserDto loginUser){
         Member follow = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member followed = loginUser.ConvertToMember();
+        Member followed = memberMapper.toMember(loginUser);
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
                 .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
         memberFollowRepository.delete(memberFollow);
