@@ -7,7 +7,6 @@ import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

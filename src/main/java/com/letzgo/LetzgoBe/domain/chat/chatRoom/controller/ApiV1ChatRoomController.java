@@ -7,7 +7,6 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomRequest;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

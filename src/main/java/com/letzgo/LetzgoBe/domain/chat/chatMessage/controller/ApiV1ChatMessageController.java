@@ -6,7 +6,6 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
