@@ -16,6 +16,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomMemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.repository.ChatRoomRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
@@ -44,11 +45,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     // 사용자의 모든 채팅방 조회
     @Override
-    @Transactional
-    public Page<ChatRoomResponse> getChatRoom(Pageable pageable, LoginUserDto loginUser) {
+    @Transactional(readOnly = true)
+    public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, loginUser.ConvertToMember());
-        return chatRooms.map(chatRoom -> convertToChatRoomDto(chatRoom, loginUser.getId()));
+        return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomDto(chatRoom, loginUser.getId())));
     }
 
     // 채팅방 생성(DM/그룹)
@@ -302,6 +303,8 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             chatRoomRepository.save(chatRoom);
         }
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {

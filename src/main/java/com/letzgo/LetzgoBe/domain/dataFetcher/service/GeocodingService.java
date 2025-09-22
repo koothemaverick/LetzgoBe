@@ -56,6 +56,8 @@ public class GeocodingService {
         log.info("음식점 좌표정보 추가완료.");
     }
 
+    // ----------------- 헬퍼 메서드 -----------------
+
     private Optional<double[]> getCoordinatesFromGoogle(String address) {
         try {
             GeocodingResult[] results = GeocodingApi.geocode(context, address).await();

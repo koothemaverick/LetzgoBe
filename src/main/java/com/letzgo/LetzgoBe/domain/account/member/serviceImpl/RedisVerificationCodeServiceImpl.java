@@ -33,7 +33,6 @@ public class RedisVerificationCodeServiceImpl {
         integerRedisTemplate.delete("code:" + email);
     }
 
-
     //비밀번호 재설정용 토큰 생성및 반환
     public String generateAndStoreResetToken(String email) {
         String resetToken = UUID.randomUUID().toString();

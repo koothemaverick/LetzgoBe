@@ -5,6 +5,7 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,7 +33,7 @@ public interface MemberService {
     void deleteMember(LoginUserDto loginUser);
 
     // 회원 검색하기
-    Page<MemberResponse> searchMemberInfo(Pageable pageable, String keyword);
+    PageResponse<MemberResponse> searchMemberInfo(Pageable pageable, String keyword);
 
     // 팔로우 요청하기
     void followReq(Long memberId, LoginUserDto loginUser);

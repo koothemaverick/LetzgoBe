@@ -3,12 +3,13 @@ package com.letzgo.LetzgoBe.domain.community.comment.service;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
-    Page<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser);
+    PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser);
 
     // 댓글 좋아요
     void addCommentLike(Long commentId, LoginUserDto loginUser);

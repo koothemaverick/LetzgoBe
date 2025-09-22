@@ -20,7 +20,7 @@ public class RestaurantController {
     //"울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"
     @GetMapping("/info")
     ApiResponse getRestaurantsInfo(@RequestParam("region") String region) {
-        return ApiResponse.of(infoProvideService.getRestaurantInfo(region));
+        return ApiResponse.success(infoProvideService.getRestaurantInfo(region));
     }
 
     //수동실행

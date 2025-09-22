@@ -7,6 +7,7 @@ import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.domain.notification.repository.NotificationRepository;
 import com.letzgo.LetzgoBe.domain.notification.service.NotificationService;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import jakarta.transaction.Transactional;
@@ -34,10 +35,10 @@ public class NotificationServiceImpl implements NotificationService {
     // 알림 목록 조회
     @Override
     @Transactional
-    public Page<NotificationResponse> getNotifications(Pageable pageable, LoginUserDto loginUser) {
+    public PageResponse<NotificationResponse> getNotifications(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<Notification> notificationPage = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(loginUser.getId(), pageable);
-        return notificationPage.map(this::convertToNotificationDto);
+        return PageResponse.of(notificationPage.map(this::convertToNotificationDto));
     }
 
     // 알림 읽음 처리
@@ -53,6 +54,8 @@ public class NotificationServiceImpl implements NotificationService {
         notifications.forEach(n -> n.setIsRead(true));
         notificationRepository.saveAll(notifications);
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {

@@ -19,6 +19,7 @@ import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostSaveQueryRepository;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
@@ -52,7 +53,7 @@ public class PostServiceImpl implements PostService {
     // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable){
+    public PageResponse<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Long loginUserId = loginUser.getId();
         List<Long> followingMemberIds = memberFollowRepository.findFollowedMemberIdsByFollowerId(loginUserId);
@@ -69,27 +70,27 @@ public class PostServiceImpl implements PostService {
         // Set<Long> -> List<Long> 변환
         List<Long> targetMemberIds = new ArrayList<>(targetMemberIdSet);
         Page<Post> posts = postRepository.findByMemberIdInOrderByCreatedAtDesc(targetMemberIds, pageable);
-        return posts.map(post -> convertToDetailPostDto(post, loginUser));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
     }
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser){
+    public PageResponse<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findPostsWithinRadius(
                 xyRequest.getMapX(), xyRequest.getMapY(), xyRequest.getRadius(), pageable
         );
-        return posts.map(post -> convertToDetailPostDto(post, loginUser));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
     }
 
     // 해당 사용자가 작성한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser){
+    public PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findByMemberId(memberId, pageable);
-        return posts.map(post -> convertToDetailPostDto(post, loginUser));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
     }
 
     // 해당 게시글 상세 조회
@@ -103,19 +104,19 @@ public class PostServiceImpl implements PostService {
     // 해당 사용자가 저장한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable) {
+    public PageResponse<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable) {
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findSavedPostByMemberId(memberId, pageable);
-        return posts.map(this::convertToPostDto);
+        return PageResponse.of(posts.map(this::convertToPostDto));
     }
 
     // 사용자 닉네임 & 게시글 내용 검색
     @Override
     @Transactional(readOnly = true)
-    public Page<PostResponse> searchByKeyword(String keyword, Pageable pageable){
+    public PageResponse<PostResponse> searchByKeyword(String keyword, Pageable pageable){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.searchByKeyword(keyword, pageable);
-        return posts.map(this::convertToPostDto);
+        return PageResponse.of(posts.map(this::convertToPostDto));
     }
 
     // 해당 게시글 저장
@@ -275,6 +276,8 @@ public class PostServiceImpl implements PostService {
             postRepository.delete(post);
         }
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     // 요청 페이지 수 제한
     public void checkPageSize(int pageSize) {

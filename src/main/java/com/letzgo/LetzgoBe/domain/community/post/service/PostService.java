@@ -5,6 +5,7 @@ import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostRequest;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYRequest;
 import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostResponse;
 import com.letzgo.LetzgoBe.domain.community.post.dto.res.PostResponse;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,22 +14,22 @@ import java.util.List;
 
 public interface PostService {
     // 본인 & 팔로우한 유저의 게시글 조회
-    Page<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable);
+    PageResponse<DetailPostResponse> getMainPost(LoginUserDto loginUser, Pageable pageable);
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
-    Page<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser);
+    PageResponse<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 사용자가 작성한 게시글 조회
-    Page<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser);
+    PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, LoginUserDto loginUser);
 
     // 해당 게시글 상세 조회
     DetailPostResponse findById(Long postId, LoginUserDto loginUser);
 
     // 해당 사용자가 저장한 게시글 조회
-    Page<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable);
+    PageResponse<PostResponse> getSavedPostByMember(Long memberId, Pageable pageable);
 
     // 사용자 닉네임 & 게시글 내용 검색
-    Page<PostResponse> searchByKeyword(String keyword, Pageable pageable);
+    PageResponse<PostResponse> searchByKeyword(String keyword, Pageable pageable);
 
     // 해당 게시글 저장
     void addCollectionPost(Long postId, LoginUserDto loginUser);

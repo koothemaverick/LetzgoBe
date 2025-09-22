@@ -26,7 +26,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     // Refresh Token 조회
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public String getRefreshToken(String memberId) {
         ValueOperations<String, Object> ops = redisTemplate.opsForValue();
         Object value = ops.get(memberId);

@@ -23,7 +23,7 @@ public class HotelController {
     //"울산광역시", "광주광역시", "강원특별자치도", "경상북도", "전라남도", "충청북도", "세종특별자치시"
     @GetMapping("/info")
     ApiResponse getHotelsInfo(@RequestParam("region") String region) {
-        return ApiResponse.of(infoProvideService.getHotelInfo(region));
+        return ApiResponse.success(infoProvideService.getHotelInfo(region));
     }
 
     //수동실행

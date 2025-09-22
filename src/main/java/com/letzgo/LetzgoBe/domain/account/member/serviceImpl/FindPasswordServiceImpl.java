@@ -22,6 +22,7 @@ public class FindPasswordServiceImpl {
     private SecureRandom secureRandom = new SecureRandom();
 
     // 이메일 인증코드 전송(비밀번호 찾기)
+    @Transactional(readOnly = true)
     public boolean sendEmailVerificationCode(String email) {
         //1.존재하는 유저인지 확인
         Optional<Member> member = memberRepository.findByEmail(email);

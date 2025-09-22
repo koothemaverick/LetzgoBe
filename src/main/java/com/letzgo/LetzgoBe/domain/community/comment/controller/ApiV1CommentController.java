@@ -7,13 +7,14 @@ import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.common.response.LetzgoPage;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value="/rest-api/v1/post/comment")
@@ -23,39 +24,39 @@ public class ApiV1CommentController {
 
     // 해당 게시글에 작성된 모든 댓글 조회
     @GetMapping("/{postId}")
-    public ApiResponse<CommentResponse> findByPostId(@ModelAttribute CommentPage request,
-                                                     @PathVariable("postId") Long postId,
-                                                     @LoginUser LoginUserDto loginUser){
+    public ApiResponse<List<CommentResponse>> findByPostId(@ModelAttribute CommentPage request,
+                                                          @PathVariable("postId") Long postId,
+                                                          @LoginUser LoginUserDto loginUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.of(LetzgoPage.of(commentService.findByPostId(postId, pageable, loginUser)));
+        return ApiResponse.success(commentService.findByPostId(postId, pageable, loginUser));
     }
 
     // 댓글 좋아요
     @PostMapping("/like/{commentId}")
-    public ApiResponse<String> addCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
+    public ApiResponse<Void> addCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.addCommentLike(commentId, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 
     // 댓글 좋아요 취소
     @DeleteMapping("/like/{commentId}")
-    public ApiResponse<String> deleteCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
+    public ApiResponse<Void> deleteCommentLike(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.deleteCommentLike(commentId, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 
     // 해당 게시글에 댓글 생성
     @PostMapping("/{postId}")
-    public ApiResponse<String> addComment(@PathVariable("postId") Long postId,
+    public ApiResponse<Void> addComment(@PathVariable("postId") Long postId,
                                           @RequestBody @Valid CommentRequest commentRequest, @LoginUser LoginUserDto loginUser){
         commentService.addComment(postId, commentRequest, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
-    public ApiResponse<String> deleteComment(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
+    public ApiResponse<Void> deleteComment(@PathVariable("commentId") Long commentId, @LoginUser LoginUserDto loginUser){
         commentService.deleteComment(commentId, loginUser);
-        return ApiResponse.of(ReturnCode.SUCCESS);
+        return ApiResponse.success();
     }
 }

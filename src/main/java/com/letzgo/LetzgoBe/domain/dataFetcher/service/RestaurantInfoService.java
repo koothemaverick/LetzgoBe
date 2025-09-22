@@ -9,6 +9,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ public class RestaurantInfoService {
     private final DriverFactory driverFactory;
     private final RestaurantRepository restaurantRepository;
 
+    @Transactional(readOnly = true)
     public void getRestaurantsInfo(int scroll) {
         String[] regions = {
                 "경기도", "제주특별자치도", "충청남도", "인천광역시", "대구광역시", "대전광역시", "서울특별시",
@@ -52,6 +54,7 @@ public class RestaurantInfoService {
         log.info("getRestaurantsInfo 식당 정보 탐색완료");
     }
 
+    @Transactional(readOnly = true)
     public void getRegionRestaurantsInfo(int scroll, String region) {
         WebDriver driver = null;
         try {
@@ -71,6 +74,8 @@ public class RestaurantInfoService {
             }
         }
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     private void getListPageInfo(WebDriver driver, String listPageUrl, String region, int scroll) {
         try {

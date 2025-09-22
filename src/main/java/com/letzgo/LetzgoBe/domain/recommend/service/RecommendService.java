@@ -5,6 +5,7 @@ import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
 import com.letzgo.LetzgoBe.domain.map.service.MapApiService;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -35,7 +37,8 @@ public class RecommendService {
     private final MapApiService mapApiService;
 
     // page&size만큼의 추천장소 반환, 아이템 기반 추천 필터링
-    public Page<PlaceResponse> getRecommendedPlace(LoginUserDto loginUserDto, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public PageResponse<PlaceResponse> getRecommendedPlace(LoginUserDto loginUserDto, Pageable pageable) {
         checkPageSize(pageable.getPageSize());
         List<Long> places = new ArrayList<>(); // place_pk 리스트
 
@@ -71,7 +74,7 @@ public class RecommendService {
                 .collect(Collectors.toList());
 
         // 페이지로 감싸서 반환 (PageImpl 사용)
-        return new PageImpl<>(placeResponses, pageable, placeResponses.size());
+        return PageResponse.of(new PageImpl<>(placeResponses, pageable, placeResponses.size()));
     }
 
     // 요청 페이지 수 제한

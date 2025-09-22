@@ -35,7 +35,7 @@ public class ApiV1OAuth2Controller {
     @GetMapping("/redirect-url/{provider}")
     public ApiResponse<String> redirectToProvider(@PathVariable("provider") String provider) {
         String authUrl = oAuth2Service.getAuthUrl(provider);
-        return ApiResponse.of(authUrl);
+        return ApiResponse.success(authUrl);
     }
 
     // 소셜 로그인

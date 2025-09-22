@@ -14,6 +14,7 @@ import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.entity.Post;
 import com.letzgo.LetzgoBe.domain.community.post.repository.PostRepository;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
+import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +40,10 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
+    public PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
-        return comments.map(comment -> convertToCommentDto(comment, loginUser));
+        return PageResponse.of(comments.map(comment -> convertToCommentDto(comment, loginUser)));
     }
 
     // 댓글 좋아요
@@ -162,6 +163,8 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> childComments = commentRepository.findBySuperCommentId(superCommentId);
         commentRepository.deleteAll(childComments);
     }
+
+    // ----------------- 헬퍼 메서드 -----------------
 
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {
