@@ -2,6 +2,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatRoom.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
@@ -42,13 +43,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final MessageContentRepository messageContentRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final MemberMapper memberMapper;
 
     // 사용자의 모든 채팅방 조회
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
-        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, loginUser.ConvertToMember());
+        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberMapper.toMember(loginUser));
         return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomDto(chatRoom, loginUser.getId())));
     }
 
@@ -75,13 +77,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         // 새로운 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .title(chatRoomRequest.getTitle())
-                .member(loginUser.ConvertToMember()) // 방장 지정
+                .member(memberMapper.toMember(loginUser)) // 방장 지정
                 .build();
         // 본인을 맨 앞에 추가
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
 
         ChatRoomMember enterChatRoomMyself = ChatRoomMember.builder()
-                .member(loginUser.ConvertToMember())
+                .member(memberMapper.toMember(loginUser))
                 .chatRoom(chatRoom)
                 .build();
         chatRoomMembers.add(enterChatRoomMyself);

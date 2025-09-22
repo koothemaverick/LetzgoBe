@@ -2,6 +2,7 @@ package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
@@ -48,6 +49,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
     private final ChatEventPublisher chatEventPublisher;
+    private final MemberMapper memberMapper;
 
     // 메시지 읽음 처리
     @Override
@@ -239,14 +241,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 채팅 메시지 생성
         ChatMessage chatMessage = ChatMessage.builder()
-                .member(loginUser.ConvertToMember())
+                .member(memberMapper.toMember(loginUser))
                 .chatRoom(chatRoom)
                 .imageUrls(imageUrls)
                 .build();
         chatMessageRepository.save(chatMessage);
 
         // 보낸 사람은 바로 읽음 처리
-        Member sender = loginUser.ConvertToMember();
+        Member sender = memberMapper.toMember(loginUser);
         ChatMessageRead readRecord = ChatMessageRead.builder()
                 .chatMessage(chatMessage)
                 .member(sender)

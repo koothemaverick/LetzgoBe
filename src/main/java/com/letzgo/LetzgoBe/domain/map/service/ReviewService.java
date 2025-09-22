@@ -1,6 +1,7 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
 import com.letzgo.LetzgoBe.domain.map.entity.Place;
@@ -27,6 +28,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final PhotoRepository photoRepository;
     private final S3Service s3Service;
+    private final MemberMapper memberMapper;
 
     @Transactional
     public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequest ReviewRequest, MultipartFile image) {
@@ -50,7 +52,7 @@ public class ReviewService {
             }
         }
         Review review = Review.builder()
-                .member(loginUserDto.ConvertToMember())
+                .member(memberMapper.toMember(loginUserDto))
                 .place(place)
                 .content(ReviewRequest.getContent())
                 .rating(ReviewRequest.getRating())

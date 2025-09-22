@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.community.post.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
@@ -49,6 +50,7 @@ public class PostServiceImpl implements PostService {
     private final MemberFollowRepository memberFollowRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final MemberMapper memberMapper;
 
     // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
@@ -130,7 +132,7 @@ public class PostServiceImpl implements PostService {
         if (alreadySaved) {
             throw new ServiceException(ReturnCode.POST_ALREADY_SAVED);
         }
-        PostSave postSave = new PostSave(loginUser.ConvertToMember(), post);
+        PostSave postSave = new PostSave(memberMapper.toMember(loginUser), post);
         post.getSavedMembers().add(postSave);
     }
 
@@ -158,7 +160,7 @@ public class PostServiceImpl implements PostService {
         if (alreadyLiked) {
             throw new ServiceException(ReturnCode.POST_ALREADY_LIKED);
         }
-        PostLike postLike = new PostLike(loginUser.ConvertToMember(), post);
+        PostLike postLike = new PostLike(memberMapper.toMember(loginUser), post);
         post.getLikedMembers().add(postLike);
         // 게시글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
@@ -210,7 +212,7 @@ public class PostServiceImpl implements PostService {
             }
         }
         Post post = Post.builder()
-                .member(loginUser.ConvertToMember())
+                .member(memberMapper.toMember(loginUser))
                 .content(postRequest.getContent())
                 .mapX(postRequest.getMapX())
                 .mapY(postRequest.getMapY())

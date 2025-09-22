@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.community.comment.serviceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.Comment;
@@ -36,6 +37,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    private final MemberMapper memberMapper;
 
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
@@ -57,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
         if (alreadyLiked) {
             throw new ServiceException(ReturnCode.COMMENT_ALREADY_LIKED);
         }
-        CommentLike commentLike = new CommentLike(loginUser.ConvertToMember(), comment);
+        CommentLike commentLike = new CommentLike(memberMapper.toMember(loginUser), comment);
         comment.getLikedMembers().add(commentLike);
         // 댓글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
@@ -97,7 +99,7 @@ public class CommentServiceImpl implements CommentService {
         // 현재 로그인한 사용자의 member 객체를 가져오는 메서드
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         Comment comment = Comment.builder()
-                .member(loginUser.ConvertToMember())
+                .member(memberMapper.toMember(loginUser))
                 .post(post)
                 .content(commentRequest.getContent())
                 .superCommentId(commentRequest.getSuperCommentId())
