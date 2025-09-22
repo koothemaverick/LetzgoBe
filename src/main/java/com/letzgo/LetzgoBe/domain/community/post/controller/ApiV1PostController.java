@@ -110,7 +110,7 @@ public class ApiV1PostController {
     }
 
     // 게시글 수정
-    @PutMapping("/{postId}")
+    @PatchMapping("/{postId}")
     public ApiResponse<String> updatePost(@PathVariable("postId") Long postId,
                                               @RequestPart(value = "postForm") @Valid PostRequest postRequest,
                                               @RequestPart(value = "imageFile") List<MultipartFile> imageFiles,

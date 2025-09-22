@@ -19,9 +19,6 @@ public interface CommentService {
     // 해당 게시글에 댓글 생성
     void addComment(Long commPostId, CommentRequest commentRequest, LoginUserDto loginUser);
 
-    // 해당 댓글 수정
-    void updateComment(Long commentId, CommentRequest commentRequest, LoginUserDto loginUser);
-
     // 해당 댓글 삭제
     void deleteComment(Long commentId, LoginUserDto loginUser);
 

@@ -29,7 +29,7 @@ public class ApiV1NotificationController {
     }
 
     // 알림 읽음 처리
-    @PutMapping
+    @PatchMapping
     public ApiResponse<String> markAsRead(@RequestBody @Valid NotificationRequest notificationRequest,
                                           @LoginUser LoginUserDto loginUser) {
         notificationService.markAsRead(notificationRequest, loginUser);

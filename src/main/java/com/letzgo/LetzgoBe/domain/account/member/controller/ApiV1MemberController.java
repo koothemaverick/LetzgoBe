@@ -55,7 +55,7 @@ public class ApiV1MemberController {
     }
 
     // 회원정보 수정
-    @PutMapping
+    @PatchMapping
     public ApiResponse<String> updateMemberInfo(@RequestPart(value = "memberForm") @Valid MemberRequest memberRequest,
                                                 @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
                                                 @LoginUser LoginUserDto loginUser) {
