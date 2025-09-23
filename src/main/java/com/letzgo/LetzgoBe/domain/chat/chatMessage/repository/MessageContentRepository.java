@@ -8,4 +8,6 @@ import java.util.List;
 public interface MessageContentRepository extends MongoRepository<MessageContent, String> {
     // MongoDB에서 메시지 내용 불러오기
     List<MessageContent> findByIdIn(List<String> messageIds);
+
+    List<MessageContent> findByIdInAndContentContaining(List<String> ids, String keyword);
 }
