@@ -107,7 +107,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             return PageResponse.of(chatMessages.map(chatMessage -> {
                 String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
-                return convertToChatMessageDto(chatMessage, content);
+                return convertToChatMessageResponse(chatMessage, content);
             }));
         } catch (ServiceException e) {
             throw e;
@@ -131,32 +131,27 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
-        // 채팅방 내 모든 메시지 ID 조회
-        Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomId(chatRoomId, pageable);
+        // 1. JPA로 메시지 메타 조회 (fetch join 적용, N+1 방지)
+        Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomIdWithMembers(chatRoomId, pageable);
         List<String> stringMessageIds = chatMessages.stream()
-                .map(chatMessage -> String.valueOf(chatMessage.getId()))
-                .collect(Collectors.toList());
+                .map(cm -> String.valueOf(cm.getId()))
+                .toList();
 
-        // MongoDB에서 해당 ID들의 메시지 내용 조회
-        Map<Long, String> messageContentMap = messageContentRepository.findByIdIn(stringMessageIds).stream()
-                .collect(Collectors.toMap(message -> Long.parseLong(message.getId()), MessageContent::getContent));
+        // 2. MongoDB에서 content + keyword 조건 검색
+        List<MessageContent> contents = messageContentRepository.findByIdInAndContentContaining(stringMessageIds, keyword);
+        Map<Long, String> messageContentMap = contents.stream()
+                .collect(Collectors.toMap(mc -> Long.parseLong(mc.getId()), MessageContent::getContent));
 
-        // 키워드 포함 여부 검사 후 필터링
+        // 3. 메시지 본문이 존재하는 것만 필터링
         List<ChatMessage> filteredMessages = chatMessages.stream()
-                .filter(chatMessage -> {
-                    String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
-                    return content.contains(keyword); // 키워드 포함 여부 확인
-                })
-                .collect(Collectors.toList());
+                .filter(cm -> messageContentMap.containsKey(cm.getId()))
+                .toList();
 
-        // 필터링된 메시지를 DTO로 변환
-        List<ChatMessageResponse> chatMessageResponses = filteredMessages.stream()
-                .map(chatMessage -> {
-                    String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
-                    return convertToChatMessageDto(chatMessage, content);
-                })
-                .collect(Collectors.toList());
-        return PageResponse.of(new PageImpl<>(chatMessageResponses, pageable, chatMessageResponses.size()));
+        // 4. DTO 변환
+        List<ChatMessageResponse> responses = filteredMessages.stream()
+                .map(cm -> convertToChatMessageResponse(cm, messageContentMap.get(cm.getId())))
+                .toList();
+        return PageResponse.of(new PageImpl<>(responses, pageable, responses.size()));
     }
 
     // 해당 채팅방에서 메시지 생성
@@ -206,7 +201,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .lastMessageCreatedAt(LocalDateTime.now())
                 .build();
         chatEventPublisher.publishLastMessageEvent(payload);
-        return(convertToChatMessageDto(chatMessage, content));
+        return(convertToChatMessageResponse(chatMessage, content));
     }
 
     // 해당 채팅방에서 이미지 메시지 생성
@@ -257,7 +252,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageReadRepository.save(readRecord);
 
         // 메시지 생성 이벤트 발행
-        ChatMessageResponse chatMessageResponse = convertToChatMessageDto(chatMessage, null);
+        ChatMessageResponse chatMessageResponse = convertToChatMessageResponse(chatMessage, null);
         ChatWebSocketPayload imagePayload = ChatWebSocketPayload.builder()
                 .messageType(MESSAGE)
                 .chatRoomId(chatRoomId)
@@ -372,7 +367,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     // ChatMessage를 ChatMessageDto로 변환
-    private ChatMessageResponse convertToChatMessageDto(ChatMessage chatMessage, String content) {
+    private ChatMessageResponse convertToChatMessageResponse(ChatMessage chatMessage, String content) {
         Long readMemberCount = chatMessageReadRepository.countByChatMessageId(chatMessage.getId());
         int totalMemberCount = chatMessage.getChatRoom().getChatRoomMembers().size();
         Long unreadCount = (long) totalMemberCount - readMemberCount;

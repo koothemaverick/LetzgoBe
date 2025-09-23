@@ -12,7 +12,12 @@ import java.util.Optional;
 @Repository
 public interface ChatMessageReadRepository extends JpaRepository<ChatMessageRead, Long> {
     // 이미 읽은 메시지 ID들 조회
-    @Query("SELECT r.chatMessage.id FROM ChatMessageRead r WHERE r.member.id = :memberId AND r.chatMessage.chatRoom.id = :chatRoomId")
+    @Query("""
+        SELECT r.chatMessage.id 
+        FROM ChatMessageRead r 
+        WHERE r.member.id = :memberId 
+        AND r.chatMessage.chatRoom.id = :chatRoomId
+    """)
     List<Long> findMessageIdsByMemberIdAndChatRoomId(@Param("memberId") Long memberId, @Param("chatRoomId") Long chatRoomId);
 
     // 메시지 읽은 수 조회
