@@ -107,7 +107,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             return PageResponse.of(chatMessages.map(chatMessage -> {
                 String content = messageContentMap.getOrDefault(chatMessage.getId(), "");
-                return convertToChatMessageDto(chatMessage, content);
+                return convertToChatMessageResponse(chatMessage, content);
             }));
         } catch (ServiceException e) {
             throw e;
@@ -149,7 +149,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 4. DTO 변환
         List<ChatMessageResponse> responses = filteredMessages.stream()
-                .map(cm -> convertToChatMessageDto(cm, messageContentMap.get(cm.getId())))
+                .map(cm -> convertToChatMessageResponse(cm, messageContentMap.get(cm.getId())))
                 .toList();
         return PageResponse.of(new PageImpl<>(responses, pageable, responses.size()));
     }
@@ -201,7 +201,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .lastMessageCreatedAt(LocalDateTime.now())
                 .build();
         chatEventPublisher.publishLastMessageEvent(payload);
-        return(convertToChatMessageDto(chatMessage, content));
+        return(convertToChatMessageResponse(chatMessage, content));
     }
 
     // 해당 채팅방에서 이미지 메시지 생성
@@ -252,7 +252,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatMessageReadRepository.save(readRecord);
 
         // 메시지 생성 이벤트 발행
-        ChatMessageResponse chatMessageResponse = convertToChatMessageDto(chatMessage, null);
+        ChatMessageResponse chatMessageResponse = convertToChatMessageResponse(chatMessage, null);
         ChatWebSocketPayload imagePayload = ChatWebSocketPayload.builder()
                 .messageType(MESSAGE)
                 .chatRoomId(chatRoomId)
@@ -367,7 +367,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     // ChatMessage를 ChatMessageDto로 변환
-    private ChatMessageResponse convertToChatMessageDto(ChatMessage chatMessage, String content) {
+    private ChatMessageResponse convertToChatMessageResponse(ChatMessage chatMessage, String content) {
         Long readMemberCount = chatMessageReadRepository.countByChatMessageId(chatMessage.getId());
         int totalMemberCount = chatMessage.getChatRoom().getChatRoomMembers().size();
         Long unreadCount = (long) totalMemberCount - readMemberCount;

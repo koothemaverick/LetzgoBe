@@ -21,7 +21,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
        JOIN FETCH m.chatRoom r
        JOIN FETCH r.chatRoomMembers
        WHERE r.id = :chatRoomId
-       """)
+    """)
     Page<ChatMessage> findByChatRoomId(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
 
     // 해당 채팅방의 메시지 리스트 조회
@@ -32,7 +32,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     List<Long> findAllMessageIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId);
 
     // 가장 최근 메시지의 ID를 가져오는 메서드
-    @Query("SELECT cm.id FROM ChatMessage cm WHERE cm.chatRoom.id = :chatRoomId ORDER BY cm.createdAt DESC")
+    @Query("""
+        SELECT cm.id
+        FROM ChatMessage cm
+        WHERE cm.chatRoom.id = :chatRoomId
+        ORDER BY cm.createdAt DESC
+    """)
     List<Long> findLatestMessageIdsByChatRoomId(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
 
     // 해당 멤버가 작성한 모든 메시지 삭제

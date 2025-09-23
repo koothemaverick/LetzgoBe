@@ -51,7 +51,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, LoginUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberMapper.toMember(loginUser));
-        return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomDto(chatRoom, loginUser.getId())));
+        return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomResponse(chatRoom, loginUser.getId())));
     }
 
     // 채팅방 생성(DM/그룹)
@@ -102,14 +102,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         chatRoom.setChatRoomMembers(chatRoomMembers);
         chatRoomRepository.save(chatRoom);
-        return convertToChatRoomDto(chatRoom, loginUser.getId());
+        return convertToChatRoomResponse(chatRoom, loginUser.getId());
     }
 
     // 채팅방 이름 수정(그룹)
     @Override
     @Transactional
     public void updateChatRoomTitle(Long chatRoomId, ChatRoomRequest chatRoomRequest, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
+                .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
         // 채팅방 멤버 누구나 수정 가능함
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
@@ -125,7 +126,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional
     public void inviteChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 채팅방 멤버 누구나 초대 가능함
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
@@ -159,7 +160,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional
     public void delegateChatRoomManager(Long chatRoomId, ChatRoomRequest chatRoomRequest, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 방장인지 확인 (방장만 위임 가능)
         if (!chatRoom.getMember().getId().equals(loginUser.getId())) {
@@ -198,7 +199,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional
     public void kickOutChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 방장인지 확인 (방장만 강퇴 가능)
         if (!chatRoom.getMember().getId().equals(loginUser.getId())) {
@@ -243,7 +244,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     @Override
     @Transactional
     public void leaveChatRoomMember(Long chatRoomId, LoginUserDto loginUser) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+        ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 현재 멤버가 속한 ChatRoomMember 찾기
         ChatRoomMember chatRoomMember = chatRoom.getChatRoomMembers().stream()
@@ -317,7 +318,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     // ChatRoom을 ChatRoomDto로 변환
-    private ChatRoomResponse convertToChatRoomDto(ChatRoom chatRoom, Long memberId) {
+    private ChatRoomResponse convertToChatRoomResponse(ChatRoom chatRoom, Long memberId) {
         // Fetch Join으로 가져온 ChatRoomMembers 사용
         List<ChatRoomMember> chatRoomMembers = chatRoomRepository.findChatRoomMembersWithMember(chatRoom.getId());
 
