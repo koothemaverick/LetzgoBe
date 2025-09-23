@@ -84,14 +84,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public MemberResponse getMyInfo(LoginUserDto loginUser) {
-        return memberMapper.toMemberResponse(loginUser);
+        Member member = memberRepository.findById(loginUser.getId())
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        return memberMapper.toMemberResponse(member);
     }
 
     // 본인 상세회원정보 조회
     @Override
     @Transactional(readOnly = true)
     public DetailMemberResponse getMyDetailInfo(LoginUserDto loginUser){
-        return memberMapper.toDetailMemberResponse(loginUser);
+        Member member = memberRepository.findById(loginUser.getId())
+                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
+        return memberMapper.toDetailMemberResponse(member);
     }
 
     // 다른 멤버의 회원정보 조회
@@ -169,8 +173,8 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public PageResponse<MemberResponse> searchMemberInfo(Pageable pageable, String keyword){
         checkPageSize(pageable.getPageSize());
-        Page<Member> members = memberRepository.findByKeyword(pageable, keyword);
-        return PageResponse.of(members.map(memberMapper::toMemberResponse));
+        Page<MemberResponse> members = memberRepository.findByKeyword(pageable, keyword);
+        return PageResponse.of(members);
     }
 
     // 팔로우 요청하기

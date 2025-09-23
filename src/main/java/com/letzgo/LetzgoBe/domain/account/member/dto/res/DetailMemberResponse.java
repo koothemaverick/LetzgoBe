@@ -15,7 +15,6 @@ public class DetailMemberResponse {
     private String nickname;
     private String phone;
     private String email;
-    private String password;
     private Member.Gender gender;  // 성별
     private LocalDate birthday;
     private String profileImageUrl;

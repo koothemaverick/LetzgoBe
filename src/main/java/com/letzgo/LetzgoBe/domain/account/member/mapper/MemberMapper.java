@@ -14,49 +14,36 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface MemberMapper {
-    // ---------- Member / LoginUserDto -> MemberResponse ----------
+    // ---------- Member -> MemberResponse ----------
+    @Mapping(target = "followMemberCount", expression = "java(source.getFollowList() != null ? (long) source.getFollowList().size() : 0L)")
+    @Mapping(target = "followedMemberCount", expression = "java(source.getFollowedList() != null ? (long) source.getFollowedList().size() : 0L)")
     MemberResponse toMemberResponse(Member source);
-    MemberResponse toMemberResponse(LoginUserDto source);
 
-    // ---------- Member / LoginUserDto -> DetailMemberResponse ----------
-    @Mappings({
-            @Mapping(target = "followList", source = "followList", qualifiedByName = "toFollowingMembers"),
-            @Mapping(target = "followedList", source = "followedList", qualifiedByName = "toFollowerMembers"),
-            @Mapping(target = "followReqList", source = "followReqList", qualifiedByName = "toSimpleMembersFromFollowReqs"),
-            @Mapping(target = "followRecList", source = "followRecList", qualifiedByName = "toSimpleMembersFromFollowRecs")
-    })
+    // ---------- Member -> DetailMemberResponse ----------
+    @Mapping(target = "followMemberCount", expression = "java(source.getFollowList() != null ? (long) source.getFollowList().size() : 0L)")
+    @Mapping(target = "followedMemberCount", expression = "java(source.getFollowedList() != null ? (long) source.getFollowedList().size() : 0L)")
+    @Mapping(target = "followList", source = "followList", qualifiedByName = "toFollowingMembers")
+    @Mapping(target = "followedList", source = "followedList", qualifiedByName = "toFollowerMembers")
+    @Mapping(target = "followReqList", source = "followReqList", qualifiedByName = "toSimpleMembersFromFollowReqs")
+    @Mapping(target = "followRecList", source = "followRecList", qualifiedByName = "toSimpleMembersFromFollowRecs")
     DetailMemberResponse toDetailMemberResponse(Member source);
 
-    @Mappings({
-            @Mapping(target = "followList", source = "followList", qualifiedByName = "toFollowingMembers"),
-            @Mapping(target = "followedList", source = "followedList", qualifiedByName = "toFollowerMembers"),
-            @Mapping(target = "followReqList", source = "followReqList", qualifiedByName = "toSimpleMembersFromFollowReqs"),
-            @Mapping(target = "followRecList", source = "followRecList", qualifiedByName = "toSimpleMembersFromFollowRecs")
-    })
-    DetailMemberResponse toDetailMemberResponse(LoginUserDto source);
-
-    // ---------- LoginUserDto -> Member (엔티티 저장용) ----------
+    // ---------- LoginUserDto <-> Member ----------
     // 관계 필드나 콜렉션은 무시 (지연 로딩 유발/불필요한 merge 방지)
-    @Mappings({
-            @Mapping(target = "followList", ignore = true),
-            @Mapping(target = "followedList", ignore = true),
-            @Mapping(target = "followReqList", ignore = true),
-            @Mapping(target = "followRecList", ignore = true)
-    })
+    @Mapping(target = "followList", ignore = true)
+    @Mapping(target = "followedList", ignore = true)
+    @Mapping(target = "followReqList", ignore = true)
+    @Mapping(target = "followRecList", ignore = true)
     Member toMember(LoginUserDto source);
 
-    // ---------- Member -> LoginUserDto ----------
     // 관계 필드나 콜렉션은 무시 (지연 로딩 유발/불필요한 merge 방지)
-    @Mappings({
-            @Mapping(target = "followList", ignore = true),
-            @Mapping(target = "followedList", ignore = true),
-            @Mapping(target = "followReqList", ignore = true),
-            @Mapping(target = "followRecList", ignore = true)
-    })
+    @Mapping(target = "followList", ignore = true)
+    @Mapping(target = "followedList", ignore = true)
+    @Mapping(target = "followReqList", ignore = true)
+    @Mapping(target = "followRecList", ignore = true)
     LoginUserDto toLoginUserDto(Member source);
 
-    // ---------- List & Element 변환기 ----------
-
+    // ---------- List 단위 매핑(팔로우/요청) ----------
     @Named("toFollowingMembers")
     default List<SimpleMemberDto> toFollowingMembers(List<MemberFollow> followList) {
         if (followList == null) return List.of();
@@ -90,8 +77,7 @@ public interface MemberMapper {
     }
 
     // ---------- Element 단위 매핑(팔로우/요청) ----------
-
-    // MemberFollow.followed 기준
+    // MemberFollow.followed -> SimpleMemberDto
     default SimpleMemberDto toFollowingMember(MemberFollow mf) {
         if (mf == null || mf.getFollowed() == null) return null;
         var m = mf.getFollowed();
@@ -103,7 +89,7 @@ public interface MemberMapper {
                 .build();
     }
 
-    // MemberFollow.follow 기준
+    // MemberFollow.follow -> SimpleMemberDto
     default SimpleMemberDto toFollowerMember(MemberFollow mf) {
         if (mf == null || mf.getFollow() == null) return null;
         var m = mf.getFollow();
@@ -115,7 +101,7 @@ public interface MemberMapper {
                 .build();
     }
 
-    // 내가 요청한 팔로우 목록: MemberFollowReq.followRec 기준
+    // MemberFollowReq.followRec -> SimpleMemberDto
     default SimpleMemberDto toSimpleMemberFromFollowRec(MemberFollowReq req) {
         if (req == null || req.getFollowRec() == null) return null;
         var m = req.getFollowRec();
@@ -127,7 +113,7 @@ public interface MemberMapper {
                 .build();
     }
 
-    // 내가 받은 팔로우 요청 목록: MemberFollowReq.followReq 기준
+    // MemberFollowReq.followReq -> SimpleMemberDto
     default SimpleMemberDto toSimpleMemberFromFollowReq(MemberFollowReq req) {
         if (req == null || req.getFollowReq() == null) return null;
         var m = req.getFollowReq();
