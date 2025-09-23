@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -77,7 +77,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방의 이전 메시지 가져오기
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, LoginUserDto loginUser) {
+    public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, CurrentUserDto loginUser) {
         try {
             checkPageSize(pageable.getPageSize());
             ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
@@ -120,7 +120,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, LoginUserDto loginUser) {
+    public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, CurrentUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         checkPageSize(pageable.getPageSize());
 
@@ -207,7 +207,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 이미지 메시지 생성
     @Override
     @Transactional
-    public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, LoginUserDto loginUser) {
+    public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, CurrentUserDto loginUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
@@ -274,7 +274,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 메시지 삭제
     @Override
     @Transactional
-    public void deleteChatMessage(Long messageId, LoginUserDto loginUser) {
+    public void deleteChatMessage(Long messageId, CurrentUserDto loginUser) {
         ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
         if (!chatMessage.getMember().getId().equals(loginUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);

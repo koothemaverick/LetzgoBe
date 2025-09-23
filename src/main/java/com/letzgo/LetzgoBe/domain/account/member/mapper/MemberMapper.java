@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.account.member.mapper;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberDto;
@@ -34,14 +34,14 @@ public interface MemberMapper {
     @Mapping(target = "followedList", ignore = true)
     @Mapping(target = "followReqList", ignore = true)
     @Mapping(target = "followRecList", ignore = true)
-    Member toMember(LoginUserDto source);
+    Member toMember(CurrentUserDto source);
 
     // 관계 필드나 콜렉션은 무시 (지연 로딩 유발/불필요한 merge 방지)
     @Mapping(target = "followList", ignore = true)
     @Mapping(target = "followedList", ignore = true)
     @Mapping(target = "followReqList", ignore = true)
     @Mapping(target = "followRecList", ignore = true)
-    LoginUserDto toLoginUserDto(Member source);
+    CurrentUserDto toCurrentUserDto(Member source);
 
     // ---------- List 단위 매핑(팔로우/요청) ----------
     @Named("toFollowingMembers")

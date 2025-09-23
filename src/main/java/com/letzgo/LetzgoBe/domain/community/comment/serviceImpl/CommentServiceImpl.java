@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.community.comment.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
@@ -42,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, LoginUserDto loginUser){
+    public PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, CurrentUserDto loginUser){
         checkPageSize(pageable.getPageSize());
         Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
         return PageResponse.of(comments.map(comment -> convertToCommentDto(comment, loginUser)));
@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
     // 댓글 좋아요
     @Override
     @Transactional
-    public void addCommentLike(Long commentId, LoginUserDto loginUser){
+    public void addCommentLike(Long commentId, CurrentUserDto loginUser){
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
         boolean alreadyLiked = comment.getLikedMembers()
                 .stream()
@@ -82,7 +82,7 @@ public class CommentServiceImpl implements CommentService {
     // 댓글 좋아요 취소
     @Override
     @Transactional
-    public void deleteCommentLike(Long commentId, LoginUserDto loginUser) {
+    public void deleteCommentLike(Long commentId, CurrentUserDto loginUser) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
         CommentLike commentLike = comment.getLikedMembers()
                 .stream()
@@ -95,7 +95,7 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 댓글 생성
     @Override
     @Transactional
-    public void addComment(Long postId, CommentRequest commentRequest, LoginUserDto loginUser){
+    public void addComment(Long postId, CommentRequest commentRequest, CurrentUserDto loginUser){
         // 현재 로그인한 사용자의 member 객체를 가져오는 메서드
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         Comment comment = Comment.builder()
@@ -126,7 +126,7 @@ public class CommentServiceImpl implements CommentService {
     // 해당 댓글 삭제
     @Override
     @Transactional
-    public void deleteComment(Long commentId, LoginUserDto loginUser) {
+    public void deleteComment(Long commentId, CurrentUserDto loginUser) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
 
         // 댓글/게시글 작성자만 삭제 가능
@@ -177,7 +177,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // Comment를 CommentDto로 변환
-    private CommentResponse convertToCommentDto(Comment comment, LoginUserDto loginUser) {
+    private CommentResponse convertToCommentDto(Comment comment, CurrentUserDto loginUser) {
         boolean liked = commentLikeQueryRepository.existsByMemberIdAndCommentId(loginUser.getId(), comment.getId());
         Long likeCount = commentLikeQueryRepository.countByCommentId(comment.getId());
         return CommentResponse.builder()

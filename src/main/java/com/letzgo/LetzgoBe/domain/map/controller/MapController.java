@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.map.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceInfoResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
@@ -9,7 +9,6 @@ import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import com.letzgo.LetzgoBe.domain.map.service.ReviewService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,28 +32,28 @@ public class MapController {
 
     //리뷰게시
     @PostMapping("/review/{placeId}")
-    public ApiResponse<Void> postReview(@LoginUser LoginUserDto loginUserDto,
+    public ApiResponse<Void> postReview(@CurrentUser CurrentUserDto currentUserDto,
                                   @PathVariable("placeId") String placeId,
                                   @ModelAttribute ReviewRequest reviewRequest,
                                   @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.createReview(loginUserDto, placeId, reviewRequest, image);
+        reviewService.createReview(currentUserDto, placeId, reviewRequest, image);
         return ApiResponse.success();
     }
 
     //리뷰수정
     @PatchMapping("/review/{reviewId}")
-    public ApiResponse<Void> patchReview(@LoginUser LoginUserDto loginUserDto,
+    public ApiResponse<Void> patchReview(@CurrentUser CurrentUserDto currentUserDto,
                                    @PathVariable("reviewId") Long reviewId,
                                    @ModelAttribute ReviewRequest reviewRequest,
                                    @RequestParam(value = "image", required = false) MultipartFile image) {
-        reviewService.updateReview(loginUserDto, reviewId, reviewRequest, image);
+        reviewService.updateReview(currentUserDto, reviewId, reviewRequest, image);
         return ApiResponse.success();
     }
 
     //리뷰삭제
     @DeleteMapping("/review/{reviewId}")
-    public ApiResponse<Void> deleteReview(@LoginUser LoginUserDto loginUserDto, @PathVariable("reviewId") Long reviewId) {
-        reviewService.deleteReview(loginUserDto, reviewId);
+    public ApiResponse<Void> deleteReview(@CurrentUser CurrentUserDto currentUserDto, @PathVariable("reviewId") Long reviewId) {
+        reviewService.deleteReview(currentUserDto, reviewId);
         return ApiResponse.success();
     }
 

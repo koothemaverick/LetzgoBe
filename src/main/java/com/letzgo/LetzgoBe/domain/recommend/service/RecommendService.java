@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.recommend.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;
@@ -17,7 +17,6 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.ItemBasedRecommender;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,7 +37,7 @@ public class RecommendService {
 
     // page&size만큼의 추천장소 반환, 아이템 기반 추천 필터링
     @Transactional(readOnly = true)
-    public PageResponse<PlaceResponse> getRecommendedPlace(LoginUserDto loginUserDto, Pageable pageable) {
+    public PageResponse<PlaceResponse> getRecommendedPlace(CurrentUserDto currentUserDto, Pageable pageable) {
         checkPageSize(pageable.getPageSize());
         List<Long> places = new ArrayList<>(); // place_pk 리스트
 
@@ -50,7 +49,7 @@ public class RecommendService {
 
             // num은 페이지 사이즈만큼 추천받도록 수정
             int num = pageable.getPageSize();
-            List<RecommendedItem> recommendations = recommender.recommend(loginUserDto.getId(), num);
+            List<RecommendedItem> recommendations = recommender.recommend(currentUserDto.getId(), num);
             for (RecommendedItem item : recommendations) {
                 places.add(item.getItemID());
             }

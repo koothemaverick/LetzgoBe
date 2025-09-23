@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.global.initData;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
@@ -133,12 +133,12 @@ public class NotProdService {
     private void createFollowRelations(List<Member> members) {
         for (int i = 0; i < members.size(); i++) {
             Member fromMember = members.get(i);
-            LoginUserDto fromLoginUser = memberMapper.toLoginUserDto(fromMember);
+            CurrentUserDto fromCurrentUser = memberMapper.toCurrentUserDto(fromMember);
             for (int j = 0; j < members.size(); j++) {
                 if (i == j) continue;
                 Member toMember = members.get(j);
-                memberService.followReq(toMember.getId(), fromLoginUser);
-                LoginUserDto toLoginUser = memberMapper.toLoginUserDto(toMember);
+                memberService.followReq(toMember.getId(), fromCurrentUser);
+                CurrentUserDto toLoginUser = memberMapper.toCurrentUserDto(toMember);
                 memberService.acceptFollowReq(fromMember.getId(), toLoginUser);
             }
         }
@@ -164,7 +164,7 @@ public class NotProdService {
                 getMultipartFileFromResource(imageFilePath1, imageFilePath1.substring(imageFilePath1.lastIndexOf("/") + 1)),
                 getMultipartFileFromResource(imageFilePath2, imageFilePath2.substring(imageFilePath2.lastIndexOf("/") + 1))
         );
-        postService.addPost(postRequest, imageFiles, memberMapper.toLoginUserDto(member));
+        postService.addPost(postRequest, imageFiles, memberMapper.toCurrentUserDto(member));
     }
 
     // 유저 3, 4, 5, 6이 모든 게시글에 대해 좋아요 누름
@@ -173,7 +173,7 @@ public class NotProdService {
         List<Member> likingMembers = members.subList(2, members.size()); // 유저 3, 4, 5 (인덱스 2부터 시작)
         for (Member member : likingMembers) {
             for (long postId = 1L; postId <= 5L; postId++) {
-                postService.addPostLike(postId, memberMapper.toLoginUserDto(member)); // 게시글 좋아요 추가
+                postService.addPostLike(postId, memberMapper.toCurrentUserDto(member)); // 게시글 좋아요 추가
             }
         }
     }
@@ -190,7 +190,7 @@ public class NotProdService {
                         ChatRoomMember.builder().member(members.get(1)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(dmChatRoomRequest, memberMapper.toLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(dmChatRoomRequest, memberMapper.toCurrentUserDto(members.get(0)));
     }
 
     // 유저 1이 단체 채팅방 생성 (대상: 유저 2, 3)
@@ -202,7 +202,7 @@ public class NotProdService {
                         ChatRoomMember.builder().member(members.get(2)).build()
                 ))
                 .build();
-        chatRoomService.addChatRoom(groupChatRoomRequest, memberMapper.toLoginUserDto(members.get(0)));
+        chatRoomService.addChatRoom(groupChatRoomRequest, memberMapper.toCurrentUserDto(members.get(0)));
     }
 
     // 유저 1, 2의 1:1 채팅

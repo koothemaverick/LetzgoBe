@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
@@ -17,7 +17,6 @@ import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepos
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberDto;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.service.ChatRoomService;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import com.letzgo.LetzgoBe.domain.community.post.service.PostService;
@@ -38,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -83,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
     // 본인 회원정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResponse getMyInfo(LoginUserDto loginUser) {
+    public MemberResponse getMyInfo(CurrentUserDto loginUser) {
         Member member = memberRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberMapper.toMemberResponse(member);
@@ -92,7 +90,7 @@ public class MemberServiceImpl implements MemberService {
     // 본인 상세회원정보 조회
     @Override
     @Transactional(readOnly = true)
-    public DetailMemberResponse getMyDetailInfo(LoginUserDto loginUser){
+    public DetailMemberResponse getMyDetailInfo(CurrentUserDto loginUser){
         Member member = memberRepository.findById(loginUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberMapper.toDetailMemberResponse(member);
@@ -119,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
     // 회원정보 수정
     @Override
     @Transactional
-    public void updateMember(MemberRequest memberRequest, MultipartFile imageFile, LoginUserDto loginUser) {
+    public void updateMember(MemberRequest memberRequest, MultipartFile imageFile, CurrentUserDto loginUser) {
         /// 기존 이미지 삭제 후 입력 받은 이미지 S3에 저장
         String imageUrl = loginUser.getProfileImageUrl(); // 기본적으로 기존 이미지 URL을 사용
         if (imageFile != null && !imageFile.isEmpty()) {
@@ -153,7 +151,7 @@ public class MemberServiceImpl implements MemberService {
     // 회원탈퇴
     @Override
     @Transactional
-    public void deleteMember(LoginUserDto loginUser) {
+    public void deleteMember(CurrentUserDto loginUser) {
         // refreshToken 삭제
         authService.logout(loginUser);
         // DB에서 회원 조회
@@ -180,7 +178,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청하기
     @Override
     @Transactional
-    public void followReq(Long memberId, LoginUserDto loginUser){
+    public void followReq(Long memberId, CurrentUserDto loginUser){
         Member followReq = memberMapper.toMember(loginUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
@@ -220,7 +218,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 취소하기
     @Override
     @Transactional
-    public void cancelFollowReq(Long memberId, LoginUserDto loginUser){
+    public void cancelFollowReq(Long memberId, CurrentUserDto loginUser){
         Member followReq = memberMapper.toMember(loginUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
@@ -232,7 +230,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 수락하기
     @Override
     @Transactional
-    public void acceptFollowReq(Long memberId, LoginUserDto loginUser){
+    public void acceptFollowReq(Long memberId, CurrentUserDto loginUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member receiver = memberMapper.toMember(loginUser);
@@ -265,7 +263,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 거절하기
     @Override
     @Transactional
-    public void refuseFollowReq(Long memberId, LoginUserDto loginUser){
+    public void refuseFollowReq(Long memberId, CurrentUserDto loginUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member receiver = memberMapper.toMember(loginUser);
@@ -277,7 +275,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 취소하기
     @Override
     @Transactional
-    public void cancelFollow(Long memberId, LoginUserDto loginUser){
+    public void cancelFollow(Long memberId, CurrentUserDto loginUser){
         Member follow = memberMapper.toMember(loginUser);
         Member followed = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
@@ -289,7 +287,7 @@ public class MemberServiceImpl implements MemberService {
     // 팔로워 목록에서 해당 유저 삭제하기
     @Override
     @Transactional
-    public void removeFollowed(Long memberId, LoginUserDto loginUser){
+    public void removeFollowed(Long memberId, CurrentUserDto loginUser){
         Member follow = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         Member followed = memberMapper.toMember(loginUser);

@@ -17,14 +17,14 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 @Component
 @RequiredArgsConstructor
-public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
+public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterAnnotation(LoginUser.class) != null &&
-                parameter.getParameterType().equals(LoginUserDto.class);
+        return parameter.getParameterAnnotation(CurrentUser.class) != null &&
+                parameter.getParameterType().equals(CurrentUserDto.class);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
             String email = securityUser.getUsername(); // UserDetails의 getUsername()은 이메일을 반환
 
             return memberRepository.findByEmail(email)
-                    .map(memberMapper::toLoginUserDto)
+                    .map(memberMapper::toCurrentUserDto)
                     .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         }
         return null;
