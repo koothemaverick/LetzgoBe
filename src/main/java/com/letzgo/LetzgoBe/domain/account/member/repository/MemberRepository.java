@@ -1,5 +1,6 @@
 package com.letzgo.LetzgoBe.domain.account.member.repository;
 
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +22,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
 
     // 회원 검색하기
-    @Query("SELECT m FROM Member m WHERE m.name LIKE %:keyword% OR m.nickname LIKE %:keyword%")
-    Page<Member> findByKeyword(Pageable pageable, @Param("keyword") String keyword);
+    @Query("SELECT new com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse(" +
+            "m.id, m.name, m.nickname, m.profileImageUrl, " +
+            "COUNT(DISTINCT f1.id), COUNT(DISTINCT f2.id)) " +
+            "FROM Member m " +
+            "LEFT JOIN MemberFollow f1 ON f1.follow.id = m.id " +
+            "LEFT JOIN MemberFollow f2 ON f2.followed.id = m.id " +
+            "WHERE m.name LIKE %:keyword% OR m.nickname LIKE %:keyword% " +
+            "GROUP BY m.id, m.name, m.nickname, m.profileImageUrl")
+    Page<MemberResponse> findByKeyword(Pageable pageable, @Param("keyword") String keyword);
 }

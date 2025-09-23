@@ -12,4 +12,16 @@ public class MemberResponse {
     private String profileImageUrl;
     private Long followMemberCount;
     private Long followedMemberCount;
+
+    public MemberResponse(Long id, String name, String nickname,
+                          String profileImageUrl,
+                          Long followMemberCount,
+                          Long followedMemberCount) {
+        this.id = id;
+        this.name = name;
+        this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
+        this.followMemberCount = followMemberCount;
+        this.followedMemberCount = followedMemberCount;
+    }
 }
