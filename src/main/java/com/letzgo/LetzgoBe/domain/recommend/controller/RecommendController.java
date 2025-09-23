@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.recommend.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.recommend.service.RecommendService;
@@ -20,8 +20,8 @@ public class RecommendController {
     private final RecommendService recommendService;
 
     @GetMapping
-    public ApiResponse<List<PlaceResponse>> getRecommendedPlaces(@LoginUser LoginUserDto loginUserDto, @ModelAttribute PlacePage request) {
+    public ApiResponse<List<PlaceResponse>> getRecommendedPlaces(@CurrentUser CurrentUserDto currentUserDto, @ModelAttribute PlacePage request) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(recommendService.getRecommendedPlace(loginUserDto, pageable));
+        return ApiResponse.success(recommendService.getRecommendedPlace(currentUserDto, pageable));
     }
 }

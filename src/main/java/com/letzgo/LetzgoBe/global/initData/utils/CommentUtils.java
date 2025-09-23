@@ -1,6 +1,5 @@
 package com.letzgo.LetzgoBe.global.initData.utils;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
@@ -141,11 +140,11 @@ public class CommentUtils {
 
     private void addComment(Long postId, String content, Member member) {
         CommentRequest form = CommentRequest.builder().content(content).build();
-        commentService.addComment(postId, form, memberMapper.toLoginUserDto(member));
+        commentService.addComment(postId, form, memberMapper.toCurrentUserDto(member));
     }
 
     private void addReply(Long postId, Long superCommentId, String content, Member member) {
         CommentRequest form = CommentRequest.builder().content(content).superCommentId(superCommentId).build();
-        commentService.addComment(postId, form, memberMapper.toLoginUserDto(member));
+        commentService.addComment(postId, form, memberMapper.toCurrentUserDto(member));
     }
 }

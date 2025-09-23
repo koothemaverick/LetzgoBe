@@ -1,11 +1,10 @@
 package com.letzgo.LetzgoBe.domain.fcm.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.fcm.dto.req.FcmTokenRequest;
 import com.letzgo.LetzgoBe.domain.fcm.service.FcmTokenService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +17,14 @@ public class ApiV1FcmController {
 
     // FCM Token 저장
     @PostMapping
-    public ApiResponse<Void> saveFcmToken(@RequestBody @Valid FcmTokenRequest fcmTokenRequest, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> saveFcmToken(@RequestBody @Valid FcmTokenRequest fcmTokenRequest, @CurrentUser CurrentUserDto loginUser) {
         fcmTokenService.saveFcmToken(loginUser.getId(), fcmTokenRequest.getFcmToken());
         return ApiResponse.success();
     }
 
     // FCM Token 삭제
     @DeleteMapping
-    public ApiResponse<Void> deleteFcmToken(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> deleteFcmToken(@CurrentUser CurrentUserDto loginUser) {
         fcmTokenService.deleteFcmToken(loginUser.getId());
         return ApiResponse.success();
     }

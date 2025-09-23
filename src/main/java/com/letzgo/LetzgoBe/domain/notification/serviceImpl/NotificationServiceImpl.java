@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.notification.serviceImpl;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
 import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationRequest;
 import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
@@ -35,7 +35,7 @@ public class NotificationServiceImpl implements NotificationService {
     // 알림 목록 조회
     @Override
     @Transactional
-    public PageResponse<NotificationResponse> getNotifications(Pageable pageable, LoginUserDto loginUser) {
+    public PageResponse<NotificationResponse> getNotifications(Pageable pageable, CurrentUserDto loginUser) {
         checkPageSize(pageable.getPageSize());
         Page<Notification> notificationPage = notificationRepository.findByReceiverIdOrderByCreatedAtDesc(loginUser.getId(), pageable);
         return PageResponse.of(notificationPage.map(this::convertToNotificationDto));
@@ -44,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     // 알림 읽음 처리
     @Override
     @Transactional
-    public void markAsRead(NotificationRequest notificationRequest, LoginUserDto loginUser) {
+    public void markAsRead(NotificationRequest notificationRequest, CurrentUserDto loginUser) {
         // 본인 알림인지 확인
         List<Long> ids = notificationRequest.getNotificationIdList();
         List<Notification> notifications = notificationRepository.findAllByIdInAndReceiverId(ids, loginUser.getId());

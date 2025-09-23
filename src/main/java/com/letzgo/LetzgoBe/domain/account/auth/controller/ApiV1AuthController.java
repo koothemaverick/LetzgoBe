@@ -2,11 +2,10 @@ package com.letzgo.LetzgoBe.domain.account.auth.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,14 +24,14 @@ public class ApiV1AuthController {
 
     // 로그아웃
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> logout(@CurrentUser CurrentUserDto loginUser) {
         authService.logout(loginUser);
         return ApiResponse.success();
     }
 
     // accessToken 재발급
     @GetMapping("/refresh-token")
-    public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @CurrentUser CurrentUserDto loginUser) {
         return ApiResponse.success(authService.refreshToken(refreshToken, loginUser));
     }
 }

@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
@@ -31,7 +31,7 @@ public class ReviewService {
     private final MemberMapper memberMapper;
 
     @Transactional
-    public void createReview(LoginUserDto loginUserDto, String placeId, ReviewRequest ReviewRequest, MultipartFile image) {
+    public void createReview(CurrentUserDto currentUserDto, String placeId, ReviewRequest ReviewRequest, MultipartFile image) {
 
         Place place = placeRepository.findByPlaceId(placeId);
         Photo uploadedPhoto = null;
@@ -52,7 +52,7 @@ public class ReviewService {
             }
         }
         Review review = Review.builder()
-                .member(memberMapper.toMember(loginUserDto))
+                .member(memberMapper.toMember(currentUserDto))
                 .place(place)
                 .content(ReviewRequest.getContent())
                 .rating(ReviewRequest.getRating())
@@ -64,11 +64,11 @@ public class ReviewService {
     }
 
     @Transactional
-    public void updateReview(LoginUserDto loginUserDto, Long reviewId, ReviewRequest reviewRequest, MultipartFile image) {
+    public void updateReview(CurrentUserDto currentUserDto, Long reviewId, ReviewRequest reviewRequest, MultipartFile image) {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(()->new NoSuchElementException());
 
-        if(loginUserDto.getName().equals(review.getMember().getName()))
+        if(currentUserDto.getName().equals(review.getMember().getName()))
             if(image!= null) {
                 //기존이미지 삭제
                 s3Service.deleteFile(review.getPhoto().getStore_dir());
@@ -101,11 +101,11 @@ public class ReviewService {
     }
 
     @Transactional
-    public void deleteReview(LoginUserDto loginUserDto, Long reviewId) {
+    public void deleteReview(CurrentUserDto currentUserDto, Long reviewId) {
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         Review review = optionalReview.orElseThrow(()->new NoSuchElementException());
         if (review.getMember().getName()
-                .equals(loginUserDto.getName())) {
+                .equals(currentUserDto.getName())) {
             if (review.getPhoto() != null)
                 s3Service.deleteFile(review.getPhoto().getStore_dir());
             reviewRepository.deleteById(reviewId);

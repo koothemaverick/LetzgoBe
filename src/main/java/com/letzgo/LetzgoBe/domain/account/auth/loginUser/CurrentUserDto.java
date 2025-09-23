@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class LoginUserDto {
+public class CurrentUserDto {
     private Long id;
     private String name;
     private String nickname;

@@ -1,12 +1,11 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.LoginUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
-import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +23,7 @@ public class ApiV1ChatMessageController {
     // 해당 채팅방의 이전 메시지 가져오기 [참여자 권한]
     @GetMapping("/{chatRoomId}")
     public ApiResponse<List<ChatMessageResponse>> findByChatRoomId(@ModelAttribute ChatMessagePage request,
-                                                             @PathVariable("chatRoomId") Long chatRoomId, @LoginUser LoginUserDto loginUser) {
+                                                             @PathVariable("chatRoomId") Long chatRoomId, @CurrentUser CurrentUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.success(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser));
     }
@@ -32,7 +31,7 @@ public class ApiV1ChatMessageController {
     // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/search")
     public ApiResponse<List<ChatMessageResponse>> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
-                                                              @RequestParam("keyword") String keyword, @LoginUser LoginUserDto loginUser) {
+                                                              @RequestParam("keyword") String keyword, @CurrentUser CurrentUserDto loginUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
         return ApiResponse.success(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser));
     }
@@ -41,14 +40,14 @@ public class ApiV1ChatMessageController {
     @PostMapping("/image/{chatRoomId}")
     public ApiResponse<Void> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
                                                  @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,
-                                                 @LoginUser LoginUserDto loginUser) {
+                                                 @CurrentUser CurrentUserDto loginUser) {
         chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser);
         return ApiResponse.success();
     }
 
     // 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")
-    public ApiResponse<Void> deleteChatMessage(@PathVariable("messageId") Long messageId, @LoginUser LoginUserDto loginUser) {
+    public ApiResponse<Void> deleteChatMessage(@PathVariable("messageId") Long messageId, @CurrentUser CurrentUserDto loginUser) {
         chatMessageService.deleteChatMessage(messageId, loginUser);
         return ApiResponse.success();
     }
