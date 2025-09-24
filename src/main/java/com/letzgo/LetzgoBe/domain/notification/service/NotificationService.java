@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.notification.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationRequest;
 import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
@@ -12,10 +12,10 @@ public interface NotificationService {
     void createNotification(Notification notification);
 
     // 알림 목록 조회
-    PageResponse<NotificationResponse> getNotifications(Pageable pageable, CurrentUserDto loginUser);
+    PageResponse<NotificationResponse> getNotifications(Pageable pageable, CurrentUserDto currentUser);
 
     // 알림 읽음 처리
-    void markAsRead(NotificationRequest notificationRequest, CurrentUserDto loginUser);
+    void markAsRead(NotificationRequest notificationRequest, CurrentUserDto currentUser);
 
     // Notification을 NotificationDto로 변환
     NotificationResponse convertToNotificationDto(Notification notification);

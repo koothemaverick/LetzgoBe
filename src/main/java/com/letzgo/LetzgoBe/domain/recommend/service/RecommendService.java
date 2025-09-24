@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.recommend.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.repository.PlaceRepository;

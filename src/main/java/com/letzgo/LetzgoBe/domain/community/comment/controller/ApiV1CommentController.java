@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.community.comment.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
 import com.letzgo.LetzgoBe.domain.community.comment.entity.CommentPage;
@@ -25,37 +25,37 @@ public class ApiV1CommentController {
     @GetMapping("/{postId}")
     public ApiResponse<List<CommentResponse>> findByPostId(@ModelAttribute CommentPage request,
                                                           @PathVariable("postId") Long postId,
-                                                          @CurrentUser CurrentUserDto loginUser){
+                                                          @CurrentUser CurrentUserDto currentUser){
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(commentService.findByPostId(postId, pageable, loginUser));
+        return ApiResponse.success(commentService.findByPostId(postId, pageable, currentUser));
     }
 
     // 댓글 좋아요
     @PostMapping("/like/{commentId}")
-    public ApiResponse<Void> addCommentLike(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto loginUser){
-        commentService.addCommentLike(commentId, loginUser);
+    public ApiResponse<Void> addCommentLike(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto currentUser){
+        commentService.addCommentLike(commentId, currentUser);
         return ApiResponse.success();
     }
 
     // 댓글 좋아요 취소
     @DeleteMapping("/like/{commentId}")
-    public ApiResponse<Void> deleteCommentLike(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto loginUser){
-        commentService.deleteCommentLike(commentId, loginUser);
+    public ApiResponse<Void> deleteCommentLike(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto currentUser){
+        commentService.deleteCommentLike(commentId, currentUser);
         return ApiResponse.success();
     }
 
     // 해당 게시글에 댓글 생성
     @PostMapping("/{postId}")
     public ApiResponse<Void> addComment(@PathVariable("postId") Long postId,
-                                          @RequestBody @Valid CommentRequest commentRequest, @CurrentUser CurrentUserDto loginUser){
-        commentService.addComment(postId, commentRequest, loginUser);
+                                          @RequestBody @Valid CommentRequest commentRequest, @CurrentUser CurrentUserDto currentUser){
+        commentService.addComment(postId, commentRequest, currentUser);
         return ApiResponse.success();
     }
 
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
-    public ApiResponse<Void> deleteComment(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto loginUser){
-        commentService.deleteComment(commentId, loginUser);
+    public ApiResponse<Void> deleteComment(@PathVariable("commentId") Long commentId, @CurrentUser CurrentUserDto currentUser){
+        commentService.deleteComment(commentId, currentUser);
         return ApiResponse.success();
     }
 }

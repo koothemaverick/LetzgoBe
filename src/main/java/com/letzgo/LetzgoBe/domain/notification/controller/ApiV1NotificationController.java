@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.notification.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.notification.dto.req.NotificationRequest;
 import com.letzgo.LetzgoBe.domain.notification.dto.res.NotificationResponse;
 import com.letzgo.LetzgoBe.domain.notification.entity.NotificationPage;
@@ -23,16 +23,16 @@ public class ApiV1NotificationController {
 
     // 알림 목록 조회
     @GetMapping
-    public ApiResponse<List<NotificationResponse>> getNotifications(@ModelAttribute NotificationPage request, @CurrentUser CurrentUserDto loginUser) {
+    public ApiResponse<List<NotificationResponse>> getNotifications(@ModelAttribute NotificationPage request, @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(notificationService.getNotifications(pageable, loginUser));
+        return ApiResponse.success(notificationService.getNotifications(pageable, currentUser));
     }
 
     // 알림 읽음 처리
     @PatchMapping
     public ApiResponse<Void> markAsRead(@RequestBody @Valid NotificationRequest notificationRequest,
-                                          @CurrentUser CurrentUserDto loginUser) {
-        notificationService.markAsRead(notificationRequest, loginUser);
+                                          @CurrentUser CurrentUserDto currentUser) {
+        notificationService.markAsRead(notificationRequest, currentUser);
         return ApiResponse.success();
     }
 }

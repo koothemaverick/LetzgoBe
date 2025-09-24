@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.community.comment.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.res.CommentResponse;
@@ -42,31 +42,31 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 작성된 모든 댓글 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, CurrentUserDto loginUser){
+    public PageResponse<CommentResponse> findByPostId(Long postId, Pageable pageable, CurrentUserDto currentUser){
         checkPageSize(pageable.getPageSize());
         Page<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId, pageable);
-        return PageResponse.of(comments.map(comment -> convertToCommentDto(comment, loginUser)));
+        return PageResponse.of(comments.map(comment -> convertToCommentDto(comment, currentUser)));
     }
 
     // 댓글 좋아요
     @Override
     @Transactional
-    public void addCommentLike(Long commentId, CurrentUserDto loginUser){
+    public void addCommentLike(Long commentId, CurrentUserDto currentUser){
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
         boolean alreadyLiked = comment.getLikedMembers()
                 .stream()
-                .anyMatch(commentLike -> commentLike.getMember() != null && commentLike.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(commentLike -> commentLike.getMember() != null && commentLike.getMember().getId().equals(currentUser.getId()));
         if (alreadyLiked) {
             throw new ServiceException(ReturnCode.COMMENT_ALREADY_LIKED);
         }
-        CommentLike commentLike = new CommentLike(memberMapper.toMember(loginUser), comment);
+        CommentLike commentLike = new CommentLike(memberMapper.toMember(currentUser), comment);
         comment.getLikedMembers().add(commentLike);
         // 댓글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
                 .receiverId(comment.getMember().getId())
-                .senderId(loginUser.getId())
-                .senderNickname(loginUser.getNickname())
-                .senderProfileUrl(loginUser.getProfileImageUrl())
+                .senderId(currentUser.getId())
+                .senderNickname(currentUser.getNickname())
+                .senderProfileUrl(currentUser.getProfileImageUrl())
                 .objectId(commentId)
                 .content("님이 댓글에 좋아요를 눌렀습니다.")
                 .targetObject(Notification.TargetObject.Comment)
@@ -82,11 +82,11 @@ public class CommentServiceImpl implements CommentService {
     // 댓글 좋아요 취소
     @Override
     @Transactional
-    public void deleteCommentLike(Long commentId, CurrentUserDto loginUser) {
+    public void deleteCommentLike(Long commentId, CurrentUserDto currentUser) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
         CommentLike commentLike = comment.getLikedMembers()
                 .stream()
-                .filter(m -> m.getMember()!=null && m.getMember().getId().equals(loginUser.getId()))
+                .filter(m -> m.getMember()!=null && m.getMember().getId().equals(currentUser.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
         comment.getLikedMembers().remove(commentLike);
@@ -95,11 +95,11 @@ public class CommentServiceImpl implements CommentService {
     // 해당 게시글에 댓글 생성
     @Override
     @Transactional
-    public void addComment(Long postId, CommentRequest commentRequest, CurrentUserDto loginUser){
+    public void addComment(Long postId, CommentRequest commentRequest, CurrentUserDto currentUser){
         // 현재 로그인한 사용자의 member 객체를 가져오는 메서드
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         Comment comment = Comment.builder()
-                .member(memberMapper.toMember(loginUser))
+                .member(memberMapper.toMember(currentUser))
                 .post(post)
                 .content(commentRequest.getContent())
                 .superCommentId(commentRequest.getSuperCommentId())
@@ -108,9 +108,9 @@ public class CommentServiceImpl implements CommentService {
         // 댓글 작성 이벤트 생성
         Notification notification = Notification.builder()
                 .receiverId(post.getMember().getId())
-                .senderId(loginUser.getId())
-                .senderNickname(loginUser.getNickname())
-                .senderProfileUrl(loginUser.getProfileImageUrl())
+                .senderId(currentUser.getId())
+                .senderNickname(currentUser.getNickname())
+                .senderProfileUrl(currentUser.getProfileImageUrl())
                 .objectId(postId)
                 .content("님이 댓글을 작성하였습니다.")
                 .targetObject(Notification.TargetObject.Post)
@@ -126,11 +126,11 @@ public class CommentServiceImpl implements CommentService {
     // 해당 댓글 삭제
     @Override
     @Transactional
-    public void deleteComment(Long commentId, CurrentUserDto loginUser) {
+    public void deleteComment(Long commentId, CurrentUserDto currentUser) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ServiceException(ReturnCode.COMMENT_NOT_FOUND));
 
         // 댓글/게시글 작성자만 삭제 가능
-        Long currentUserId = loginUser.getId();
+        Long currentUserId = currentUser.getId();
         if (!comment.getMember().getId().equals(currentUserId) && !comment.getPost().getMember().getId().equals(currentUserId)) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
@@ -177,8 +177,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // Comment를 CommentDto로 변환
-    private CommentResponse convertToCommentDto(Comment comment, CurrentUserDto loginUser) {
-        boolean liked = commentLikeQueryRepository.existsByMemberIdAndCommentId(loginUser.getId(), comment.getId());
+    private CommentResponse convertToCommentDto(Comment comment, CurrentUserDto currentUser) {
+        boolean liked = commentLikeQueryRepository.existsByMemberIdAndCommentId(currentUser.getId(), comment.getId());
         Long likeCount = commentLikeQueryRepository.countByCommentId(comment.getId());
         return CommentResponse.builder()
                 .id(comment.getId())

@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.account.member.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
@@ -32,14 +32,14 @@ public class ApiV1MemberController {
 
     // 본인 회원정보 조회
     @GetMapping
-    public ApiResponse<MemberResponse> getMyInfo(@CurrentUser CurrentUserDto loginUser) {
-        return ApiResponse.success(memberService.getMyInfo(loginUser));
+    public ApiResponse<MemberResponse> getMyInfo(@CurrentUser CurrentUserDto currentUser) {
+        return ApiResponse.success(memberService.getMyInfo(currentUser));
     }
 
     // 본인 상세회원정보 조회
     @GetMapping("/detail")
-    public ApiResponse<DetailMemberResponse> getMyDetailInfo(@CurrentUser CurrentUserDto loginUser) {
-        return ApiResponse.success(memberService.getMyDetailInfo(loginUser));
+    public ApiResponse<DetailMemberResponse> getMyDetailInfo(@CurrentUser CurrentUserDto currentUser) {
+        return ApiResponse.success(memberService.getMyDetailInfo(currentUser));
     }
 
     // 다른 멤버의 회원정보 조회
@@ -58,15 +58,15 @@ public class ApiV1MemberController {
     @PatchMapping
     public ApiResponse<Void> updateMemberInfo(@RequestPart(value = "memberForm") @Valid MemberRequest memberRequest,
                                                 @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
-                                                @CurrentUser CurrentUserDto loginUser) {
-        memberService.updateMember(memberRequest, imageFile, loginUser);
+                                                @CurrentUser CurrentUserDto currentUser) {
+        memberService.updateMember(memberRequest, imageFile, currentUser);
         return ApiResponse.success();
     }
 
     // 회원탈퇴
     @DeleteMapping
-    public ApiResponse<Void> deleteMember(@CurrentUser CurrentUserDto loginUser) {
-        memberService.deleteMember(loginUser);
+    public ApiResponse<Void> deleteMember(@CurrentUser CurrentUserDto currentUser) {
+        memberService.deleteMember(currentUser);
         return ApiResponse.success();
     }
 
@@ -79,43 +79,43 @@ public class ApiV1MemberController {
 
     // 팔로우 요청하기
     @PostMapping("/follow/{memberId}")
-    public ApiResponse<Void> followReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.followReq(memberId, loginUser);
+    public ApiResponse<Void> followReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.followReq(memberId, currentUser);
         return ApiResponse.success();
     }
 
     // 팔로우 요청 취소하기
     @DeleteMapping("/follow/{memberId}")
-    public ApiResponse<Void> cancelFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.cancelFollowReq(memberId, loginUser);
+    public ApiResponse<Void> cancelFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.cancelFollowReq(memberId, currentUser);
         return ApiResponse.success();
     }
 
     // 팔로우 요청 수락하기
     @PostMapping("/followReq/{memberId}")
-    public ApiResponse<Void> acceptFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.acceptFollowReq(memberId, loginUser);
+    public ApiResponse<Void> acceptFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.acceptFollowReq(memberId, currentUser);
         return ApiResponse.success();
     }
 
     // 팔로우 요청 거절하기
     @DeleteMapping("/followReq/{memberId}")
-    public ApiResponse<Void> refuseFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.refuseFollowReq(memberId, loginUser);
+    public ApiResponse<Void> refuseFollowReq(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.refuseFollowReq(memberId, currentUser);
         return ApiResponse.success();
     }
 
     // 팔로우 취소하기
     @DeleteMapping("/followMember/{memberId}")
-    public ApiResponse<Void> cancelFollow(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.cancelFollow(memberId, loginUser);
+    public ApiResponse<Void> cancelFollow(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.cancelFollow(memberId, currentUser);
         return ApiResponse.success();
     }
 
     // 팔로워 목록에서 해당 유저 삭제하기
     @DeleteMapping("/followed/{memberId}")
-    public ApiResponse<Void> removeFollowed(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto loginUser) {
-        memberService.removeFollowed(memberId, loginUser);
+    public ApiResponse<Void> removeFollowed(@PathVariable("memberId") Long memberId, @CurrentUser CurrentUserDto currentUser) {
+        memberService.removeFollowed(memberId, currentUser);
         return ApiResponse.success();
     }
 }

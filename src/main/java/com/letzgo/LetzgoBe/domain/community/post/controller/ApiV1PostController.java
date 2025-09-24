@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.community.post.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.PostRequest;
 import com.letzgo.LetzgoBe.domain.community.post.dto.req.XYRequest;
 import com.letzgo.LetzgoBe.domain.community.post.dto.res.DetailPostResponse;
@@ -26,33 +26,33 @@ public class ApiV1PostController {
 
     // 본인 & 팔로우한 유저의 게시글 조회
     @GetMapping("/main")
-    public ApiResponse<List<DetailPostResponse>> getMainPost(@ModelAttribute PostPage request, @CurrentUser CurrentUserDto loginUser) {
+    public ApiResponse<List<DetailPostResponse>> getMainPost(@ModelAttribute PostPage request, @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(postService.getMainPost(loginUser, pageable));
+        return ApiResponse.success(postService.getMainPost(currentUser, pageable));
     }
 
     // 사용자 위치 주변 게시글 조회
     @GetMapping("/surroundings")
     public ApiResponse<List<DetailPostResponse>> getSurroundings(@ModelAttribute PostPage request,
                                                            @RequestBody @Valid XYRequest xyRequest,
-                                                           @CurrentUser CurrentUserDto loginUser) {
+                                                           @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(postService.findPostsWithinRadius(xyRequest, pageable, loginUser));
+        return ApiResponse.success(postService.findPostsWithinRadius(xyRequest, pageable, currentUser));
     }
 
     // 해당 사용자가 작성한 게시글 조회
     @GetMapping("/member/{memberId}")
     public ApiResponse<List<DetailPostResponse>> getMemberPost(@ModelAttribute PostPage request,
                                                          @PathVariable("memberId") Long memberId,
-                                                         @CurrentUser CurrentUserDto loginUser) {
+                                                         @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(postService.findByMemberId(memberId, pageable, loginUser));
+        return ApiResponse.success(postService.findByMemberId(memberId, pageable, currentUser));
     }
 
     // 해당 게시글 상세 조회
     @GetMapping("/detail/{postId}")
-    public ApiResponse<DetailPostResponse> getDetailPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        return ApiResponse.success(postService.findById(postId, loginUser));
+    public ApiResponse<DetailPostResponse> getDetailPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        return ApiResponse.success(postService.findById(postId, currentUser));
     }
 
     // 해당 사용자가 저장한 게시글 조회
@@ -72,29 +72,29 @@ public class ApiV1PostController {
 
     // 게시글 저장
     @PostMapping("/collection/{postId}")
-    public ApiResponse<Void> addCollectionPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        postService.addCollectionPost(postId, loginUser);
+    public ApiResponse<Void> addCollectionPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        postService.addCollectionPost(postId, currentUser);
         return ApiResponse.success();
     }
 
     // 게시글 저장 취소
     @DeleteMapping("/collection/{postId}")
-    public ApiResponse<Void> deleteCollectionPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        postService.deleteCollectionPost(postId, loginUser);
+    public ApiResponse<Void> deleteCollectionPost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        postService.deleteCollectionPost(postId, currentUser);
         return ApiResponse.success();
     }
 
     // 게시글 좋아요
     @PostMapping("/like/{postId}")
-    public ApiResponse<Void> addPostLike(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        postService.addPostLike(postId, loginUser);
+    public ApiResponse<Void> addPostLike(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        postService.addPostLike(postId, currentUser);
         return ApiResponse.success();
     }
 
     // 게시글 좋아요 취소
     @DeleteMapping("/like/{postId}")
-    public ApiResponse<Void> deletePostLike(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        postService.deletePostLike(postId, loginUser);
+    public ApiResponse<Void> deletePostLike(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        postService.deletePostLike(postId, currentUser);
         return ApiResponse.success();
     }
 
@@ -102,8 +102,8 @@ public class ApiV1PostController {
     @PostMapping
     public ApiResponse<Void> addPost(@RequestPart(value = "postForm") @Valid PostRequest postRequest,
                                        @RequestPart(value = "imageFiles") List<MultipartFile> imageFiles,
-                                       @CurrentUser CurrentUserDto loginUser) {
-        postService.addPost(postRequest, imageFiles, loginUser);
+                                       @CurrentUser CurrentUserDto currentUser) {
+        postService.addPost(postRequest, imageFiles, currentUser);
         return ApiResponse.success();
     }
 
@@ -112,15 +112,15 @@ public class ApiV1PostController {
     public ApiResponse<Void> updatePost(@PathVariable("postId") Long postId,
                                               @RequestPart(value = "postForm") @Valid PostRequest postRequest,
                                               @RequestPart(value = "imageFile") List<MultipartFile> imageFiles,
-                                          @CurrentUser CurrentUserDto loginUser) {
-        postService.updatePost(postId, postRequest, imageFiles, loginUser);
+                                          @CurrentUser CurrentUserDto currentUser) {
+        postService.updatePost(postId, postRequest, imageFiles, currentUser);
         return ApiResponse.success();
     }
 
     // 게시글 삭제
     @DeleteMapping("/{postId}")
-    public ApiResponse<Void> deletePost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto loginUser) {
-        postService.deletePost(postId, loginUser);
+    public ApiResponse<Void> deletePost(@PathVariable("postId") Long postId, @CurrentUser CurrentUserDto currentUser) {
+        postService.deletePost(postId, currentUser);
         return ApiResponse.success();
     }
 }

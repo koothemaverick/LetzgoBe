@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.map.service;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;
 import com.letzgo.LetzgoBe.domain.map.entity.Photo;
