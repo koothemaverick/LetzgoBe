@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.chat.chatRoom.serviceImpl;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -48,16 +48,16 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 사용자의 모든 채팅방 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, CurrentUserDto loginUser) {
+    public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, CurrentUserDto currentUser) {
         checkPageSize(pageable.getPageSize());
-        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberMapper.toMember(loginUser));
-        return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomResponse(chatRoom, loginUser.getId())));
+        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberMapper.toMember(currentUser));
+        return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomResponse(chatRoom, currentUser.getId())));
     }
 
     // 채팅방 생성(DM/그룹)
     @Override
     @Transactional
-    public ChatRoomResponse addChatRoom(ChatRoomRequest chatRoomRequest, CurrentUserDto loginUser) {
+    public ChatRoomResponse addChatRoom(ChatRoomRequest chatRoomRequest, CurrentUserDto currentUser) {
         // 제한 인원 초과 여부 확인 (본인 제외)
         if (chatRoomRequest.getChatRoomMembers().size() > ChatRoom.ROOM_MEMBER_LIMIT - 1) {
             throw new ServiceException(ReturnCode.CHATROOM_LIMIT_EXCEEDED);
@@ -68,7 +68,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
             Long otherMemberId = chatRoomRequest.getChatRoomMembers().get(0).getMember().getId();
 
             // 현재 사용자가 otherMember와 이미 1대1 채팅방이 존재하는지 확인
-            boolean exists = chatRoomRepository.existsOneOnOneChatRoom(loginUser.getId(), otherMemberId);
+            boolean exists = chatRoomRepository.existsOneOnOneChatRoom(currentUser.getId(), otherMemberId);
             if (exists) {
                 throw new ServiceException(ReturnCode.CHATROOM_ALREADY_EXISTS);
             }
@@ -77,20 +77,20 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         // 새로운 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .title(chatRoomRequest.getTitle())
-                .member(memberMapper.toMember(loginUser)) // 방장 지정
+                .member(memberMapper.toMember(currentUser)) // 방장 지정
                 .build();
         // 본인을 맨 앞에 추가
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
 
         ChatRoomMember enterChatRoomMyself = ChatRoomMember.builder()
-                .member(memberMapper.toMember(loginUser))
+                .member(memberMapper.toMember(currentUser))
                 .chatRoom(chatRoom)
                 .build();
         chatRoomMembers.add(enterChatRoomMyself);
 
         // 추가하려는 멤버들 중 중복되지 않는 멤버만 추가
         Set<Long> addedMemberIds = new HashSet<>();
-        addedMemberIds.add(loginUser.getId()); // 본인 ID 추가
+        addedMemberIds.add(currentUser.getId()); // 본인 ID 추가
         for (ChatRoomMember chatRoomMember : chatRoomRequest.getChatRoomMembers()) {
             Long memberId = chatRoomMember.getMember().getId();
             if (!addedMemberIds.add(memberId)) continue; // 중복 제거만 하고, 예외는 던지지 않음
@@ -102,19 +102,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         chatRoom.setChatRoomMembers(chatRoomMembers);
         chatRoomRepository.save(chatRoom);
-        return convertToChatRoomResponse(chatRoom, loginUser.getId());
+        return convertToChatRoomResponse(chatRoom, currentUser.getId());
     }
 
     // 채팅방 이름 수정(그룹)
     @Override
     @Transactional
-    public void updateChatRoomTitle(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto loginUser) {
+    public void updateChatRoomTitle(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
         // 채팅방 멤버 누구나 수정 가능함
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(currentUser.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
@@ -125,12 +125,12 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방에 초대(그룹)
     @Override
     @Transactional
-    public void inviteChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto loginUser) {
+    public void inviteChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 채팅방 멤버 누구나 초대 가능함
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(currentUser.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
@@ -159,11 +159,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 방장 권한 위임(그룹)
     @Override
     @Transactional
-    public void delegateChatRoomManager(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto loginUser) {
+    public void delegateChatRoomManager(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 방장인지 확인 (방장만 위임 가능)
-        if (!chatRoom.getMember().getId().equals(loginUser.getId())) {
+        if (!chatRoom.getMember().getId().equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
@@ -180,7 +180,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         Long delegateMemberId = delegateMembers.get(0).getMember().getId();
 
         // 방장은 자기자신을 위임하지 못함
-        if (delegateMemberId.equals(loginUser.getId())) {
+        if (delegateMemberId.equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.INVALID_DELEGATE_MEMBER);
         }
 
@@ -198,11 +198,11 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방에서 강퇴(그룹)
     @Override
     @Transactional
-    public void kickOutChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto loginUser) {
+    public void kickOutChatRoomMember(Long chatRoomId, ChatRoomRequest chatRoomRequest, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 방장인지 확인 (방장만 강퇴 가능)
-        if (!chatRoom.getMember().getId().equals(loginUser.getId())) {
+        if (!chatRoom.getMember().getId().equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
@@ -217,7 +217,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .collect(Collectors.toList());
 
         // 방장은 자기자신을 강퇴하지 못함
-        if (kickMemberIds.contains(loginUser.getId())) {
+        if (kickMemberIds.contains(currentUser.getId())) {
             throw new ServiceException(ReturnCode.INVALID_KICK_MEMBER);
         }
 
@@ -243,18 +243,18 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     // 채팅방 나가기(DM/그룹)
     @Override
     @Transactional
-    public void leaveChatRoomMember(Long chatRoomId, CurrentUserDto loginUser) {
+    public void leaveChatRoomMember(Long chatRoomId, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findByIdWithMembers(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         // 현재 멤버가 속한 ChatRoomMember 찾기
         ChatRoomMember chatRoomMember = chatRoom.getChatRoomMembers().stream()
-                .filter(member -> member.getMember().getId().equals(loginUser.getId()))
+                .filter(member -> member.getMember().getId().equals(currentUser.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         chatRoom.getChatRoomMembers().remove(chatRoomMember);  // ChatRoomMember 제거
 
         // 방장인지 확인
-        if (chatRoom.getMember().getId().equals(loginUser.getId())) {
+        if (chatRoom.getMember().getId().equals(currentUser.getId())) {
             if (chatRoom.getChatRoomMembers().size() > 1) { // 2명 이상 남아있으면 다음 방장 지정
                 ChatRoomMember nextOwner = chatRoom.getChatRoomMembers().get(0);
                 chatRoom.setMember(nextOwner.getMember());

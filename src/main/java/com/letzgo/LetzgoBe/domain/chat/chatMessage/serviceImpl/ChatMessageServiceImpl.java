@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -77,15 +77,15 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방의 이전 메시지 가져오기
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, CurrentUserDto loginUser) {
+    public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, CurrentUserDto currentUser) {
         try {
             checkPageSize(pageable.getPageSize());
-            ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(loginUser.getId(), chatRoomId);
+            ChatRoomMember chatRoomMember = chatRoomMemberRepository.findByMemberIdAndChatRoomId(currentUser.getId(), chatRoomId);
             if (chatRoomMember == null) {
-                log.warn("chatRoomMember not found - chatRoomId: {}, loginUserId: {}", chatRoomId, loginUser.getId());
+                log.warn("chatRoomMember not found - chatRoomId: {}, loginUserId: {}", chatRoomId, currentUser.getId());
                 throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
             }
-            readAllChatMessages(loginUser.getId(), chatRoomId, chatRoomMember);
+            readAllChatMessages(currentUser.getId(), chatRoomId, chatRoomMember);
             Pageable sortedPageable = PageRequest.of(
                     pageable.getPageNumber(),
                     pageable.getPageSize(),
@@ -112,7 +112,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error in findByChatRoomId - chatRoomId: {}, loginUserId: {}, error: {}", chatRoomId, loginUser.getId(), e.getMessage(), e);
+            log.error("Error in findByChatRoomId - chatRoomId: {}, loginUserId: {}, error: {}", chatRoomId, currentUser.getId(), e.getMessage(), e);
             throw new ServiceException(ReturnCode.INTERNAL_SERVER_ERROR);
         }
     }
@@ -120,13 +120,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 메시지 검색(내용)
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, CurrentUserDto loginUser) {
+    public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
         checkPageSize(pageable.getPageSize());
 
         // 채팅방 참여멤버만 메시지 조회 가능
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(currentUser.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
@@ -207,13 +207,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 채팅방에서 이미지 메시지 생성
     @Override
     @Transactional
-    public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, CurrentUserDto loginUser) {
+    public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, CurrentUserDto currentUser) {
         ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.CHATROOM_NOT_FOUND));
 
         // 채팅방 참여 멤버만 메시지 생성 가능
         boolean memberExists = chatRoom.getChatRoomMembers().stream()
-                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(joinedMember -> joinedMember.getMember().getId().equals(currentUser.getId()));
         if (!memberExists) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
@@ -236,14 +236,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 채팅 메시지 생성
         ChatMessage chatMessage = ChatMessage.builder()
-                .member(memberMapper.toMember(loginUser))
+                .member(memberMapper.toMember(currentUser))
                 .chatRoom(chatRoom)
                 .imageUrls(imageUrls)
                 .build();
         chatMessageRepository.save(chatMessage);
 
         // 보낸 사람은 바로 읽음 처리
-        Member sender = memberMapper.toMember(loginUser);
+        Member sender = memberMapper.toMember(currentUser);
         ChatMessageRead readRecord = ChatMessageRead.builder()
                 .chatMessage(chatMessage)
                 .member(sender)
@@ -263,7 +263,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         // 해당 채팅방의 마지막 메시지 갱신 이벤트 발행
         ChatWebSocketPayload payload = ChatWebSocketPayload.builder()
                 .messageType(MESSAGE)
-                .memberId(loginUser.getId())
+                .memberId(currentUser.getId())
                 .chatRoomId(chatRoomId)
                 .content(null)
                 .lastMessageCreatedAt(LocalDateTime.now())
@@ -274,9 +274,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // 해당 메시지 삭제
     @Override
     @Transactional
-    public void deleteChatMessage(Long messageId, CurrentUserDto loginUser) {
+    public void deleteChatMessage(Long messageId, CurrentUserDto currentUser) {
         ChatMessage chatMessage = chatMessageRepository.findById(messageId).orElseThrow(() -> new ServiceException(ReturnCode.CHATMESSAGE_NOT_FOUND));
-        if (!chatMessage.getMember().getId().equals(loginUser.getId())) {
+        if (!chatMessage.getMember().getId().equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
         if (chatMessage.getImageUrls() != null && !chatMessage.getImageUrls().isEmpty()) {

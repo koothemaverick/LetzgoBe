@@ -2,8 +2,8 @@ package com.letzgo.LetzgoBe.domain.account.auth.controller;
 
 import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -24,14 +24,14 @@ public class ApiV1AuthController {
 
     // 로그아웃
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@CurrentUser CurrentUserDto loginUser) {
-        authService.logout(loginUser);
+    public ApiResponse<Void> logout(@CurrentUser CurrentUserDto currentUser) {
+        authService.logout(currentUser);
         return ApiResponse.success();
     }
 
     // accessToken 재발급
     @GetMapping("/refresh-token")
-    public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @CurrentUser CurrentUserDto loginUser) {
-        return ApiResponse.success(authService.refreshToken(refreshToken, loginUser));
+    public ApiResponse<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken, @CurrentUser CurrentUserDto currentUser) {
+        return ApiResponse.success(authService.refreshToken(refreshToken, currentUser));
     }
 }

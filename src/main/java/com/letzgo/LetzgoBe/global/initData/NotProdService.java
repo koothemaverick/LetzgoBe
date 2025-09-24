@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.global.initData;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;

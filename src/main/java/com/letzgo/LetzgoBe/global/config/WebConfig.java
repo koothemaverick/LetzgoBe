@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.global.config;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserArgumentResolver;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

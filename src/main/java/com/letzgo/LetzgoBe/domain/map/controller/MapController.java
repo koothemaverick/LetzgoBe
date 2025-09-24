@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.map.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceInfoResponse;
 import com.letzgo.LetzgoBe.domain.map.dto.req.ReviewRequest;

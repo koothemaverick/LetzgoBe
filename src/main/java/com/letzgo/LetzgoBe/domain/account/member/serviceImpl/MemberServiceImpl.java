@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
@@ -81,8 +81,8 @@ public class MemberServiceImpl implements MemberService {
     // 본인 회원정보 조회
     @Override
     @Transactional(readOnly = true)
-    public MemberResponse getMyInfo(CurrentUserDto loginUser) {
-        Member member = memberRepository.findById(loginUser.getId())
+    public MemberResponse getMyInfo(CurrentUserDto currentUser) {
+        Member member = memberRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberMapper.toMemberResponse(member);
     }
@@ -90,8 +90,8 @@ public class MemberServiceImpl implements MemberService {
     // 본인 상세회원정보 조회
     @Override
     @Transactional(readOnly = true)
-    public DetailMemberResponse getMyDetailInfo(CurrentUserDto loginUser){
-        Member member = memberRepository.findById(loginUser.getId())
+    public DetailMemberResponse getMyDetailInfo(CurrentUserDto currentUser){
+        Member member = memberRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         return memberMapper.toDetailMemberResponse(member);
     }
@@ -117,9 +117,9 @@ public class MemberServiceImpl implements MemberService {
     // 회원정보 수정
     @Override
     @Transactional
-    public void updateMember(MemberRequest memberRequest, MultipartFile imageFile, CurrentUserDto loginUser) {
+    public void updateMember(MemberRequest memberRequest, MultipartFile imageFile, CurrentUserDto currentUser) {
         /// 기존 이미지 삭제 후 입력 받은 이미지 S3에 저장
-        String imageUrl = loginUser.getProfileImageUrl(); // 기본적으로 기존 이미지 URL을 사용
+        String imageUrl = currentUser.getProfileImageUrl(); // 기본적으로 기존 이미지 URL을 사용
         if (imageFile != null && !imageFile.isEmpty()) {
             // 기존 이미지 없으면 바로 새로운 이미지 저장
             if (imageUrl != null && !imageUrl.isEmpty()) s3Service.deleteFile(imageUrl);
@@ -133,35 +133,35 @@ public class MemberServiceImpl implements MemberService {
             if (imageUrl != null && !imageUrl.isEmpty()) s3Service.deleteFile(imageUrl); // 기존 이미지 삭제
             imageUrl = null;
         }
-        if (memberRequest.getName() != null) loginUser.setName(memberRequest.getName());
-        if (memberRequest.getNickname() != null) loginUser.setNickname(memberRequest.getNickname());
-        if (memberRequest.getPhone() != null) loginUser.setPhone(memberRequest.getPhone());
-        if (memberRequest.getEmail() != null) loginUser.setEmail(memberRequest.getEmail());
+        if (memberRequest.getName() != null) currentUser.setName(memberRequest.getName());
+        if (memberRequest.getNickname() != null) currentUser.setNickname(memberRequest.getNickname());
+        if (memberRequest.getPhone() != null) currentUser.setPhone(memberRequest.getPhone());
+        if (memberRequest.getEmail() != null) currentUser.setEmail(memberRequest.getEmail());
         if (memberRequest.getPassword() != null) {
-            loginUser.setPassword(BCrypt.hashpw(memberRequest.getPassword(), BCrypt.gensalt()));
+            currentUser.setPassword(BCrypt.hashpw(memberRequest.getPassword(), BCrypt.gensalt()));
         }
-        if (memberRequest.getGender() != null) loginUser.setGender(memberRequest.getGender());
-        if (memberRequest.getBirthday() != null) loginUser.setBirthday(memberRequest.getBirthday());
-        loginUser.setProfileImageUrl(imageUrl);
+        if (memberRequest.getGender() != null) currentUser.setGender(memberRequest.getGender());
+        if (memberRequest.getBirthday() != null) currentUser.setBirthday(memberRequest.getBirthday());
+        currentUser.setProfileImageUrl(imageUrl);
         // LoginUserDto를 Member 엔티티로 변환
-        Member memberEntity = memberMapper.toMember(loginUser);
+        Member memberEntity = memberMapper.toMember(currentUser);
         memberRepository.save(memberEntity);
     }
 
     // 회원탈퇴
     @Override
     @Transactional
-    public void deleteMember(CurrentUserDto loginUser) {
+    public void deleteMember(CurrentUserDto currentUser) {
         // refreshToken 삭제
-        authService.logout(loginUser);
+        authService.logout(currentUser);
         // DB에서 회원 조회
-        Member memberEntity = memberRepository.findById(loginUser.getId())
+        Member memberEntity = memberRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         // 연관된 데이터 삭제
-        commentService.deleteMembersAllComments(loginUser.getId());
-        postService.deleteMembersAllPosts(loginUser.getId());
-        chatMessageService.deleteMembersAllChatMessages(loginUser.getId());
-        chatRoomService.leaveAllChatRooms(loginUser.getId());
+        commentService.deleteMembersAllComments(currentUser.getId());
+        postService.deleteMembersAllPosts(currentUser.getId());
+        chatMessageService.deleteMembersAllChatMessages(currentUser.getId());
+        chatRoomService.leaveAllChatRooms(currentUser.getId());
 
         memberRepository.delete(memberEntity);
     }
@@ -178,8 +178,8 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청하기
     @Override
     @Transactional
-    public void followReq(Long memberId, CurrentUserDto loginUser){
-        Member followReq = memberMapper.toMember(loginUser);
+    public void followReq(Long memberId, CurrentUserDto currentUser){
+        Member followReq = memberMapper.toMember(currentUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         // 기존 팔로우 여부 확인
@@ -218,8 +218,8 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 취소하기
     @Override
     @Transactional
-    public void cancelFollowReq(Long memberId, CurrentUserDto loginUser){
-        Member followReq = memberMapper.toMember(loginUser);
+    public void cancelFollowReq(Long memberId, CurrentUserDto currentUser){
+        Member followReq = memberMapper.toMember(currentUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
@@ -230,10 +230,10 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 수락하기
     @Override
     @Transactional
-    public void acceptFollowReq(Long memberId, CurrentUserDto loginUser){
+    public void acceptFollowReq(Long memberId, CurrentUserDto currentUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = memberMapper.toMember(loginUser);
+        Member receiver = memberMapper.toMember(currentUser);
         MemberFollowReq followReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(followReq);
@@ -244,9 +244,9 @@ public class MemberServiceImpl implements MemberService {
         memberFollowRepository.save(memberFollow);
         // 팔로우 수락 이벤트 생성
         Notification notification = Notification.builder()
-                .senderId(loginUser.getId())
-                .senderNickname(loginUser.getNickname())
-                .senderProfileUrl(loginUser.getProfileImageUrl())
+                .senderId(currentUser.getId())
+                .senderNickname(currentUser.getNickname())
+                .senderProfileUrl(currentUser.getProfileImageUrl())
                 .receiverId(memberId)
                 .objectId(memberFollow.getId())
                 .content("님이 팔로우 요청을 수락하였습니다.")
@@ -263,10 +263,10 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 요청 거절하기
     @Override
     @Transactional
-    public void refuseFollowReq(Long memberId, CurrentUserDto loginUser){
+    public void refuseFollowReq(Long memberId, CurrentUserDto currentUser){
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = memberMapper.toMember(loginUser);
+        Member receiver = memberMapper.toMember(currentUser);
         MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(memberFollowReq);
@@ -275,8 +275,8 @@ public class MemberServiceImpl implements MemberService {
     // 팔로우 취소하기
     @Override
     @Transactional
-    public void cancelFollow(Long memberId, CurrentUserDto loginUser){
-        Member follow = memberMapper.toMember(loginUser);
+    public void cancelFollow(Long memberId, CurrentUserDto currentUser){
+        Member follow = memberMapper.toMember(currentUser);
         Member followed = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
@@ -287,10 +287,10 @@ public class MemberServiceImpl implements MemberService {
     // 팔로워 목록에서 해당 유저 삭제하기
     @Override
     @Transactional
-    public void removeFollowed(Long memberId, CurrentUserDto loginUser){
+    public void removeFollowed(Long memberId, CurrentUserDto currentUser){
         Member follow = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member followed = memberMapper.toMember(loginUser);
+        Member followed = memberMapper.toMember(currentUser);
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
                 .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
         memberFollowRepository.delete(memberFollow);

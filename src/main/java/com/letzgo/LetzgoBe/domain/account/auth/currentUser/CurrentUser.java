@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.account.auth.loginUser;
+package com.letzgo.LetzgoBe.domain.account.auth.currentUser;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

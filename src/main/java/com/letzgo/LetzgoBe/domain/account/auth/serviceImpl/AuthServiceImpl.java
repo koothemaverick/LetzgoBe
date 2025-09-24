@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.account.auth.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.security.JwtTokenProvider;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
 import com.letzgo.LetzgoBe.domain.account.auth.service.RefreshTokenService;
@@ -51,20 +51,20 @@ public class AuthServiceImpl implements AuthService {
 
     // 로그아웃
     @Override
-    public void logout(CurrentUserDto loginUser) {
+    public void logout(CurrentUserDto currentUser) {
         // Redis에서 Refresh Token 삭제
-        refreshTokenService.deleteRefreshToken(loginUser.getId().toString());
+        refreshTokenService.deleteRefreshToken(currentUser.getId().toString());
     }
 
     // accessToken 재발급
     @Override
-    public LoginResponse refreshToken(String refreshToken, CurrentUserDto loginUser) {
+    public LoginResponse refreshToken(String refreshToken, CurrentUserDto currentUser) {
         // "Bearer "가 붙어있다면 제거
         if (refreshToken.startsWith("Bearer ")) {
             refreshToken = refreshToken.substring(7);
         }
 
-        String storedRefreshToken = refreshTokenService.getRefreshToken(loginUser.getId().toString());
+        String storedRefreshToken = refreshTokenService.getRefreshToken(currentUser.getId().toString());
         if (storedRefreshToken == null || !storedRefreshToken.equals(refreshToken)) {
             throw new RuntimeException("유효하지 않은 리프레시 토큰입니다.");
         }

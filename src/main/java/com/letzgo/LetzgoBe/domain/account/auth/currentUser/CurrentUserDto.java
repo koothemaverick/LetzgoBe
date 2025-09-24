@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.account.auth.loginUser;
+package com.letzgo.LetzgoBe.domain.account.auth.currentUser;
 
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;

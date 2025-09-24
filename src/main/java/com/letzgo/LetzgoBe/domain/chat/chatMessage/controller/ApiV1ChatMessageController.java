@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.controller;
 
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUser;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUser;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
@@ -23,32 +23,32 @@ public class ApiV1ChatMessageController {
     // 해당 채팅방의 이전 메시지 가져오기 [참여자 권한]
     @GetMapping("/{chatRoomId}")
     public ApiResponse<List<ChatMessageResponse>> findByChatRoomId(@ModelAttribute ChatMessagePage request,
-                                                             @PathVariable("chatRoomId") Long chatRoomId, @CurrentUser CurrentUserDto loginUser) {
+                                                             @PathVariable("chatRoomId") Long chatRoomId, @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(chatMessageService.findByChatRoomId(chatRoomId, pageable, loginUser));
+        return ApiResponse.success(chatMessageService.findByChatRoomId(chatRoomId, pageable, currentUser));
     }
 
     // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/search")
     public ApiResponse<List<ChatMessageResponse>> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
-                                                              @RequestParam("keyword") String keyword, @CurrentUser CurrentUserDto loginUser) {
+                                                              @RequestParam("keyword") String keyword, @CurrentUser CurrentUserDto currentUser) {
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
-        return ApiResponse.success(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, loginUser));
+        return ApiResponse.success(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, currentUser));
     }
 
     // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
     @PostMapping("/image/{chatRoomId}")
     public ApiResponse<Void> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
                                                  @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,
-                                                 @CurrentUser CurrentUserDto loginUser) {
-        chatMessageService.writeImageMessage(chatRoomId, imageFiles, loginUser);
+                                                 @CurrentUser CurrentUserDto currentUser) {
+        chatMessageService.writeImageMessage(chatRoomId, imageFiles, currentUser);
         return ApiResponse.success();
     }
 
     // 메시지 삭제 [참여자 권한]
     @DeleteMapping("/{messageId}")
-    public ApiResponse<Void> deleteChatMessage(@PathVariable("messageId") Long messageId, @CurrentUser CurrentUserDto loginUser) {
-        chatMessageService.deleteChatMessage(messageId, loginUser);
+    public ApiResponse<Void> deleteChatMessage(@PathVariable("messageId") Long messageId, @CurrentUser CurrentUserDto currentUser) {
+        chatMessageService.deleteChatMessage(messageId, currentUser);
         return ApiResponse.success();
     }
 }

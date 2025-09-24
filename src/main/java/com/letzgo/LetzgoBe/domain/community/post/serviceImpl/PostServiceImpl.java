@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.domain.community.post.serviceImpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.letzgo.LetzgoBe.domain.account.auth.loginUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
@@ -55,9 +55,9 @@ public class PostServiceImpl implements PostService {
     // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<DetailPostResponse> getMainPost(CurrentUserDto loginUser, Pageable pageable){
+    public PageResponse<DetailPostResponse> getMainPost(CurrentUserDto currentUser, Pageable pageable){
         checkPageSize(pageable.getPageSize());
-        Long loginUserId = loginUser.getId();
+        Long loginUserId = currentUser.getId();
         List<Long> followingMemberIds = memberFollowRepository.findFollowedMemberIdsByFollowerId(loginUserId);
         // 기본 유저 ID: 1, 2, 3, 4, 5 (단, 본인 ID는 제외)
         List<Long> defaultMemberIds = Arrays.asList(1L, 2L, 3L, 4L, 5L)
@@ -72,35 +72,35 @@ public class PostServiceImpl implements PostService {
         // Set<Long> -> List<Long> 변환
         List<Long> targetMemberIds = new ArrayList<>(targetMemberIdSet);
         Page<Post> posts = postRepository.findByMemberIdInOrderByCreatedAtDesc(targetMemberIds, pageable);
-        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, currentUser)));
     }
 
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, CurrentUserDto loginUser){
+    public PageResponse<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, CurrentUserDto currentUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findPostsWithinRadius(
                 xyRequest.getMapX(), xyRequest.getMapY(), xyRequest.getRadius(), pageable
         );
-        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, currentUser)));
     }
 
     // 해당 사용자가 작성한 게시글 조회
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, CurrentUserDto loginUser){
+    public PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, CurrentUserDto currentUser){
         checkPageSize(pageable.getPageSize());
         Page<Post> posts = postRepository.findByMemberId(memberId, pageable);
-        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, loginUser)));
+        return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, currentUser)));
     }
 
     // 해당 게시글 상세 조회
     @Override
     @Transactional(readOnly = true)
-    public DetailPostResponse findById(Long postId, CurrentUserDto loginUser){
+    public DetailPostResponse findById(Long postId, CurrentUserDto currentUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
-        return convertToDetailPostDto(post, loginUser);
+        return convertToDetailPostDto(post, currentUser);
     }
 
     // 해당 사용자가 저장한 게시글 조회
@@ -124,26 +124,26 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 저장
     @Override
     @Transactional
-    public void addCollectionPost(Long postId, CurrentUserDto loginUser){
+    public void addCollectionPost(Long postId, CurrentUserDto currentUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         boolean alreadySaved = post.getSavedMembers()
                 .stream()
-                .anyMatch(postSave -> postSave.getMember() !=null && postSave.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(postSave -> postSave.getMember() !=null && postSave.getMember().getId().equals(currentUser.getId()));
         if (alreadySaved) {
             throw new ServiceException(ReturnCode.POST_ALREADY_SAVED);
         }
-        PostSave postSave = new PostSave(memberMapper.toMember(loginUser), post);
+        PostSave postSave = new PostSave(memberMapper.toMember(currentUser), post);
         post.getSavedMembers().add(postSave);
     }
 
     // 해당 게시글 저장 취소
     @Override
     @Transactional
-    public void deleteCollectionPost(Long postId, CurrentUserDto loginUser){
+    public void deleteCollectionPost(Long postId, CurrentUserDto currentUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         PostSave postSave = post.getSavedMembers()
                 .stream()
-                .filter(m -> m.getMember() != null && m.getMember().getId().equals(loginUser.getId()))
+                .filter(m -> m.getMember() != null && m.getMember().getId().equals(currentUser.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         post.getSavedMembers().remove(postSave);
@@ -152,22 +152,22 @@ public class PostServiceImpl implements PostService {
     // 게시글 좋아요
     @Override
     @Transactional
-    public void addPostLike(Long postId, CurrentUserDto loginUser){
+    public void addPostLike(Long postId, CurrentUserDto currentUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         boolean alreadyLiked = post.getLikedMembers()
                 .stream()
-                .anyMatch(postLike -> postLike.getMember() != null && postLike.getMember().getId().equals(loginUser.getId()));
+                .anyMatch(postLike -> postLike.getMember() != null && postLike.getMember().getId().equals(currentUser.getId()));
         if (alreadyLiked) {
             throw new ServiceException(ReturnCode.POST_ALREADY_LIKED);
         }
-        PostLike postLike = new PostLike(memberMapper.toMember(loginUser), post);
+        PostLike postLike = new PostLike(memberMapper.toMember(currentUser), post);
         post.getLikedMembers().add(postLike);
         // 게시글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
                 .receiverId(post.getMember().getId())
-                .senderId(loginUser.getId())
-                .senderNickname(loginUser.getNickname())
-                .senderProfileUrl(loginUser.getProfileImageUrl())
+                .senderId(currentUser.getId())
+                .senderNickname(currentUser.getNickname())
+                .senderProfileUrl(currentUser.getProfileImageUrl())
                 .objectId(postId)
                 .content("님이 게시글에 좋아요를 눌렀습니다.")
                 .targetObject(Notification.TargetObject.Post)
@@ -183,11 +183,11 @@ public class PostServiceImpl implements PostService {
     // 게시글 좋아요 취소
     @Override
     @Transactional
-    public void deletePostLike(Long postId, CurrentUserDto loginUser){
+    public void deletePostLike(Long postId, CurrentUserDto currentUser){
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         PostLike postLike = post.getLikedMembers()
                 .stream()
-                .filter(m -> m.getMember()!=null && m.getMember().getId().equals(loginUser.getId()))
+                .filter(m -> m.getMember()!=null && m.getMember().getId().equals(currentUser.getId()))
                 .findFirst()
                 .orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         post.getLikedMembers().remove(postLike);
@@ -196,7 +196,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 생성
     @Override
     @Transactional
-    public void addPost(PostRequest postRequest, List<MultipartFile> imageFiles, CurrentUserDto loginUser) {
+    public void addPost(PostRequest postRequest, List<MultipartFile> imageFiles, CurrentUserDto currentUser) {
         // 입력 받은 이미지들 S3에 저장
         List<String> imageUrls = new ArrayList<>();
         if (imageFiles.size() > 5 || imageFiles.isEmpty() || imageFiles == null) {
@@ -212,7 +212,7 @@ public class PostServiceImpl implements PostService {
             }
         }
         Post post = Post.builder()
-                .member(memberMapper.toMember(loginUser))
+                .member(memberMapper.toMember(currentUser))
                 .content(postRequest.getContent())
                 .mapX(postRequest.getMapX())
                 .mapY(postRequest.getMapY())
@@ -224,10 +224,10 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 수정
     @Override
     @Transactional
-    public void updatePost(Long postId, PostRequest postRequest, List<MultipartFile> imageFiles, CurrentUserDto loginUser) {
+    public void updatePost(Long postId, PostRequest postRequest, List<MultipartFile> imageFiles, CurrentUserDto currentUser) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
-        if (!post.getMember().getId().equals(loginUser.getId())) {
+        if (!post.getMember().getId().equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
 
@@ -256,10 +256,10 @@ public class PostServiceImpl implements PostService {
     // 해당 게시글 삭제
     @Override
     @Transactional
-    public void deletePost(Long postId, CurrentUserDto loginUser) {
+    public void deletePost(Long postId, CurrentUserDto currentUser) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new ServiceException(ReturnCode.POST_NOT_FOUND));
         // 작성자 검증 - 현재 로그인한 사용자의 ID를 가져와서 검증
-        if (!post.getMember().getId().equals(loginUser.getId())) {
+        if (!post.getMember().getId().equals(currentUser.getId())) {
             throw new ServiceException(ReturnCode.NOT_AUTHORIZED);
         }
         commentService.deleteAllComments(postId);
@@ -303,10 +303,10 @@ public class PostServiceImpl implements PostService {
     }
 
     // Post를 DetailPostDto로 변환
-    private DetailPostResponse convertToDetailPostDto(Post post, CurrentUserDto loginUser) {
-        boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
+    private DetailPostResponse convertToDetailPostDto(Post post, CurrentUserDto currentUser) {
+        boolean liked = postLikeQueryRepository.existsByPostIdAndMemberId(post.getId(), currentUser.getId());
         Long likeCount = postLikeQueryRepository.countByPostId(post.getId());
-        boolean saved = postSaveQueryRepository.existsByPostIdAndMemberId(post.getId(), loginUser.getId());
+        boolean saved = postSaveQueryRepository.existsByPostIdAndMemberId(post.getId(), currentUser.getId());
         return DetailPostResponse.builder()
                 .id(post.getId())
                 .memberId(post.getMember().getId())
