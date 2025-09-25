@@ -20,7 +20,7 @@ import java.util.List;
 public class ApiV1ChatMessageController {
     private final ChatMessageService chatMessageService;
 
-    // 해당 채팅방의 이전 메시지 가져오기 [참여자 권한]
+    // 채팅방의 이전 메시지 가져오기 & 모든 메시지 읽음 처리[참여자 권한]
     @GetMapping("/{chatRoomId}")
     public ApiResponse<List<ChatMessageResponse>> findByChatRoomId(@ModelAttribute ChatMessagePage request,
                                                              @PathVariable("chatRoomId") Long chatRoomId, @CurrentUser CurrentUserDto currentUser) {
@@ -28,7 +28,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.success(chatMessageService.findByChatRoomId(chatRoomId, pageable, currentUser));
     }
 
-    // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
+    // 채팅방에서 메시지 검색(내용) [참여자 권한]
     @GetMapping("/{chatRoomId}/search")
     public ApiResponse<List<ChatMessageResponse>> searchChatMessage(@ModelAttribute ChatMessagePage request, @PathVariable("chatRoomId") Long chatRoomId,
                                                               @RequestParam("keyword") String keyword, @CurrentUser CurrentUserDto currentUser) {
@@ -36,7 +36,7 @@ public class ApiV1ChatMessageController {
         return ApiResponse.success(chatMessageService.searchByKeyword(chatRoomId, keyword, pageable, currentUser));
     }
 
-    // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
+    // 채팅방에서 이미지 메시지 생성 [참여자 권한]
     @PostMapping("/image/{chatRoomId}")
     public ApiResponse<Void> writeImageMessage(@PathVariable("chatRoomId") Long chatRoomId,
                                                  @RequestPart(value = "imageFile", required = false) List<MultipartFile> imageFiles,

@@ -22,10 +22,11 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
         SELECT cr
         FROM ChatRoom cr
         JOIN cr.chatRoomMembers crm
-        LEFT JOIN ChatMessage cm ON cm.chatRoom = cr
         WHERE crm.member = :member
-        GROUP BY cr
-        ORDER BY COALESCE(MAX(cm.createdAt), cr.createdAt) DESC
+        ORDER BY COALESCE(
+            (SELECT MAX(cm.createdAt) FROM ChatMessage cm WHERE cm.chatRoom = cr),
+            cr.createdAt
+        ) DESC
     """)
     Page<ChatRoom> findChatRoomsByMemberOrderByLatestMessage(Pageable pageable, @Param("member") Member member);
 
