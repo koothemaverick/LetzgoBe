@@ -12,24 +12,24 @@ public interface ChatMessageService {
     // 메시지 읽음 처리
     void readChatMessage(Long messageId, Long memberId);
 
-    // 해당 채팅방의 이전 메시지 가져오기
+    // 채팅방의 이전 메시지 가져오기 & 모든 메시지 읽음 처리[참여자 권한]
     PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, CurrentUserDto currentUser);
 
-    // 해당 채팅방에서 메시지 검색(내용)
+    // 채팅방에서 메시지 검색(내용) [참여자 권한]
     PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, CurrentUserDto currentUser);
 
-    // 해당 채팅방에서 메시지 생성
+    // 채팅방에서 메시지 생성
     ChatMessageResponse writeChatMessage(Long chatRoomId, String content, Long memberId);
 
-    // 해당 채팅방에서 이미지 메시지 생성
+    // 채팅방에서 이미지 메시지 생성 [참여자 권한]
     void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, CurrentUserDto currentUser);
 
-    // 해당 메시지 삭제
+    // 메시지 삭제 [참여자 권한]
     void deleteChatMessage(Long messageId, CurrentUserDto currentUser);
 
-    // 해당 채팅방의 모든 메시지 삭제
+    // 채팅방의 모든 메시지 삭제
     void deleteAllChatMessages(Long chatRoomId);
 
-    // 해당 멤버가 작성한 모든 메시지 삭제
+    // 멤버가 작성한 모든 메시지 삭제
     void deleteMembersAllChatMessages(Long memberId);
 }

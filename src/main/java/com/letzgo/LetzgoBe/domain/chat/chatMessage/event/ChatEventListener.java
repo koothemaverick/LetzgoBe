@@ -62,7 +62,7 @@ public class ChatEventListener {
 
     private void handleLastMessage(ChatWebSocketPayload payload, String rawJson) {
         log.info("Consumed last-message-topic: chatRoomId={}, type={}", payload.getChatRoomId(), payload.getMessageType());
-        chatRoomWebSocketHandler.sendLatestMessageToOtherMembers(payload.getChatRoomId(), payload.getMemberId(), payload);
+        chatRoomWebSocketHandler.sendLatestMessageToAllMembers(payload.getChatRoomId(), payload);
     }
 
     private void handleImageMessage(ChatWebSocketPayload payload, String rawJson) {

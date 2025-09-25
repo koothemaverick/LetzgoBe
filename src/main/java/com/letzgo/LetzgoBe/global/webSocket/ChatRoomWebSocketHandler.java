@@ -64,12 +64,10 @@ public class ChatRoomWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    public void sendLatestMessageToOtherMembers(Long chatRoomId, Long senderId, ChatWebSocketPayload payload) {
+    public void sendLatestMessageToAllMembers(Long chatRoomId, ChatWebSocketPayload payload) {
         List<Long> participantIds = chatRoomRepository.findParticipantMemberIds(chatRoomId);
         for (Long memberId : participantIds) {
-            if (!memberId.equals(senderId)) {
-                sendLatestMessageToMember(memberId, payload);
-            }
+            sendLatestMessageToMember(memberId, payload);
         }
     }
 }

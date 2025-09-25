@@ -51,7 +51,7 @@ public class ApiV1ChatRoomController {
     }
 
     // 방장 권한 위임(그룹) [방장 권한]
-    @PostMapping("/group/{chatRoomId}")
+    @PatchMapping("/groupHost/{chatRoomId}")
     public ApiResponse<Void> delegateChatRoomManager(@PathVariable("chatRoomId") Long chatRoomId,
                                                        @RequestBody @Valid ChatRoomRequest chatRoomRequest, @CurrentUser CurrentUserDto currentUser){
         chatRoomService.delegateChatRoomManager(chatRoomId, chatRoomRequest, currentUser);

@@ -74,9 +74,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
-    // 해당 채팅방의 이전 메시지 가져오기
+    // 채팅방의 이전 메시지 가져오기 & 모든 메시지 읽음 처리[참여자 권한]
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PageResponse<ChatMessageResponse> findByChatRoomId(Long chatRoomId, Pageable pageable, CurrentUserDto currentUser) {
         try {
             checkPageSize(pageable.getPageSize());
@@ -117,7 +117,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
-    // 해당 채팅방에서 메시지 검색(내용)
+    // 해당 채팅방에서 메시지 검색(내용) [참여자 권한]
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ChatMessageResponse> searchByKeyword(Long chatRoomId, String keyword, Pageable pageable, CurrentUserDto currentUser) {
@@ -204,7 +204,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return(convertToChatMessageResponse(chatMessage, content));
     }
 
-    // 해당 채팅방에서 이미지 메시지 생성
+    // 해당 채팅방에서 이미지 메시지 생성 [참여자 권한]
     @Override
     @Transactional
     public void writeImageMessage(Long chatRoomId, List<MultipartFile> imageFiles, CurrentUserDto currentUser) {
@@ -271,7 +271,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         chatEventPublisher.publishLastMessageEvent(payload);
     }
 
-    // 해당 메시지 삭제
+    // 메시지 삭제 [참여자 권한]
     @Override
     @Transactional
     public void deleteChatMessage(Long messageId, CurrentUserDto currentUser) {
@@ -319,9 +319,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
-    // 해당 채팅방 내의 모든 메시지 읽음 처리
-    @Transactional
-    public void readAllChatMessages(Long memberId, Long chatRoomId, ChatRoomMember chatRoomMember) {
+    // ----------------- 헬퍼 메서드 -----------------
+
+    // 채팅방 내의 모든 메시지 읽음 처리
+    private void readAllChatMessages(Long memberId, Long chatRoomId, ChatRoomMember chatRoomMember) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
 
@@ -356,8 +357,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
-    // ----------------- 헬퍼 메서드 -----------------
-
     // 요청 페이지 수 제한
     private void checkPageSize(int pageSize) {
         int maxPageSize = ChatMessagePage.getMaxPageSize();
@@ -369,8 +368,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     // ChatMessage를 ChatMessageDto로 변환
     private ChatMessageResponse convertToChatMessageResponse(ChatMessage chatMessage, String content) {
         Long readMemberCount = chatMessageReadRepository.countByChatMessageId(chatMessage.getId());
-        int totalMemberCount = chatMessage.getChatRoom().getChatRoomMembers().size();
-        Long unreadCount = (long) totalMemberCount - readMemberCount;
+        Long totalMemberCount = chatRoomMemberRepository.countByChatRoomId(chatMessage.getChatRoom().getId());
+        Long unreadCount = totalMemberCount - readMemberCount;
         return ChatMessageResponse.builder()
                 .id(chatMessage.getId())
                 .memberId(chatMessage.getMember().getId())
