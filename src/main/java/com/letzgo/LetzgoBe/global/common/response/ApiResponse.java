@@ -2,7 +2,7 @@ package com.letzgo.LetzgoBe.global.common.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.iEdu.global.exception.ReturnCode;
+import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
