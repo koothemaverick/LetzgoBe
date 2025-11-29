@@ -1,7 +1,8 @@
-package com.letzgo.LetzgoBe.global.webSocket;
+package com.letzgo.LetzgoBe.global.webSocket.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
+import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatEventPublisher;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.service.ChatMessageService;
 import com.letzgo.LetzgoBe.global.webSocket.payload.ChatWebSocketPayload;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @RequiredArgsConstructor
 public class ChatWebSocketHandler extends TextWebSocketHandler {
-    private final ChatMessageService chatMessageService;
+    private final ChatEventPublisher chatEventPublisher;
     private final ObjectMapper objectMapper;
     private final Map<Long, List<WebSocketSession>> chatRoomSessions = new ConcurrentHashMap<>();
     private final Map<WebSocketSession, Long> sessionRoomMap = new ConcurrentHashMap<>(); // 세션 -> 방 매핑
@@ -50,18 +51,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             ChatWebSocketPayload payload = objectMapper.readValue(message.getPayload(), ChatWebSocketPayload.class);
             switch (payload.getMessageType()) {
                 case MESSAGE:
-                    ChatMessageResponse savedChatMessageResponse = chatMessageService.writeChatMessage(
-                            payload.getChatRoomId(),
-                            payload.getChatMessageResponse().getContent(),
-                            payload.getChatMessageResponse().getMemberId()
-                    );
-                    payload.setChatMessageResponse(savedChatMessageResponse);
-                    String updatedPayload = objectMapper.writeValueAsString(payload);
-                    broadcastToRoom(payload.getChatRoomId(), updatedPayload);
+                    // 메시지 생성 요청을 Kafka로 발행
+                    chatEventPublisher.publishChatMessageEvent(payload);
                     break;
                 case READ:
-                    chatMessageService.readChatMessage(payload.getMessageId(), payload.getMemberId());
-                    broadcastToRoom(payload.getChatRoomId(), message.getPayload());
+                    // 단일 메시지 읽음 처리 요청을 Kafka로 발행
+                    chatEventPublisher.publishReadMessageEvent(payload);
                     break;
                 case PING:
                     // 클라이언트의 PING 메시지 응답 (옵션: PONG으로 응답하거나 무시)
