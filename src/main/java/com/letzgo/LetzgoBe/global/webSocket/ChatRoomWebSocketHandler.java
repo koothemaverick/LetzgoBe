@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.global.webSocket.handler;
+package com.letzgo.LetzgoBe.global.webSocket;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
