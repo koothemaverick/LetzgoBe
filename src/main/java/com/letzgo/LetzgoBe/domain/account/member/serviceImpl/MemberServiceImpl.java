@@ -1,9 +1,8 @@
 package com.letzgo.LetzgoBe.domain.account.member.serviceImpl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
 import com.letzgo.LetzgoBe.domain.account.auth.service.AuthService;
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.DetailMemberResponse;
 import com.letzgo.LetzgoBe.domain.account.member.dto.res.MemberResponse;
@@ -11,7 +10,6 @@ import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollow;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberFollowReq;
 import com.letzgo.LetzgoBe.domain.account.member.entity.MemberPage;
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowReqRepository;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
@@ -24,16 +22,17 @@ import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
+import com.letzgo.LetzgoBe.global.kafka.event.notification.NotificationEventPublisher;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -52,9 +51,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberFollowReqRepository memberFollowReqRepository;
     private final MemberFollowRepository memberFollowRepository;
     private final S3Service s3Service;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
-    private final MemberMapper memberMapper;
+    private final NotificationEventPublisher notificationEventPublisher;
+    private final MemberConverter memberConverter;
 
     // 회원가입
     @Override
@@ -84,7 +82,7 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponse getMyInfo(CurrentUserDto currentUser) {
         Member member = memberRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberMapper.toMemberResponse(member);
+        return memberConverter.toMemberResponse(member);
     }
 
     // 본인 상세회원정보 조회
@@ -93,7 +91,7 @@ public class MemberServiceImpl implements MemberService {
     public DetailMemberResponse getMyDetailInfo(CurrentUserDto currentUser){
         Member member = memberRepository.findById(currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberMapper.toDetailMemberResponse(member);
+        return memberConverter.toDetailMemberResponse(member);
     }
 
     // 다른 멤버의 회원정보 조회
@@ -102,7 +100,7 @@ public class MemberServiceImpl implements MemberService {
     public MemberResponse getMemberInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberMapper.toMemberResponse(member);
+        return memberConverter.toMemberResponse(member);
     }
 
     // 다른 멤버의 상세회원정보 조회
@@ -111,7 +109,7 @@ public class MemberServiceImpl implements MemberService {
     public DetailMemberResponse getDetailMemberInfo(Long memberId){
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        return memberMapper.toDetailMemberResponse(member);
+        return memberConverter.toDetailMemberResponse(member);
     }
 
     // 회원정보 수정
@@ -144,7 +142,7 @@ public class MemberServiceImpl implements MemberService {
         if (memberRequest.getBirthday() != null) currentUser.setBirthday(memberRequest.getBirthday());
         currentUser.setProfileImageUrl(imageUrl);
         // LoginUserDto를 Member 엔티티로 변환
-        Member memberEntity = memberMapper.toMember(currentUser);
+        Member memberEntity = memberConverter.toMember(currentUser);
         memberRepository.save(memberEntity);
     }
 
@@ -179,7 +177,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void followReq(Long memberId, CurrentUserDto currentUser){
-        Member followReq = memberMapper.toMember(currentUser);
+        Member followReq = memberConverter.toMember(currentUser);
         Member followRec = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         // 기존 팔로우 여부 확인
@@ -208,10 +206,10 @@ public class MemberServiceImpl implements MemberService {
                 .targetObject(Notification.TargetObject.Follow)
                 .build();
         try {
-            String message = objectMapper.writeValueAsString(notification);
-            kafkaTemplate.send("follow-topic", message);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize Notification: {}", e.getMessage());
+            notificationEventPublisher.publishFollowNotification(notification);
+        } catch (RuntimeException e) {
+            log.error("Failed to publish follow notification for receiverId={}: {}",
+                    followRec.getId(), e.getMessage(), e);
         }
     }
 
@@ -219,10 +217,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void cancelFollowReq(Long memberId, CurrentUserDto currentUser){
-        Member followReq = memberMapper.toMember(currentUser);
-        Member followRec = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(followReq, followRec)
+        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqIdAndFollowRecId(currentUser.getId(), memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(memberFollowReq);
     }
@@ -231,12 +226,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void acceptFollowReq(Long memberId, CurrentUserDto currentUser){
+        log.info("TX active={}, readOnly={}",
+                TransactionSynchronizationManager.isActualTransactionActive(),
+                TransactionSynchronizationManager.isCurrentTransactionReadOnly());
         Member requester = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = memberMapper.toMember(currentUser);
-        MemberFollowReq followReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
-                .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
-        memberFollowReqRepository.delete(followReq);
+        Member receiver = memberConverter.toMember(currentUser);
+        memberFollowReqRepository.deleteByFollowReqIdAndFollowRecId(memberId, currentUser.getId());
+
         MemberFollow memberFollow = MemberFollow.builder()
                 .follow(requester)
                 .followed(receiver)
@@ -253,10 +250,10 @@ public class MemberServiceImpl implements MemberService {
                 .targetObject(Notification.TargetObject.Follow)
                 .build();
         try {
-            String message = objectMapper.writeValueAsString(notification);
-            kafkaTemplate.send("follow-topic", message);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize Notification: {}", e.getMessage());
+            notificationEventPublisher.publishFollowNotification(notification);
+        } catch (RuntimeException e) {
+            log.error("Failed to publish follow accepted notification for receiverId={}: {}",
+                    memberId, e.getMessage(), e);
         }
     }
 
@@ -264,10 +261,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void refuseFollowReq(Long memberId, CurrentUserDto currentUser){
-        Member requester = memberRepository.findById(memberId)
-                .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member receiver = memberMapper.toMember(currentUser);
-        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqAndFollowRec(requester, receiver)
+        MemberFollowReq memberFollowReq = memberFollowReqRepository.findByFollowReqIdAndFollowRecId(memberId, currentUser.getId())
                 .orElseThrow(() -> new ServiceException(ReturnCode.REQUEST_NOT_FOUND));
         memberFollowReqRepository.delete(memberFollowReq);
     }
@@ -276,7 +270,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void cancelFollow(Long memberId, CurrentUserDto currentUser){
-        Member follow = memberMapper.toMember(currentUser);
+        Member follow = memberConverter.toMember(currentUser);
         Member followed = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
@@ -290,7 +284,7 @@ public class MemberServiceImpl implements MemberService {
     public void removeFollowed(Long memberId, CurrentUserDto currentUser){
         Member follow = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
-        Member followed = memberMapper.toMember(currentUser);
+        Member followed = memberConverter.toMember(currentUser);
         MemberFollow memberFollow = memberFollowRepository.findByFollowAndFollowed(follow, followed)
                 .orElseThrow(() -> new ServiceException(ReturnCode.FOLLOWER_NOT_FOUND));
         memberFollowRepository.delete(memberFollow);
