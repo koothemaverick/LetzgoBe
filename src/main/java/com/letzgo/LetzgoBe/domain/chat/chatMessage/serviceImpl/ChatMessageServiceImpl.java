@@ -1,15 +1,15 @@
 package com.letzgo.LetzgoBe.domain.chat.chatMessage.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.dto.ChatMessageResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessagePage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessageRead;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
-import com.letzgo.LetzgoBe.domain.chat.chatMessage.event.ChatEventPublisher;
+import com.letzgo.LetzgoBe.global.kafka.event.chatMessage.ChatEventPublisher;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReadRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
@@ -49,7 +49,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private final ChatMessageReadRepository chatMessageReadRepository;
     private final S3Service s3Service;
     private final ChatEventPublisher chatEventPublisher;
-    private final MemberMapper memberMapper;
+    private final MemberConverter memberConverter;
 
     // 메시지 읽음 처리
     @Override
@@ -236,14 +236,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         // 채팅 메시지 생성
         ChatMessage chatMessage = ChatMessage.builder()
-                .member(memberMapper.toMember(currentUser))
+                .member(memberConverter.toMember(currentUser))
                 .chatRoom(chatRoom)
                 .imageUrls(imageUrls)
                 .build();
         chatMessageRepository.save(chatMessage);
 
         // 보낸 사람은 바로 읽음 처리
-        Member sender = memberMapper.toMember(currentUser);
+        Member sender = memberConverter.toMember(currentUser);
         ChatMessageRead readRecord = ChatMessageRead.builder()
                 .chatMessage(chatMessage)
                 .member(sender)

@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res;
 
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class ChatRoomResponse {
     private Long id;
     private Long memberId;
     private String title;
-    private List<SimpleMemberDto> chatRoomMembers;
+    private List<SimpleMemberResponse> chatRoomMembers;
     private Long unreadCount;
     private String lastMessage;
     private LocalDateTime lastMessageCreatedAt;

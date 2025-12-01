@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.notification.eventListener;
+package com.letzgo.LetzgoBe.global.kafka.event.notification;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.fcm.dto.res.FcmMessageResponse;

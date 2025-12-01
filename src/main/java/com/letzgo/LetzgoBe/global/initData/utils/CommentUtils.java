@@ -1,7 +1,7 @@
 package com.letzgo.LetzgoBe.global.initData.utils;
 
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.community.comment.dto.req.CommentRequest;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentUtils {
     private final CommentService commentService;
-    private final MemberMapper memberMapper;
+    private final MemberConverter memberConverter;
 
     public void createSampleCommentsForPosts(List<Member> members) {
         createCommentsForPost1(members);
@@ -140,11 +140,11 @@ public class CommentUtils {
 
     private void addComment(Long postId, String content, Member member) {
         CommentRequest form = CommentRequest.builder().content(content).build();
-        commentService.addComment(postId, form, memberMapper.toCurrentUserDto(member));
+        commentService.addComment(postId, form, memberConverter.toCurrentUserDto(member));
     }
 
     private void addReply(Long postId, Long superCommentId, String content, Member member) {
         CommentRequest form = CommentRequest.builder().content(content).superCommentId(superCommentId).build();
-        commentService.addComment(postId, form, memberMapper.toCurrentUserDto(member));
+        commentService.addComment(postId, form, memberConverter.toCurrentUserDto(member));
     }
 }

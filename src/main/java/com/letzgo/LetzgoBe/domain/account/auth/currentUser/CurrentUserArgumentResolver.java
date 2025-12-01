@@ -1,6 +1,6 @@
 package com.letzgo.LetzgoBe.domain.account.auth.currentUser;
 
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
@@ -19,7 +19,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @RequiredArgsConstructor
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
     private final MemberRepository memberRepository;
-    private final MemberMapper memberMapper;
+    private final MemberConverter memberConverter;
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -35,7 +35,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
             String email = securityUser.getUsername(); // UserDetails의 getUsername()은 이메일을 반환
 
             return memberRepository.findByEmail(email)
-                    .map(memberMapper::toCurrentUserDto)
+                    .map(memberConverter::toCurrentUserDto)
                     .orElseThrow(() -> new ServiceException(ReturnCode.USER_NOT_FOUND));
         }
         return null;

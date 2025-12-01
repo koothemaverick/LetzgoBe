@@ -1,8 +1,8 @@
 package com.letzgo.LetzgoBe.domain.chat.chatRoom.serviceImpl;
 
 import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.ChatMessage;
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.entity.MessageContent;
@@ -10,7 +10,7 @@ import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.ChatMessageReposit
 import com.letzgo.LetzgoBe.domain.chat.chatMessage.repository.MessageContentRepository;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.req.ChatRoomRequest;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.dto.res.ChatRoomResponse;
-import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberDto;
+import com.letzgo.LetzgoBe.domain.account.member.dto.res.SimpleMemberResponse;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoom;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomMember;
 import com.letzgo.LetzgoBe.domain.chat.chatRoom.entity.ChatRoomPage;
@@ -43,14 +43,14 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     private final MessageContentRepository messageContentRepository;
     private final MemberRepository memberRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
-    private final MemberMapper memberMapper;
+    private final MemberConverter memberConverter;
 
     // 사용자의 모든 채팅방 조회
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ChatRoomResponse> getChatRoom(Pageable pageable, CurrentUserDto currentUser) {
         checkPageSize(pageable.getPageSize());
-        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberMapper.toMember(currentUser));
+        Page<ChatRoom> chatRooms = chatRoomRepository.findChatRoomsByMemberOrderByLatestMessage(pageable, memberConverter.toMember(currentUser));
         return PageResponse.of(chatRooms.map(chatRoom -> convertToChatRoomResponse(chatRoom, currentUser.getId())));
     }
 
@@ -77,13 +77,13 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         // 새로운 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .title(chatRoomRequest.getTitle())
-                .member(memberMapper.toMember(currentUser)) // 방장 지정
+                .member(memberConverter.toMember(currentUser)) // 방장 지정
                 .build();
         // 본인을 맨 앞에 추가
         List<ChatRoomMember> chatRoomMembers = new ArrayList<>();
 
         ChatRoomMember enterChatRoomMyself = ChatRoomMember.builder()
-                .member(memberMapper.toMember(currentUser))
+                .member(memberConverter.toMember(currentUser))
                 .chatRoom(chatRoom)
                 .build();
         chatRoomMembers.add(enterChatRoomMyself);
@@ -345,7 +345,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
                 .title(chatRoom.getTitle())
                 .memberCount(chatRoomMembers.size()) // 여기서 변경
                 .chatRoomMembers(chatRoomMembers.stream() // 여기서도 변경
-                        .map(chatRoomMember -> SimpleMemberDto.builder()
+                        .map(chatRoomMember -> SimpleMemberResponse.builder()
                                 .userId(chatRoomMember.getMember().getId())
                                 .userName(chatRoomMember.getMember().getName())
                                 .userNickname(chatRoomMember.getMember().getNickname()) // 이제 정상적으로 가져올 수 있음

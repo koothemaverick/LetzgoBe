@@ -1,9 +1,7 @@
 package com.letzgo.LetzgoBe.domain.community.post.serviceImpl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.domain.account.auth.currentUser.CurrentUserDto;
-import com.letzgo.LetzgoBe.domain.account.member.mapper.MemberMapper;
+import com.letzgo.LetzgoBe.domain.account.member.converter.MemberConverter;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberFollowRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.repository.CommentRepository;
 import com.letzgo.LetzgoBe.domain.community.comment.service.CommentService;
@@ -23,12 +21,12 @@ import com.letzgo.LetzgoBe.domain.notification.entity.Notification;
 import com.letzgo.LetzgoBe.global.common.response.PageResponse;
 import com.letzgo.LetzgoBe.global.exception.ReturnCode;
 import com.letzgo.LetzgoBe.global.exception.ServiceException;
+import com.letzgo.LetzgoBe.global.kafka.event.notification.NotificationEventPublisher;
 import com.letzgo.LetzgoBe.global.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,9 +46,8 @@ public class PostServiceImpl implements PostService {
     private final S3Service s3Service;
     private final CommentRepository commentRepository;
     private final MemberFollowRepository memberFollowRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
-    private final MemberMapper memberMapper;
+    private final NotificationEventPublisher notificationEventPublisher;
+    private final MemberConverter memberConverter;
 
     // 본인 & 팔로우한 유저 & 유저(1,2,3,4,5)의 게시글 조회
     @Override
@@ -132,7 +129,7 @@ public class PostServiceImpl implements PostService {
         if (alreadySaved) {
             throw new ServiceException(ReturnCode.POST_ALREADY_SAVED);
         }
-        PostSave postSave = new PostSave(memberMapper.toMember(currentUser), post);
+        PostSave postSave = new PostSave(memberConverter.toMember(currentUser), post);
         post.getSavedMembers().add(postSave);
     }
 
@@ -160,7 +157,7 @@ public class PostServiceImpl implements PostService {
         if (alreadyLiked) {
             throw new ServiceException(ReturnCode.POST_ALREADY_LIKED);
         }
-        PostLike postLike = new PostLike(memberMapper.toMember(currentUser), post);
+        PostLike postLike = new PostLike(memberConverter.toMember(currentUser), post);
         post.getLikedMembers().add(postLike);
         // 게시글 좋아요 이벤트 생성
         Notification notification = Notification.builder()
@@ -173,10 +170,10 @@ public class PostServiceImpl implements PostService {
                 .targetObject(Notification.TargetObject.Post)
                 .build();
         try {
-            String message = objectMapper.writeValueAsString(notification);
-            kafkaTemplate.send("comment-topic", message);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to serialize Notification: {}", e.getMessage());
+            notificationEventPublisher.publishPostNotification(notification);
+        } catch (RuntimeException e) {
+            log.error("Failed to publish post like notification for postId={}: {}",
+                    postId, e.getMessage(), e);
         }
     }
 
@@ -212,7 +209,7 @@ public class PostServiceImpl implements PostService {
             }
         }
         Post post = Post.builder()
-                .member(memberMapper.toMember(currentUser))
+                .member(memberConverter.toMember(currentUser))
                 .content(postRequest.getContent())
                 .mapX(postRequest.getMapX())
                 .mapY(postRequest.getMapY())

@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.chat.chatMessage.event;
+package com.letzgo.LetzgoBe.global.kafka.event.chatMessage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.letzgo.LetzgoBe.global.webSocket.ChatRoomWebSocketHandler;
