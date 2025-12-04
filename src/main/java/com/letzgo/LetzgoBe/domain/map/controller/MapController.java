@@ -9,6 +9,7 @@ import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.map.service.MapService;
 import com.letzgo.LetzgoBe.domain.map.service.ReviewService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/map-api")
+@Tag(name = "Map", description = "지도 API")
 public class MapController {
     private final MapService mapService;
     private final ReviewService reviewService;

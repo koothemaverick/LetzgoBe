@@ -40,7 +40,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.equals("/rest-api/v1/member") && method.equals("POST")
                 || path.startsWith("/api/**")
                 || path.startsWith("/find-password/")
-                || path.startsWith("/ws");
+                || path.startsWith("/ws")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs");
     }
 
     @Override

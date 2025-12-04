@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.domain.account.member.config;
+package com.letzgo.LetzgoBe.global.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

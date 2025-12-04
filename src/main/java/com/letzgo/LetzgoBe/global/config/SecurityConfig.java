@@ -2,6 +2,7 @@ package com.letzgo.LetzgoBe.global.config;
 
 import com.letzgo.LetzgoBe.domain.account.auth.security.JwtAuthenticationFilter;
 import com.letzgo.LetzgoBe.domain.account.auth.serviceImpl.CustomUserDetailsServiceImpl;
+import com.letzgo.LetzgoBe.global.oauth.CustomOAuth2Handler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +33,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsServiceImpl customUserDetailsServiceImpl;
+    private final CustomOAuth2Handler customOAuth2Handler;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,18 +47,25 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/rest-api/v1/auth/login",
-                                "/rest-api/v1/oauth2/**",
+                        .requestMatchers(
+                                "/rest-api/v1/auth/login",
                                 "/map-api/**",
                                 "/rest-api/v1/member",
                                 "/api/**",
                                 "/rest-api/v1/post/**",
                                 "/find-password/**",
-                                "/ws/**").permitAll()
+                                "/ws/**",
+                                "/oauth2/**",              // OAuth2 시작 엔드포인트
+                                "/login/oauth2/**",         // OAuth2 콜백 엔드포인트
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(customOAuth2Handler)
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -65,13 +75,8 @@ public class SecurityConfig {
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder
                 .userDetailsService(customUserDetailsServiceImpl)
-                .passwordEncoder(passwordEncoder());
+                .passwordEncoder(passwordEncoder);
         return authenticationManagerBuilder.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

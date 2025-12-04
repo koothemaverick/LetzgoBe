@@ -83,7 +83,7 @@ public class PostServiceImpl implements PostService {
         return PageResponse.of(posts.map(post -> convertToDetailPostDto(post, currentUser)));
     }
 
-    // 해당 사용자가 작성한 게시글 조회
+    // 특정 사용자가 작성한 게시글 조회
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, CurrentUserDto currentUser){
