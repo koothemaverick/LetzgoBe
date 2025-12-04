@@ -18,7 +18,7 @@ public interface PostService {
     // 사용자 위치 주변 게시글(관광지&사용자) 조회
     PageResponse<DetailPostResponse> findPostsWithinRadius(XYRequest xyRequest, Pageable pageable, CurrentUserDto currentUser);
 
-    // 해당 사용자가 작성한 게시글 조회
+    // 특정 사용자가 작성한 게시글 조회
     PageResponse<DetailPostResponse> findByMemberId(Long memberId, Pageable pageable, CurrentUserDto currentUser);
 
     // 해당 게시글 상세 조회

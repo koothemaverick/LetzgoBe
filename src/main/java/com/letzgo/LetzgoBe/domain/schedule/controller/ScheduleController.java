@@ -3,6 +3,7 @@ package com.letzgo.LetzgoBe.domain.schedule.controller;
 import com.letzgo.LetzgoBe.domain.schedule.dto.ScheduleDto;
 import com.letzgo.LetzgoBe.domain.schedule.entity.Schedule;
 import com.letzgo.LetzgoBe.domain.schedule.service.ScheduleService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/schedules")
 @RequiredArgsConstructor
+@Tag(name = "Schedule", description = "일정 API")
 public class ScheduleController {
 
     private final ScheduleService scheduleService;

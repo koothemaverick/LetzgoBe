@@ -4,6 +4,7 @@ import com.letzgo.LetzgoBe.domain.dataFetcher.service.GeocodingService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.HotelInfoService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.InfoProvideService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import javax.ws.rs.Path;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/hotel")
+@Tag(name = "Hotel", description = "호텔 API")
 public class HotelController {
     private final HotelInfoService hotelInfoService;
     private final GeocodingService geocodingService;

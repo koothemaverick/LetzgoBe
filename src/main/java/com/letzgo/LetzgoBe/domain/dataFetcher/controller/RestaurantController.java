@@ -4,12 +4,14 @@ import com.letzgo.LetzgoBe.domain.dataFetcher.service.GeocodingService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.InfoProvideService;
 import com.letzgo.LetzgoBe.domain.dataFetcher.service.RestaurantInfoService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/restaurant")
+@Tag(name = "Restaurant", description = "레스토랑 API")
 public class RestaurantController {
     private final RestaurantInfoService restaurantInfoService;
     private final InfoProvideService infoProvideService;

@@ -6,6 +6,7 @@ import com.letzgo.LetzgoBe.domain.map.dto.res.PlaceResponse;
 import com.letzgo.LetzgoBe.domain.map.entity.PlacePage;
 import com.letzgo.LetzgoBe.domain.recommend.service.RecommendService;
 import com.letzgo.LetzgoBe.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/rest-api/v1/recommend")
 @RequiredArgsConstructor
+@Tag(name = "Recommend", description = "장소 추천 API")
 public class RecommendController {
     private final RecommendService recommendService;
 
