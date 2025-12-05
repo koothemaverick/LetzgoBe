@@ -21,7 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class NotificationEventListener {
+public class NotificationEventConsumer {
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
     private final KafkaTemplate<String, String> kafkaTemplate;

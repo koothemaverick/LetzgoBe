@@ -16,7 +16,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ChatEventListener {
+public class ChatEventConsumer {
     private final ObjectMapper objectMapper;
     private final ChatRoomWebSocketHandler chatRoomWebSocketHandler;
     private final ChatWebSocketHandler chatWebSocketHandler;
