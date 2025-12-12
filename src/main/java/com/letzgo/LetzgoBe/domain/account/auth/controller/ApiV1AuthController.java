@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 일반 인증 API
 
 소셜 로그인 플로우:
-1. 프론트에서 /oauth2/authorization/{provider} 로 브라우저 리다이렉트
+1. 프론트에서 {BaseUrl}/oauth2/authorization/{provider}로 요청
    - provider: google, kakao, naver
 2. 로그인 완료 후 백엔드에서 JWT 발급
 """)

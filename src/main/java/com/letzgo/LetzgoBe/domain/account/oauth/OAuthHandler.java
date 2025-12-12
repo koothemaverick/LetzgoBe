@@ -1,4 +1,4 @@
-package com.letzgo.LetzgoBe.global.oauth;
+package com.letzgo.LetzgoBe.domain.account.oauth;
 
 import com.letzgo.LetzgoBe.domain.account.auth.dto.req.LoginRequest;
 import com.letzgo.LetzgoBe.domain.account.auth.dto.res.LoginResponse;
@@ -7,7 +7,6 @@ import com.letzgo.LetzgoBe.domain.account.member.dto.req.MemberRequest;
 import com.letzgo.LetzgoBe.domain.account.member.entity.Member;
 import com.letzgo.LetzgoBe.domain.account.member.repository.MemberRepository;
 import com.letzgo.LetzgoBe.domain.account.member.service.MemberService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class CustomOAuth2Handler implements AuthenticationSuccessHandler {
+public class OAuthHandler implements AuthenticationSuccessHandler {
     private final AuthService authService;
     private final MemberService memberService;
     private final MemberRepository memberRepository;
