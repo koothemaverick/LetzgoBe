@@ -2,11 +2,10 @@ package com.letzgo.LetzgoBe.global.config;
 
 import com.letzgo.LetzgoBe.domain.account.auth.security.JwtAuthenticationFilter;
 import com.letzgo.LetzgoBe.domain.account.auth.serviceImpl.CustomUserDetailsServiceImpl;
-import com.letzgo.LetzgoBe.global.oauth.CustomOAuth2Handler;
+import com.letzgo.LetzgoBe.domain.account.oauth.OAuthHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,7 +13,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -24,16 +22,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsServiceImpl customUserDetailsServiceImpl;
-    private final CustomOAuth2Handler customOAuth2Handler;
+    private final OAuthHandler OAuthHandler;
     private final PasswordEncoder passwordEncoder;
 
     @Bean
@@ -63,7 +58,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(customOAuth2Handler)
+                        .successHandler(OAuthHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
